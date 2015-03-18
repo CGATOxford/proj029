@@ -1,0 +1,14 @@
+.. _functionalProfiling:
+
+
+====================
+Functional profiles
+====================
+
+Metagenomic data analysis often seeks to answer questions regarding the functional
+capabilities of the community. This can be achieved in two ways. Firstly, and most
+conveniently (though not neccessarily most accurately) this can be done through alignment
+of raw reads to functional annotations. The pipeline attempts to carry out this analysis
+by using RPS-BLAST to align reads to a database of conserved protein domains (NCBI CDD). These
+are then annotated with their associated Cluster of Orthologous Groups (COG) identifier and
+functional categories represented by the reads are counted.

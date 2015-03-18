@@ -1,0 +1,15 @@
+.. _reads:
+
+
+==============
+Reads Summary
+==============
+
+Below is a summary of the number of raw reads that were obtained for each sample.
+for each track. The number of reads is the actual number of reads. The number of pairs is
+thus half this number.
+
+.. report:: ReadSummary.ReadSummary
+   :render: table
+
+   summary of read numbers
