@@ -165,7 +165,8 @@ def diff_stats():
 ###################################################
 # SECTION 2: Build lists of overlapping sets
 # of genera/NOGs - total and differentially
-# abundant
+# abundant. Also scatterplot abundance estimates
+# between data sets
 ###################################################
 ###################################################
 ###################################################
@@ -193,7 +194,8 @@ def buildCommonGeneList(infiles, outfile):
 @follows(mkdir("diff.dir"))
 @merge([os.path.join(
             PARAMS.get("rna_communitiesdir"), "csvdb"),
-        os.path.join(PARAMS.get("dna_communitiesdir"), "csvdb")],
+        os.path.join(
+            PARAMS.get("dna_communitiesdir"), "csvdb")],
            "diff.dir/common_genera.tsv")
 def buildCommonGeneraList(infiles, outfile):
     '''
@@ -202,8 +204,8 @@ def buildCommonGeneraList(infiles, outfile):
     '''
     rnadb, dnadb = infiles
     PipelineMetaomics.buildCommonList(rnadb,
-                                          dnadb,
-                                          outfile)
+                                      dnadb,
+                                      outfile)
 
 #########################################
 #########################################
@@ -256,14 +258,158 @@ def testSignificanceOfGenesOverlap(infiles, outfile):
                                                 overlap,
                                                 outfile)
 
-#########################################
-#########################################
-#########################################
+###################################################
+###################################################
+###################################################
+
+@follows(mkdir("compare_detected.dir"))
+@split([os.path.join(
+            PARAMS.get("rna_communitiesdir"), 
+            "counts.dir/*diamond*.aggregated.counts.tsv.gz"),
+        os.path.join(
+            PARAMS.get("dna_communitiesdir"), 
+            "counts.dir/*diamond*.aggregated.counts.tsv.gz")],
+       "compare_detected.dir/*.overlap.tsv")
+def buildTaxaDetectionOverlap(infiles, outfiles):
+    '''
+    build taxa detection overlap
+    '''
+    levels = ["phylum", "class", "order", "family", "genus", "species"]
+    for level in levels:
+        rnacounts, dnacounts = [inf for inf in infiles if inf.find(level) != -1]
+        outfile = "compare_detected.dir/%s.overlap.tsv" % level
+        PipelineMetaomics.buildDetectionOverlap(rnacounts,
+                                                dnacounts,
+                                                outfile)
+
+###################################################
+###################################################
+###################################################
+@follows(mkdir("compare_detected.dir"))
+@split([os.path.join(
+            PARAMS.get("rna_communitiesdir"), 
+            "genes.dir/gene_counts.tsv.gz"),
+       os.path.join(
+        PARAMS.get("dna_communitiesdir"), 
+        "genes.dir/gene_counts.tsv.gz")],
+       "compare_detected.dir/genes.overlap.tsv")
+def buildGeneDetectionOverlap(infiles, outfile):
+    '''
+    build NOG detection overlap
+    '''
+    rnacounts, dnacounts = infiles
+    PipelineMetaomics.buildDetectionOverlap(rnacounts, 
+                                            dnacounts,
+                                            outfile)
+
+
+###################################################
+###################################################
+###################################################
+
+@follows(mkdir("compare_abundance.dir"))
+@split([os.path.join(
+            PARAMS.get("rna_communitiesdir"), 
+            "counts.dir/*diamond*.norm.matrix"),
+        os.path.join(
+            PARAMS.get("dna_communitiesdir"), 
+            "counts.dir/*diamond*.norm.matrix")],
+       "compare_abundance.dir/*.pdf")
+def scatterplotTaxaAbundanceEstimates(infiles, outfiles):
+    '''
+    scatterplot abundance estimates for each sample
+    '''
+    levels = ["phylum", "class", "order", "family", "genus", "species"]
+    for level in levels:
+        print level
+        outfile = "compare_abundance.dir/average_abundance.%s.png" % level
+        rnamatrix, dnamatrix = [inf for inf in infiles if inf.find(level) != -1]
+        PipelineMetaomics.scatterplotAbundanceEstimates(dnamatrix, 
+                                                        rnamatrix, 
+                                                        outfile)
+
+###################################################
+###################################################
+###################################################
+
+@follows(mkdir("compare_abundance.dir"))
+@split([os.path.join(
+            PARAMS.get("rna_communitiesdir"), 
+            "genes.dir/*.norm.matrix"),
+        os.path.join(
+            PARAMS.get("dna_communitiesdir"), 
+            "genes.dir/*.norm.matrix")],
+       "compare_abundance.dir/average_abundance_genes.png")
+def scatterplotGeneAbundanceEstimates(infiles, outfile):
+    '''
+    scatterplot abundance estimates for each sample
+    '''
+    rnamatrix, dnamatrix = infiles
+    PipelineMetaomics.scatterplotAbundanceEstimates(dnamatrix, 
+                                                    rnamatrix, 
+                                                    outfile)
+
+###################################################
+###################################################
+###################################################
+
+@follows(mkdir("compare_detected.dir"))
+@split([os.path.join(
+        PARAMS.get("rna_communitiesdir"), 
+        "counts.dir/*diamond*.aggregated.counts.tsv.gz"), 
+       os.path.join(
+        PARAMS.get("dna_communitiesdir"), 
+        "counts.dir/*diamond*.aggregated.counts.tsv.gz")],
+       "compare_detected.dir/*.abundance.pdf")
+def plotAbundanceLevelsOfTaxaOverlap(infiles, outfiles):
+    '''
+    plot the RPM values of taxa that do and don't
+    overlap between data sets
+    '''
+    rnacounts, dnacounts = [inf for inf in infiles if inf.find("genus") != -1]
+    outfile = "compare_detected.dir/genus.overlap.abundance.pdf"
+
+    PipelineMetaomics.plotAbundanceLevelsOfOverlap(rnacounts, 
+                                                   dnacounts,
+                                                   outfile,
+                                                   of = "genus")
+
+###################################################
+###################################################
+###################################################
+
+@follows(mkdir("compare_detected.dir"))
+@merge([os.path.join(
+            PARAMS.get("rna_communitiesdir"), 
+            "genes.dir/gene_counts.tsv.gz"),
+       os.path.join(
+        PARAMS.get("dna_communitiesdir"), 
+        "genes.dir/gene_counts.tsv.gz")],
+       "compare_detected.dir/genes.abundance.pdf")
+def plotAbundanceLevelsOfGeneOverlap(infiles, outfile):
+    '''
+    plot abundances for unique and common genes
+    '''
+    rnacounts, dnacounts = infiles
+    PipelineMetaomics.plotAbundanceLevelsOfOverlap(rnacounts,
+                                                   dnacounts,
+                                                   outfile,
+                                                   of = "genes")
+
+###################################################
+###################################################
+###################################################
 
 @follows(buildCommonGeneList,
          buildCommonGeneraList,
          buildGeneDiffList,
-         testSignificanceOfGenesOverlap)
+         testSignificanceOfGenesOverlap,
+         buildTaxaDetectionOverlap,
+         buildGeneDetectionOverlap,
+         scatterplotTaxaAbundanceEstimates,
+         scatterplotGeneAbundanceEstimates,
+         plotAbundanceLevelsOfTaxaOverlap,
+         plotAbundanceLevelsOfGeneOverlap)
 def overlaps():
     pass
 
@@ -403,7 +549,8 @@ def buildGenesOutsidePredictionInterval(infile, outfile):
 #########################################
 #########################################
 
-@follows(buildGenesOutsidePredictionInterval):
+@follows(plotSets,
+         buildGenesOutsidePredictionInterval)
 def define_colitis_responsive_nogs():
     pass
 
@@ -608,7 +755,8 @@ def mergeCountTaxaInCogsDNA(infiles, outfile):
     '''
     pattern = os.path.dirname(infiles[0]) + "/*.dna_ctaxa.tsv.gz"
     prefixes = ",".join(
-        [P.snip(os.path.basename(x), ".diamond.dna_ctaxa.tsv.gz") for x in glob.glob(pattern)])
+        [P.snip(os.path.basename(x), ".diamond.dna_ctaxa.tsv.gz") 
+         for x in glob.glob(pattern)])
     statement = '''python %(scriptsdir)s/combine_tables.py
                    --glob=%(pattern)s
                    --missing=0
@@ -632,7 +780,9 @@ def associate_taxa():
 ###################################################
 ###################################################
 # SECTION 6: Plot those genera that contribute
-# predominantly to NOG expression
+# predominantly to NOG expression and run
+# metagenomeSeq to get per taxa cog differences
+# and fold changes
 ###################################################
 ###################################################
 ###################################################
@@ -652,7 +802,7 @@ def buildGenusCogCountsMatrix(infile, outfile):
 ###################################################
 ###################################################
 
-@merge([buildTaxaCogCountsMatrix, 
+@merge([buildGenusCogCountsMatrix, 
         buildGenesOutsidePredictionInterval], 
        "associate_taxa.dir/taxa_cogs_matrix_annotated.pdf")
 def plotMaxTaxaContribution(infiles, outfile):
@@ -669,7 +819,7 @@ def plotMaxTaxaContribution(infiles, outfile):
 ###################################################
 ###################################################
 
-@merge([buildTaxaCogCountsMatrix, 
+@merge([buildGenusCogCountsMatrix, 
         buildGenesOutsidePredictionInterval], 
        "associate_taxa.dir/taxa_cogs_matrix_annotated.sig")
 def testSignificanceOfMaxTaxaContribution(infiles, outfile):
@@ -686,7 +836,7 @@ def testSignificanceOfMaxTaxaContribution(infiles, outfile):
 ###################################################
 ###################################################
 
-@transform(buildTaxaCogCountsMatrix, 
+@transform(buildGenusCogCountsMatrix, 
            suffix(".matrix"), 
            add_inputs(buildGenesOutsidePredictionInterval),
            ".pdf")
@@ -703,6 +853,82 @@ def heatmapTaxaCogProportionMatrix(infiles, outfile):
 ###################################################
 ###################################################
 ###################################################
+
+@follows(mkdir("taxa_cogs_diff.dir"))
+@transform([mergeCountTaxaInCogsRNA,
+            mergeCountTaxaInCogsDNA],
+            regex("(\S+)/(\S+).tsv.gz"), r"taxa_cogs_diff.dir/\2.diff.tsv")
+def runMetagenomeSeqPerCOGAndTaxa(infile, outfile):
+    '''
+    run metagenomeSeq on taxa-COG counts
+    '''
+    rscriptsdir = PARAMS.get("rscriptsdir")
+    rscript = PARAMS.get("metagenomeseq_rscript")
+    prefix = P.snip(outfile, ".diff.tsv")
+
+    k = PARAMS.get("metagenomeseq_genes_k")
+    a = PARAMS.get("metagenomeseq_genes_a")
+
+    statement = '''%(rscript)s %(rscriptsdir)s/run_metagenomeseq.R
+                   -c %(infile)s 
+                   -p %(prefix)s
+                   --k %(k)i 
+                   --a %(a)i > %(outfile)s.log'''
+
+    P.run()
+
+#########################################
+#########################################
+#########################################
+
+@follows(mkdir("scatterplot_genus_cog_fold.dir"))
+@split([runMetagenomeSeqPerCOGAndTaxa, 
+        os.path.join(
+            PARAMS.get("rna_communitiesdir"), 
+            "genes.dir/gene_counts.diff.tsv"),
+        os.path.join(
+            PARAMS.get("dna_communitiesdir"),
+            "genes.dir/gene_counts.diff.tsv")],
+       "scatterplot_genus_cog_fold.dir/*scatters.pdf")
+def scatterplotPerCogTaxaDNAFoldRNAFold(infiles, outfiles):
+    '''
+    plot fold change of RNA and DNA for NOGs
+    of interest
+    '''
+    taxa_cog_rnadiff, taxa_cog_dnadiff, cog_rnadiff, cog_dnadiff = infiles
+    PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold(taxa_cog_rnadiff,
+                                                          taxa_cog_dnadiff,
+                                                          cog_rnadiff,
+                                                          cog_dnadiff)
+
+#########################################
+#########################################
+#########################################
+
+@follows(plotMaxTaxaContribution,
+         testSignificanceOfMaxTaxaContribution,
+         heatmapTaxaCogProportionMatrix,
+         runMetagenomeSeqPerCOGAndTaxa,
+         scatterplotPerCogTaxaDNAFoldRNAFold)
+def genus_contributions_to_cogs():
+    pass
+
+#########################################
+#########################################
+#########################################
+
+@follows(diff_stats,
+         overlaps,
+         PCA,
+         define_colitis_responsive_nogs,
+         associate_taxa,
+         genus_contributions_to_cogs)
+def full():
+    pass
+
+#########################################
+#########################################
+#########################################
 
 if __name__ == "__main__":
     sys.exit(P.main(sys.argv))

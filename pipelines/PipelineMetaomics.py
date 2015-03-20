@@ -226,6 +226,145 @@ def testSignificanceOfOverlap(common, overlap, outfile):
 ####################################################
 ####################################################
 ####################################################
+
+def scatterplotAbundanceEstimates(dnamatrix, 
+                                  rnamatrix,
+                                  outfile):
+    '''
+    scatterplot abundance estimates between DNA and RNA
+    data sets
+    '''
+    R('''rna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % rnamatrix)
+    R('''rownames(rna) <- rna$taxa''')
+    R('''rna <- rna[,1:ncol(rna)-1]''')
+    R('''dna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % dnamatrix)
+    R('''rownames(dna) <- dna$taxa''')
+    R('''dna <- dna[,1:ncol(dna)-1]''')
+
+    # intersection of taxa/NOGs present
+    R('''keep <- intersect(rownames(rna), rownames(dna))''')
+
+    # get data where there is rna and dna
+    R('''rna <- rna[keep,]''')
+    R('''dna <- dna[keep,]''')
+        
+    # take averages
+    R('''rna.ave <- data.frame(apply(rna, 1, mean))''')
+    R('''dna.ave <- data.frame(apply(dna, 1, mean))''')
+
+    R('''print(cor(dna.ave,rna.ave)[[1]])''')
+    R('''png("%s")''' % outfile)
+    R('''plot(dna.ave[,1], 
+              rna.ave[,1], 
+              pch = 16, 
+              col = "slateGrey",
+              xlab = "Mean DNA abundance",
+              ylab = "Mean RNA abundance",
+              main = paste("N = ", nrow(dna.ave), sep = ""))
+              abline(lm(rna[,1]~dna[,1], na.rm = T))''')
+    R["dev.off"]()
+
+####################################################
+####################################################
+####################################################
+
+def buildDetectionOverlap(rnacounts, dnacounts, outfile):
+    '''
+    build detection overlaps between RNA and DNA
+    data sets
+    '''
+    R('''rna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % rnacounts)
+    R('''rownames(rna) <- rna$taxa''')
+    R('''rna <- rna[,1:ncol(rna)]''')
+    R('''dna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % dnacounts)
+    R('''rownames(dna) <- dna$taxa''')
+    R('''dna <- dna[,1:ncol(dna)]''')
+
+    R('''taxa.rna <- rownames(rna)''')
+    R('''taxa.dna <- rownames(dna)''')
+
+    # union of taxa across samples
+    R('''nrna = length(taxa.rna)''')
+    R('''ndna = length(taxa.dna)''')
+
+    # get overlapping
+    R('''noverlap = length(intersect(taxa.rna, taxa.dna))''')
+    R('''result = data.frame(nrna = nrna, ndna = ndna, noverlap = noverlap)''')
+    R('''write.table(result, file = "%s", sep = "\t", quote = F, row.names = F)''' % outfile)
+
+####################################################
+####################################################
+####################################################
+
+def plotAbundanceLevelsOfOverlap(rnacounts, 
+                                 dnacounts, 
+                                 outfile,
+                                 of = None):
+    '''
+    plot abundance levels pf taxa/NOGs that do
+    and don't overlap between data sets
+    '''
+    R('''library(ggplot2)''')
+
+    # get rna reads per million
+    R('''rna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % rnacounts)
+    R('''rownames(rna) <- rna$taxa''')
+    R('''rna <- rna[,2:ncol(rna)]''')
+    R('''rna <- sweep(rna, 2, colSums(rna)/1000000, "/")''')
+
+    # get dna reads per million
+    R('''dna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % dnacounts)
+    R('''rownames(dna) <- dna$taxa''')
+    R('''dna <- dna[,2:ncol(dna)]''')
+    R('''dna <- sweep(dna, 2, colSums(dna)/1000000, "/")''')
+
+    # common and distinct sets
+    R('''common <- intersect(rownames(dna), rownames(rna))''')
+    R('''rna.only <- setdiff(rownames(rna), rownames(dna))''')
+    R('''dna.only <- setdiff(rownames(dna), rownames(rna))''')
+
+    # boxplot the abundance levels
+    R('''rna.common <- apply(rna[common,], 1, mean)''')
+    R('''dna.common <- apply(dna[common,], 1, mean)''')
+    R('''rna.distinct <- apply(rna[rna.only,], 1, mean)''')
+    R('''dna.distinct <- apply(dna[dna.only,], 1, mean)''')
+    
+    if of == "genes":
+        # this is jsut so the thing will run
+        # genes do not have distinct genes
+        R('''rna.distinct <- c(0,0)''')
+    else:
+        R('''rna.distinct <- rna.distinct''')
+
+    # test sig bewteen groups
+    R('''wtest1 <- wilcox.test(rna.common, rna.distinct)''')
+    R('''wtest2 <- wilcox.test(dna.common, dna.distinct)''')
+    R('''wtest3 <- wilcox.test(rna.common, dna.distinct)''')
+    R('''wtest4 <- wilcox.test(dna.common, rna.distinct)''')
+    R('''wtest5 <- wilcox.test(dna.common, rna.common)''')
+
+    R('''res <- data.frame("rna.common_vs_rna.distinct" = wtest1$p.value,
+                               "dna.common_vs_dna.distinct" = wtest2$p.value,
+                               "rna.common_vs_dna.distinct" = wtest3$p.value,
+                               "dna.common_vs_rna.distinct" = wtest4$p.value,
+                               "dna.common_vs_rna.common" = wtest5$p.value)''')
+
+    outname_sig = P.snip(outfile, ".pdf") + ".sig"
+    R('''write.table(res, file = "%s", row.names = F, sep = "\t", quote = F)''' % outname_sig)
+
+    # create dataframe for plotting
+    R('''dat <- data.frame(values = c(dna.distinct, dna.common, rna.common, rna.distinct),
+                           status = c(rep("unique.dna", length(dna.distinct)),
+                                      rep("common.dna", length(dna.common)),
+                                      rep("common.rna", length(rna.common)),
+                                      rep("unique.rna", length(rna.distinct))))''')
+    R('''plot1 <- ggplot(dat, aes(x = factor(status, levels = status), y = values, stat = "identity"))''')
+    R('''plot1 + geom_boxplot() + scale_y_log10()''')
+    R('''ggsave("%s")''' % outfile)
+
+####################################################
+####################################################
+####################################################
 # SECTION 3
 ####################################################
 ####################################################
@@ -682,3 +821,89 @@ def heatmapTaxaCogProportionMatrix(matrix, annotations, outfile):
                   color = cols,
                   fontsize = 8)''')
     R["dev.off"]()
+
+####################################################
+####################################################
+####################################################
+
+def scatterplotPerCogTaxaDNAFoldRNAFold(taxa_cog_rnadiff,
+                                        taxa_cog_dnadiff,
+                                        cog_rnadiff,
+                                        cog_dnadiff):
+    '''
+    scatterplot fold changes for per genus cog
+    differences for NOGs of interest
+    '''
+    
+    R('''library(ggplot2)''')
+
+    # read in cogs + taxa
+    R('''dna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % taxa_cog_dnadiff)
+    R('''dna <- dna[dna$group2 == "WT" & dna$group1 == "HhaIL10R",]''')
+    R('''rna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % taxa_cog_rnadiff)
+    R('''rna <- rna[rna$group2 == "WT" & rna$group1 == "HhaIL10R",]''')
+
+    # read in cogs alone
+    R('''dna.cog <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % cog_dnadiff)
+    R('''dna.cog <- dna.cog[dna.cog$group2 == "WT" & dna.cog$group1 == "HhaIL10R",]''')
+    R('''rna.cog <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % cog_rnadiff)
+    R('''rna.cog <- rna.cog[rna.cog$group2 == "WT" & rna.cog$group1 == "HhaIL10R",]''')
+
+    # merge data
+    R('''dat <- merge(dna, rna, 
+                      by.x = "taxa", 
+                      by.y = "taxa", 
+                      all.x = T, 
+                      all.y = T, 
+                      suffixes = c("dna", "rna"))''')
+
+    # add gene column
+    R('''dat$gene <- unlist(strsplit(dat$taxa, "-"))[seq(1, nrow(dat)*2, 2)]''')
+    R('''dat$genus <- unlist(strsplit(dat$taxa, "-"))[seq(2, nrow(dat)*2, 2)]''')
+
+    # more merging
+    R('''dat <- merge(dat, dna.cog, 
+                      by.x = "gene", 
+                      by.y = "taxa", 
+                      suffixes = c("taxa","dna.cog"), 
+                      all.x = T, 
+                      all.y = T)''')
+    R('''dat <- merge(dat, rna.cog, 
+                      by.x = "gene", 
+                      by.y = "taxa", 
+                      suffixes = c("dna.cog", "rna.cog"), 
+                      all.x = T, 
+                      all.y = T)''')
+
+    # sub NA for 0
+    R('''dat[is.na(dat)] <- 0''')
+
+    # NOTE these are specified and hardcoded 
+    # here - NOGs of interest
+    R('''cogs <- c("COG0783", "COG2837", "COG0435","COG5520")''')
+
+    # iterate over cogs and scatterplot
+    # fold changes in DNA and RNA analysis.
+    # if not present in one or other then fold change will
+    # be 0
+    R('''for (cog in cogs){
+            dat2 <- dat[grep(cog, dat$gene),]
+             
+            # add the data for COG fold changes and abundance
+            dat3 <- data.frame("genus" = append(dat2$genus, cog),
+                               "dna.fold" = append(dat2$logFCdna, unique(dat2$logFCdna.cog)),
+                               "rna.fold" = append(dat2$logFCrna, unique(dat2$logFCrna.cog)),
+                               "abundance" = append(dat2$AveExprdna, sum(dat2$AveExprdna.cog)))
+                               
+            suffix <- paste(cog, "scatters.pdf", sep = ".")
+            outname <- paste("scatterplot_genus_cog_fold.dir", suffix, sep = "/")
+
+            plot1 <- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = log10(abundance), label = genus))
+            plot2 <- plot1 + geom_point(shape = 18) 
+            plot3 <- plot2 + geom_text(hjust = 0.5, vjust = 1, size = 5)
+            plot4 <- plot3 + geom_abline(intercept = 0, slope = 1, colour = "blue") 
+            plot5 <- plot4 + geom_hline(yintercept = c(-1,1), linetype = "dashed")
+            plot6 <- plot5 + geom_vline(xintercept = c(-1,1), linetype = "dashed")
+            plot7 <- plot6 + geom_hline(yintercept = 0) + geom_vline(xintercept = 0)
+            ggsave(outname)
+            }''')
