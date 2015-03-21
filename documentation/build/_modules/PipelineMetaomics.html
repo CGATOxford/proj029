@@ -1,0 +1,1004 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PipelineMetaomics &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for PipelineMetaomics</h1><div class="highlight"><pre>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c"># functions and classes used in conjunction with</span>
+<span class="c"># pipeline_metaomics.py</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+
+<span class="c"># import libraries</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">CGAT.IOTools</span> <span class="kn">as</span> <span class="nn">IOTools</span>
+<span class="kn">import</span> <span class="nn">CGAT.Pipeline</span> <span class="kn">as</span> <span class="nn">P</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">r</span> <span class="k">as</span> <span class="n">R</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c"># SECTION 1</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+
+<div class="viewcode-block" id="buildDiffStats"><a class="viewcode-back" href="../code.html#PipelineMetaomics.buildDiffStats">[docs]</a><span class="k">def</span> <span class="nf">buildDiffStats</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    build differential abundance statistics</span>
+<span class="sd">    at different p-value and Fold change</span>
+<span class="sd">    thresholds for each comparison</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">tablename</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">toTable</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">infile</span><span class="p">))</span>
+    <span class="n">statement</span> <span class="o">=</span> <span class="s">&quot;ATTACH &#39;</span><span class="si">%(db)s</span><span class="s">&#39; as diff;&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span> 
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span>
+    
+    <span class="c"># build table of results at different thresholds</span>
+    <span class="n">ps</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>
+    <span class="n">fcs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="c"># build results for each pair</span>
+    <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&quot;HhaIL10R&quot;</span><span class="p">,</span> <span class="s">&quot;WT&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s">&quot;WT&quot;</span><span class="p">,</span> <span class="s">&quot;aIL10R&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s">&quot;Hh&quot;</span><span class="p">,</span> <span class="s">&quot;WT&quot;</span><span class="p">)]</span>
+
+    <span class="n">outf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;group1</span><span class="se">\t</span><span class="s">group2</span><span class="se">\t</span><span class="s">adj_P_Val</span><span class="se">\t</span><span class="s">logFC</span><span class="se">\t</span><span class="s">number</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+        <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="n">fcs</span><span class="p">):</span>
+            <span class="n">statement</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;SELECT COUNT(*) </span>
+<span class="s">                           FROM diff.</span><span class="si">%(tablename)s</span><span class="s"></span>
+<span class="s">                           WHERE group1 == &quot;</span><span class="si">%(p1)s</span><span class="s">&quot;</span>
+<span class="s">                           AND group2 == &quot;</span><span class="si">%(p2)s</span><span class="s">&quot;</span>
+<span class="s">                           AND adj_P_Val &lt; </span><span class="si">%(p)f</span><span class="s"></span>
+<span class="s">                           AND abs(logFC) &gt; </span><span class="si">%(fc)f</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">fc</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span> 
+    <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c"># SECTION 2</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="buildCommonList"><a class="viewcode-back" href="../code.html#PipelineMetaomics.buildCommonList">[docs]</a><span class="k">def</span> <span class="nf">buildCommonList</span><span class="p">(</span><span class="n">rnadb</span><span class="p">,</span> <span class="n">dnadb</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    build a list of NOGs/genera that were found in</span>
+<span class="sd">    common after filtering between RNA and</span>
+<span class="sd">    DNA data sets</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c"># select appropriate table depending on</span>
+    <span class="c"># whether we want genera or NOGs</span>
+    <span class="k">if</span> <span class="s">&quot;genera&quot;</span> <span class="ow">in</span> <span class="n">outfile</span><span class="p">:</span>
+        <span class="n">tablename</span> <span class="o">=</span> <span class="s">&quot;genus_diamond_aggregated_counts_diff&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tablename</span> <span class="o">=</span> <span class="s">&quot;gene_counts_diff&quot;</span>
+    
+    <span class="c"># connect to respective</span>
+    <span class="c"># databases for RNA and DNA</span>
+    <span class="n">dbh_rna</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">rnadb</span><span class="p">)</span>
+    <span class="n">cc_rna</span> <span class="o">=</span> <span class="n">dbh_rna</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="n">dbh_dna</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dnadb</span><span class="p">)</span>
+    <span class="n">cc_dna</span> <span class="o">=</span> <span class="n">dbh_dna</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="c"># collect NOGs/genera and write to </span>
+    <span class="c"># file</span>
+    <span class="n">outf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">rna</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">dna</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">cc_rna</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">                               SELECT taxa </span>
+<span class="s">                               FROM </span><span class="si">%s</span><span class="s"></span>
+<span class="s">                               WHERE group1 == &quot;HhaIL10R&quot; </span>
+<span class="s">                               AND group2 == &quot;WT&quot; </span>
+<span class="s">                               &quot;&quot;&quot;</span> <span class="o">%</span> <span class="n">tablename</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+        <span class="n">rna</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">gene</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">cc_dna</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
+<span class="s">                              FROM </span><span class="si">%s</span><span class="s"></span>
+<span class="s">                              WHERE group1 == &quot;HhaIL10R&quot; </span>
+<span class="s">                              AND group2 == &quot;WT&quot; </span>
+<span class="s">                              &quot;&quot;&quot;</span> <span class="o">%</span> <span class="n">tablename</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+        <span class="n">dna</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">gene</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">rna</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">dna</span><span class="p">):</span>
+        <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gene</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="buildGeneDiffList"><a class="viewcode-back" href="../code.html#PipelineMetaomics.buildGeneDiffList">[docs]</a><span class="k">def</span> <span class="nf">buildGeneDiffList</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">commonset</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    build a list of differentially expressed</span>
+<span class="sd">    NOGs between colitis and steady state</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c"># list of common NOGs for sql statement</span>
+    <span class="n">common</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">commonset</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()])</span>
+    <span class="n">common</span> <span class="o">=</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span><span class="o">+</span><span class="n">x</span><span class="o">+</span><span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">common</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
+
+    <span class="c"># connect to database</span>
+    <span class="n">dbh</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+    <span class="n">cc</span> <span class="o">=</span> <span class="n">dbh</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="c"># remove any genes that are different between Hh and steady state</span>
+    <span class="c"># or between aIL10R and steady state</span>
+    <span class="n">hh</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
+<span class="s">                       FROM gene_counts_diff</span>
+<span class="s">                       WHERE group1 == &quot;Hh&quot; </span>
+<span class="s">                       AND group2 == &quot;WT&quot; </span>
+<span class="s">                       AND adj_P_Val &lt; 0.05&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()])</span>
+
+    <span class="c"># sql list</span>
+    <span class="n">hh</span> <span class="o">=</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span><span class="o">+</span><span class="n">x</span><span class="o">+</span><span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">hh</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
+
+    <span class="n">ail10r</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
+<span class="s">                       FROM gene_counts_diff</span>
+<span class="s">                       WHERE group1 == &quot;WT&quot; </span>
+<span class="s">                       AND group2 == &quot;aIL10R&quot; </span>
+<span class="s">                       AND adj_P_Val &lt; 0.05&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()])</span>
+    <span class="c"># sql list</span>
+    <span class="n">ail10r</span> <span class="o">=</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span><span class="o">+</span><span class="n">x</span><span class="o">+</span><span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ail10r</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
+
+    <span class="n">outf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">cc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
+<span class="s">                              FROM gene_counts_diff </span>
+<span class="s">                              WHERE group1 == &quot;HhaIL10R&quot; </span>
+<span class="s">                              AND group2 == &quot;WT&quot; </span>
+<span class="s">                              AND adj_P_Val &lt; 0.05</span>
+<span class="s">                              AND (logFC &gt; 1 OR logFC &lt; -1)</span>
+<span class="s">                              AND taxa IN </span><span class="si">%s</span><span class="s"></span>
+<span class="s">                              AND taxa NOT IN </span><span class="si">%s</span><span class="s"></span>
+<span class="s">                              AND taxa NOT IN </span><span class="si">%s</span><span class="s"></span>
+<span class="s">                              ORDER BY logFC DESC&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">common</span><span class="p">,</span> <span class="n">hh</span><span class="p">,</span> <span class="n">ail10r</span><span class="p">))</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+        <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gene</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="buildDiffGeneOverlap"><a class="viewcode-back" href="../code.html#PipelineMetaomics.buildDiffGeneOverlap">[docs]</a><span class="k">def</span> <span class="nf">buildDiffGeneOverlap</span><span class="p">(</span><span class="n">dnafile</span><span class="p">,</span> <span class="n">rnafile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    overlap differentially abundant NOGs between</span>
+<span class="sd">    RNA and DNA data sets</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">dna</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">dnafile</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()])</span>
+    <span class="n">rna</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">rnafile</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()])</span>
+    <span class="n">ndna</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dna</span><span class="p">)</span>
+    <span class="n">nrna</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rna</span><span class="p">)</span>
+    <span class="n">overlap</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dna</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">rna</span><span class="p">))</span>
+    <span class="n">outf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;nDNA</span><span class="se">\t</span><span class="s">nRNA</span><span class="se">\t</span><span class="s">noverlap</span><span class="se">\n</span><span class="si">%(ndna)i</span><span class="se">\t</span><span class="si">%(nrna)i</span><span class="se">\t</span><span class="si">%(overlap)i</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">())</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="testSignificanceOfOverlap"><a class="viewcode-back" href="../code.html#PipelineMetaomics.testSignificanceOfOverlap">[docs]</a><span class="k">def</span> <span class="nf">testSignificanceOfOverlap</span><span class="p">(</span><span class="n">common</span><span class="p">,</span> <span class="n">overlap</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Test significance of overlapping lists </span>
+<span class="sd">    bewteen RNA and DNA using hypergeometric test</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pop &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, stringsAsFactors = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">common</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;overlaps &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">overlap</span><span class="p">)</span>
+
+    <span class="c"># total genes in population</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;npop &lt;- nrow(pop)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># x = number of white balls picked = overlap</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;x &lt;- overlaps$noverlap&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># m = total number of white balls = total diff in RNA analysis</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;m &lt;- overlaps$nRNA&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># n = total number of black balls = total - diff in RNA analysis</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;n &lt;- npop - m&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># k = total balls sampled = number of genera different in DNA analysis</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;k &lt;- overlaps$nDNA&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># hypergeometric test</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p &lt;- 1-phyper(x,m,n,k)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># write result</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res &lt;- matrix(ncol = 2, nrow = 5)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[1,1] &lt;- &quot;x&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[2,1] &lt;- &quot;m&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[3,1] &lt;- &quot;n&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[4,1] &lt;- &quot;k&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[5,1] &lt;- &quot;p-value&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[1,2] &lt;- x&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[2,2] &lt;- m&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[3,2] &lt;- n&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[4,2] &lt;- k&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res[5,2] &lt;- p&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;print(res)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(as.data.frame(res), file = &quot;</span><span class="si">%s</span><span class="s">&quot;, quote = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="scatterplotAbundanceEstimates"><a class="viewcode-back" href="../code.html#PipelineMetaomics.scatterplotAbundanceEstimates">[docs]</a><span class="k">def</span> <span class="nf">scatterplotAbundanceEstimates</span><span class="p">(</span><span class="n">dnamatrix</span><span class="p">,</span> 
+                                  <span class="n">rnamatrix</span><span class="p">,</span>
+                                  <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    scatterplot abundance estimates between DNA and RNA</span>
+<span class="sd">    data sets</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rnamatrix</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(rna) &lt;- rna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[,1:ncol(rna)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">dnamatrix</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dna) &lt;- dna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[,1:ncol(dna)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># intersection of taxa/NOGs present</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;keep &lt;- intersect(rownames(rna), rownames(dna))&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># get data where there is rna and dna</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[keep,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[keep,]&#39;&#39;&#39;</span><span class="p">)</span>
+        
+    <span class="c"># take averages</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.ave &lt;- data.frame(apply(rna, 1, mean))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.ave &lt;- data.frame(apply(dna, 1, mean))&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;print(cor(dna.ave,rna.ave)[[1]])&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;png(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot(dna.ave[,1], </span>
+<span class="s">              rna.ave[,1], </span>
+<span class="s">              pch = 16, </span>
+<span class="s">              col = &quot;slateGrey&quot;,</span>
+<span class="s">              xlab = &quot;Mean DNA abundance&quot;,</span>
+<span class="s">              ylab = &quot;Mean RNA abundance&quot;,</span>
+<span class="s">              main = paste(&quot;N = &quot;, nrow(dna.ave), sep = &quot;&quot;))</span>
+<span class="s">              abline(lm(rna[,1]~dna[,1], na.rm = T))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[</span><span class="s">&quot;dev.off&quot;</span><span class="p">]()</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="buildDetectionOverlap"><a class="viewcode-back" href="../code.html#PipelineMetaomics.buildDetectionOverlap">[docs]</a><span class="k">def</span> <span class="nf">buildDetectionOverlap</span><span class="p">(</span><span class="n">rnacounts</span><span class="p">,</span> <span class="n">dnacounts</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    build detection overlaps between RNA and DNA</span>
+<span class="sd">    data sets</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rnacounts</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(rna) &lt;- rna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[,1:ncol(rna)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">dnacounts</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dna) &lt;- dna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[,1:ncol(dna)]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;taxa.rna &lt;- rownames(rna)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;taxa.dna &lt;- rownames(dna)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># union of taxa across samples</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;nrna = length(taxa.rna)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ndna = length(taxa.dna)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># get overlapping</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;noverlap = length(intersect(taxa.rna, taxa.dna))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;result = data.frame(nrna = nrna, ndna = ndna, noverlap = noverlap)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(result, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, quote = F, row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="plotAbundanceLevelsOfOverlap"><a class="viewcode-back" href="../code.html#PipelineMetaomics.plotAbundanceLevelsOfOverlap">[docs]</a><span class="k">def</span> <span class="nf">plotAbundanceLevelsOfOverlap</span><span class="p">(</span><span class="n">rnacounts</span><span class="p">,</span> 
+                                 <span class="n">dnacounts</span><span class="p">,</span> 
+                                 <span class="n">outfile</span><span class="p">,</span>
+                                 <span class="n">of</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot abundance levels pf taxa/NOGs that do</span>
+<span class="sd">    and don&#39;t overlap between data sets</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># get rna reads per million</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rnacounts</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(rna) &lt;- rna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[,2:ncol(rna)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- sweep(rna, 2, colSums(rna)/1000000, &quot;/&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># get dna reads per million</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">dnacounts</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dna) &lt;- dna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[,2:ncol(dna)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- sweep(dna, 2, colSums(dna)/1000000, &quot;/&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># common and distinct sets</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;common &lt;- intersect(rownames(dna), rownames(rna))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.only &lt;- setdiff(rownames(rna), rownames(dna))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.only &lt;- setdiff(rownames(dna), rownames(rna))&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># boxplot the abundance levels</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.common &lt;- apply(rna[common,], 1, mean)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.common &lt;- apply(dna[common,], 1, mean)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.distinct &lt;- apply(rna[rna.only,], 1, mean)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.distinct &lt;- apply(dna[dna.only,], 1, mean)&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">of</span> <span class="o">==</span> <span class="s">&quot;genes&quot;</span><span class="p">:</span>
+        <span class="c"># this is jsut so the thing will run</span>
+        <span class="c"># genes do not have distinct genes</span>
+        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.distinct &lt;- c(0,0)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.distinct &lt;- rna.distinct&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># test sig bewteen groups</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;wtest1 &lt;- wilcox.test(rna.common, rna.distinct)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;wtest2 &lt;- wilcox.test(dna.common, dna.distinct)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;wtest3 &lt;- wilcox.test(rna.common, dna.distinct)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;wtest4 &lt;- wilcox.test(dna.common, rna.distinct)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;wtest5 &lt;- wilcox.test(dna.common, rna.common)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res &lt;- data.frame(&quot;rna.common_vs_rna.distinct&quot; = wtest1$p.value,</span>
+<span class="s">                               &quot;dna.common_vs_dna.distinct&quot; = wtest2$p.value,</span>
+<span class="s">                               &quot;rna.common_vs_dna.distinct&quot; = wtest3$p.value,</span>
+<span class="s">                               &quot;dna.common_vs_rna.distinct&quot; = wtest4$p.value,</span>
+<span class="s">                               &quot;dna.common_vs_rna.common&quot; = wtest5$p.value)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">outname_sig</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.pdf&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.sig&quot;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(res, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, row.names = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, quote = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outname_sig</span><span class="p">)</span>
+
+    <span class="c"># create dataframe for plotting</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- data.frame(values = c(dna.distinct, dna.common, rna.common, rna.distinct),</span>
+<span class="s">                           status = c(rep(&quot;unique.dna&quot;, length(dna.distinct)),</span>
+<span class="s">                                      rep(&quot;common.dna&quot;, length(dna.common)),</span>
+<span class="s">                                      rep(&quot;common.rna&quot;, length(rna.common)),</span>
+<span class="s">                                      rep(&quot;unique.rna&quot;, length(rna.distinct))))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 &lt;- ggplot(dat, aes(x = factor(status, levels = status), y = values, stat = &quot;identity&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 + geom_boxplot() + scale_y_log10()&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c"># SECTION 3</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="runPCA"><a class="viewcode-back" href="../code.html#PipelineMetaomics.runPCA">[docs]</a><span class="k">def</span> <span class="nf">runPCA</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    run pca analysis - this outputs</span>
+<span class="sd">    a plot coloured by condition and</span>
+<span class="sd">    also the loadings</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="s">&quot;RNA&quot;</span> <span class="ow">in</span> <span class="n">infile</span><span class="p">:</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s">&quot;rna&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s">&quot;dna&quot;</span>
+    <span class="k">if</span> <span class="s">&quot;gene&quot;</span> <span class="ow">in</span> <span class="n">infile</span><span class="p">:</span>
+        <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span><span class="mi">40</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span><span class="mi">7</span>
+    
+    <span class="n">outname_plot</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.loadings.tsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="s">&quot;/</span><span class="si">%s</span><span class="s">_&quot;</span> <span class="o">%</span> <span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.pca.pdf&quot;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[, 1:ncol(dat)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pc &lt;- prcomp(t(dat))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(colnames(dat), &quot;.R[0-9]&quot;))[seq(1, ncol(dat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(conds, &quot;.&quot;, fixed = T))[seq(2, length(conds)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>  
+        
+    <span class="c"># plot the principle components</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pcs &lt;- data.frame(pc$x)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pcs$cond &lt;- conds&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="c"># get variance explained</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;imps &lt;- c(summary(pc)$importance[2], summary(pc)$importance[5])&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p &lt;- ggplot(pcs, aes(x = PC1, y = PC2, colour = cond, size = 3)) + geom_point()&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p2 &lt;- p + xlab(imps[1]) + ylab(imps[2])&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p3 &lt;- p2 + scale_colour_manual(values = c(&quot;slateGrey&quot;, &quot;green&quot;, &quot;red&quot;, &quot;blue&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p3 + xlim(c(-</span><span class="si">%i</span><span class="s">, </span><span class="si">%i</span><span class="s">)) + ylim(c(-</span><span class="si">%i</span><span class="s">, </span><span class="si">%i</span><span class="s">))&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xlim</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">))</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outname_plot</span><span class="p">)</span>
+
+    <span class="c"># get the loadings</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;loads &lt;- data.frame(pc$rotation)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;loads$taxa &lt;- rownames(loads)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># write out data</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(loads, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names = F, quote = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="s">&quot;/</span><span class="si">%s</span><span class="s">_&quot;</span> <span class="o">%</span> <span class="n">suffix</span><span class="p">))</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="plotPCALoadings"><a class="viewcode-back" href="../code.html#PipelineMetaomics.plotPCALoadings">[docs]</a><span class="k">def</span> <span class="nf">plotPCALoadings</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot PCA loadings</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(grid)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;top5pc1 &lt;- dat[order(-dat$PC1),][1:5,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;bottom5pc1 &lt;- dat[order(dat$PC1),][1:5,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;top5pc2 &lt;- dat[order(-dat$PC2),][1:5,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;bottom5pc2 &lt;- dat[order(dat$PC2),][1:5,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;totext &lt;- data.frame(rbind(top5pc1, bottom5pc1, top5pc2, bottom5pc2))&#39;&#39;&#39;</span><span class="p">)</span>
+ 
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$x &lt;- 0&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$y &lt;- 0&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p &lt;- ggplot(dat, aes(x = x, y = y, xend = PC1, yend = PC2, colour = taxa))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p2 &lt;- p + geom_segment(arrow = arrow(length = unit(0.2, &quot;cm&quot;)))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p2 + geom_text(data = totext, aes(x = PC1, y = PC2, label = totext$taxa, size = 6)) + xlim(c(-0.5,0.5)) + ylim(c(-0.5,0.25))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+    <span class="n">rna</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">infiles</span> <span class="k">if</span> <span class="s">&quot;RNA&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dna</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">infiles</span> <span class="k">if</span> <span class="s">&quot;DNA&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rna</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">dna</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[rna$group1 == &quot;HhaIL10R&quot; &amp; rna$group2 == &quot;WT&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[dna$group1 == &quot;HhaIL10R&quot; &amp; dna$group2 == &quot;WT&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(rna) &lt;- rna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dna) &lt;- dna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[,1:ncol(rna)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[,1:ncol(dna)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># only look at those that are present in both</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;keep &lt;- intersect(rownames(rna), rownames(dna))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[keep,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[keep,]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.ratio &lt;- rna$logFC&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.ratio &lt;- dna$logFC&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.p &lt;- rna$adj.P.Val&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.p &lt;- dna$adj.P.Val&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ratio &lt;- data.frame(gene = keep, dna = dna.ratio, rna = rna.ratio, pdna = dna.p, prna = rna.p, ratio = rna.ratio - dna.ratio)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(ratio, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names = F, quote = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c"># SECTION 4</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="buildRNADNARatio"><a class="viewcode-back" href="../code.html#PipelineMetaomics.buildRNADNARatio">[docs]</a><span class="k">def</span> <span class="nf">buildRNADNARatio</span><span class="p">(</span><span class="n">dnadiff</span><span class="p">,</span> <span class="n">rnadiff</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    build ratio of RNAfold/DNAfold</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rnadiff</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">dnadiff</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[rna$group1 == &quot;HhaIL10R&quot; &amp; rna$group2 == &quot;WT&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[dna$group1 == &quot;HhaIL10R&quot; &amp; dna$group2 == &quot;WT&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(rna) &lt;- rna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dna) &lt;- dna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[,1:ncol(rna)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[,1:ncol(dna)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># only look at those that are present in both</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;keep &lt;- intersect(rownames(rna), rownames(dna))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[keep,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[keep,]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.ratio &lt;- rna$logFC&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.ratio &lt;- dna$logFC&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.p &lt;- rna$adj.P.Val&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.p &lt;- dna$adj.P.Val&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ratio &lt;- data.frame(gene = keep, </span>
+<span class="s">                             dna = dna.ratio, </span>
+<span class="s">                             rna = rna.ratio, </span>
+<span class="s">                             pdna = dna.p, </span>
+<span class="s">                             prna = rna.p, </span>
+<span class="s">                             ratio = rna.ratio - dna.ratio)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(ratio,  </span>
+<span class="s">                     file = &quot;</span><span class="si">%s</span><span class="s">&quot;, </span>
+<span class="s">                     sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, </span>
+<span class="s">                     row.names = F, </span>
+<span class="s">                     quote = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="annotateRNADNARatio"><a class="viewcode-back" href="../code.html#PipelineMetaomics.annotateRNADNARatio">[docs]</a><span class="k">def</span> <span class="nf">annotateRNADNARatio</span><span class="p">(</span><span class="n">RNADNARatio</span><span class="p">,</span> 
+                        <span class="n">dnalist</span><span class="p">,</span> 
+                        <span class="n">rnalist</span><span class="p">,</span> 
+                        <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    annotate NOGs as to whether they were differentially</span>
+<span class="sd">    regulated in metagenomic, metatranscriptomic or both</span>
+<span class="sd">    data sets</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">rna_diff</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">y</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">rnalist</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()])</span>
+    <span class="n">dna_diff</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">y</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">dnalist</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()])</span>
+
+    <span class="n">inf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">RNADNARatio</span><span class="p">)</span>
+    <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">outf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;gene</span><span class="se">\t</span><span class="s">dna</span><span class="se">\t</span><span class="s">rna</span><span class="se">\t</span><span class="s">pdna</span><span class="se">\t</span><span class="s">prna</span><span class="se">\t</span><span class="s">ratio</span><span class="se">\t</span><span class="s">status</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">gene</span><span class="p">,</span> <span class="n">dna</span><span class="p">,</span> <span class="n">rna</span><span class="p">,</span> <span class="n">pdna</span><span class="p">,</span> <span class="n">prna</span><span class="p">,</span> <span class="n">ratio</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">gene</span> <span class="o">=</span> <span class="n">gene</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&#39;&quot;&#39;</span><span class="p">)</span>
+        <span class="n">dna</span><span class="p">,</span> <span class="n">rna</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dna</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">rna</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">rna_diff</span> <span class="ow">and</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">dna_diff</span> <span class="ow">and</span> <span class="n">dna</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">rna</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;up.both&quot;</span>
+        <span class="k">elif</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">rna_diff</span> <span class="ow">and</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">dna_diff</span> <span class="ow">and</span> <span class="n">dna</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">rna</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;down.both&quot;</span>
+        <span class="k">elif</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">rna_diff</span> <span class="ow">and</span> <span class="n">rna</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;up.RNA&quot;</span>
+        <span class="k">elif</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">rna_diff</span> <span class="ow">and</span> <span class="n">rna</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;down.RNA&quot;</span>
+        <span class="k">elif</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">dna_diff</span> <span class="ow">and</span> <span class="n">dna</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;up.DNA&quot;</span>
+        <span class="k">elif</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">dna_diff</span> <span class="ow">and</span> <span class="n">dna</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;down.DNA&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s">&quot;NS&quot;</span>
+        <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(gene)s</span><span class="se">\t</span><span class="si">%(dna)s</span><span class="se">\t</span><span class="si">%(rna)s</span><span class="se">\t</span><span class="si">%(pdna)s</span><span class="se">\t</span><span class="si">%(prna)s</span><span class="se">\t</span><span class="si">%(ratio)s</span><span class="se">\t</span><span class="si">%(status)s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">())</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="plotSets"><a class="viewcode-back" href="../code.html#PipelineMetaomics.plotSets">[docs]</a><span class="k">def</span> <span class="nf">plotSets</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot the fold changes in RNA and DNA analyses</span>
+<span class="sd">    and label by how they are regulated in DNA and</span>
+<span class="sd">    RNA analyses</span>
+<span class="sd">    MUST HAVE GOI FILE IN WORKING DIR - not ideal</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># read in data</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+
+    <span class="c"># get nog 2 gene map</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;cog2gene &lt;- read.csv(&quot;goi.tsv&quot;, header = F, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names = 1)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># just get those signficant in either DNA or RNA or both</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$status[dat$status == &quot;NS&quot;] = &quot;z&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;genes &lt;- dat$gene&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># regression model</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mod1 &lt;- lm(dat$rna~dat$dna)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;intercept &lt;- mod1[[1]][1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;slope = mod1[[1]][2]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># prediction intervals</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pred.ints &lt;- predict(mod1, interval = &quot;prediction&quot;, level = 0.95)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># add to data.frame</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$lwr &lt;- pred.ints[,2]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$upr &lt;- pred.ints[,3]&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># add labels</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$goi &lt;- cog2gene[dat$gene,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$pointsize &lt;- ifelse(!(is.na(dat$goi)), 10, 1)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># plot</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 &lt;- ggplot(dat, aes(x = dna, y = rna, alpha = 1, colour = status))&#39;&#39;&#39;</span><span class="p">)</span> 
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot2 &lt;- plot1 + geom_point(shape = 18, aes(size = pointsize))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot3 &lt;- plot2 + scale_size_area() + xlim(c(-5,5))&#39;&#39;&#39;</span><span class="p">)</span> 
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot4 &lt;- plot3 + scale_colour_manual(values = c(&quot;blue&quot;, </span>
+<span class="s">                                                         &quot;brown&quot;,</span>
+<span class="s">                                                         &quot;darkGreen&quot;, </span>
+<span class="s">                                                         &quot;orange&quot;, </span>
+<span class="s">                                                         &quot;purple&quot;, </span>
+<span class="s">                                                         &quot;red&quot;, </span>
+<span class="s">                                                         &quot;grey&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot5 &lt;- plot4 + geom_abline(yintercept = intercept, slope = slope)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># prediction intervals</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot6 &lt;- plot5 + geom_line(aes(x = dna, y = lwr), linetype = &quot;dashed&quot;, colour = &quot;black&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot7 &lt;- plot6 + geom_line(aes(x = dna, y = upr), linetype = &quot;dashed&quot;, colour = &quot;black&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot7 + geom_text(aes(label = goi))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="buildGenesOutsidePredictionInterval"><a class="viewcode-back" href="../code.html#PipelineMetaomics.buildGenesOutsidePredictionInterval">[docs]</a><span class="k">def</span> <span class="nf">buildGenesOutsidePredictionInterval</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    annotate genes as being outside prediction</span>
+<span class="sd">    interval - these are the NOGs that we are</span>
+<span class="sd">    defining as colitis-responsive</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+
+    <span class="c"># just get those signficant in either DNA or RNA or both</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;genes &lt;- dat$gene&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># regression model</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mod1 &lt;- lm(dat$rna~dat$dna)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># prediction intervals</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pred.ints &lt;- predict(mod1, interval = &quot;prediction&quot;, level = 0.95)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># add to data.frame</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$lwr &lt;- pred.ints[,2]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$upr &lt;- pred.ints[,3]&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># annotate with whether or not they are above </span>
+    <span class="c"># prediction intervals</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$pi_status[dat$rna &gt; dat$upr &amp; dat$status == &quot;up.RNA&quot;] &lt;- &quot;diff.up.rna&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$pi_status[dat$rna &gt; dat$upr &amp; dat$status == &quot;down.DNA&quot;] &lt;- &quot;diff.down.dna&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$pi_status[dat$rna &gt; dat$upr &amp; dat$status == &quot;up.both&quot;] &lt;- &quot;diff.up.rna&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$pi_status[dat$rna &lt; dat$lwr &amp; dat$status == &quot;down.RNA&quot;] &lt;- &quot;diff.down.rna&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$pi_status[dat$rna &lt; dat$lwr &amp; dat$status == &quot;up.DNA&quot;] &lt;- &quot;diff.up.dna&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$pi_status[dat$rna &lt; dat$lwr &amp; dat$status == &quot;down.both&quot;] &lt;- &quot;diff.down.rna&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># write results</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(dat, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, quote = F, row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c"># SECTION 6</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="buildGenusCogCountsMatrix"><a class="viewcode-back" href="../code.html#PipelineMetaomics.buildGenusCogCountsMatrix">[docs]</a><span class="k">def</span> <span class="nf">buildGenusCogCountsMatrix</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    build cog x genus proportion</span>
+<span class="sd">    matrix</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">inf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c"># create container for results</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">cog</span><span class="p">,</span> <span class="n">taxa</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">taxa</span> <span class="o">==</span> <span class="s">&quot;unassigned&quot;</span><span class="p">:</span> <span class="k">continue</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">cog</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c"># get average % taxa per cog</span>
+    <span class="n">inf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">19</span><span class="p">:</span>
+            <span class="n">cog</span><span class="p">,</span> <span class="n">taxa</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">:])</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="n">cog</span><span class="p">,</span> <span class="n">taxa</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cog</span><span class="p">,</span> <span class="n">taxa</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="k">if</span> <span class="n">taxa</span> <span class="o">==</span> <span class="s">&quot;unassigned&quot;</span><span class="p">:</span> <span class="k">continue</span>
+        <span class="n">ave</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">cog</span><span class="p">][</span><span class="n">taxa</span><span class="p">]</span> <span class="o">=</span> <span class="n">ave</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="k">continue</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">na_rep</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="plotMaxTaxaContribution"><a class="viewcode-back" href="../code.html#PipelineMetaomics.plotMaxTaxaContribution">[docs]</a><span class="k">def</span> <span class="nf">plotMaxTaxaContribution</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot the distribution of maximum genus</span>
+<span class="sd">    contribution per gene set</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">matrix</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;annotations &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">annotations</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;maximums &lt;- apply(dat, 2, max)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2 &lt;- data.frame(&quot;cog&quot; = colnames(dat), &quot;max&quot; = maximums)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat3 &lt;- merge(dat2, annotations, by.x = &quot;cog&quot;, by.y = &quot;gene&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat3$pi_status &lt;- ifelse(dat3$status == &quot;NS&quot;, &quot;NS&quot;, dat3$pi_status)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat3$pi_status[is.na(dat3$pi_status)] &lt;- &quot;other_significant&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 &lt;- ggplot(dat3, aes(x = as.numeric(as.character(max)), group = pi_status, colour = pi_status))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot2 &lt;- plot1 + stat_ecdf(size = 1.1)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot2 + scale_colour_manual(values = c(&quot;cyan3&quot;, </span>
+<span class="s">                                                &quot;darkorchid&quot;, </span>
+<span class="s">                                                &quot;black&quot;, </span>
+<span class="s">                                                &quot;darkgoldenrod2&quot;, </span>
+<span class="s">                                                &quot;grey&quot;, </span>
+<span class="s">                                                &quot;darkBlue&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="testSignificanceOfMaxTaxaContribution"><a class="viewcode-back" href="../code.html#PipelineMetaomics.testSignificanceOfMaxTaxaContribution">[docs]</a><span class="k">def</span> <span class="nf">testSignificanceOfMaxTaxaContribution</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Test significance of distribution differences. Compared to NS</span>
+<span class="sd">    group</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">matrix</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;annotations &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">annotations</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;maximums &lt;- apply(dat, 2, max)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2 &lt;- data.frame(&quot;cog&quot; = colnames(dat), &quot;max&quot; = maximums)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat3 &lt;- merge(dat2, annotations, by.x = &quot;cog&quot;, by.y = &quot;gene&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat3$pi_status &lt;- ifelse(dat3$status == &quot;NS&quot;, &quot;NS&quot;, dat3$pi_status)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;diff.up.rna &lt;- as.numeric(as.character(dat3$max[dat3$pi_status == &quot;diff.up.rna&quot;]))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;diff.down.rna &lt;- as.numeric(as.character(dat3$max[dat3$pi_status == &quot;diff.down.rna&quot;]))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;diff.up.dna &lt;- as.numeric(as.character(dat3$max[dat3$pi_status == &quot;diff.up.dna&quot;]))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;diff.down.dna &lt;- as.numeric(as.character(dat3$max[dat3$pi_status == &quot;diff.down.dna&quot;]))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ns &lt;- as.numeric(as.character(dat3$max[dat3$pi_status == &quot;NS&quot;]))&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># ks tests</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ks1 &lt;- ks.test(diff.up.rna, ns)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ks2 &lt;- ks.test(diff.down.rna, ns)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ks3 &lt;- ks.test(diff.up.dna, ns)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ks4 &lt;- ks.test(diff.down.dna, ns)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;res &lt;- data.frame(&quot;RNAGreaterThanDNA.up.pvalue&quot; = ks1$p.value,</span>
+<span class="s">                           &quot;RNAGreaterThanDNA.up.D&quot; = ks1$statistic,</span>
+<span class="s">                           &quot;RNAGreaterThanDNA.down.pvalue&quot; = ks2$p.value,</span>
+<span class="s">                           &quot;RNAGreaterThanDNA.down.D&quot; = ks2$statistic,</span>
+<span class="s">                           &quot;DNAGreaterThanRNA.up.pvalue&quot; = ks3$p.value,</span>
+<span class="s">                           &quot;DNAGreaterThanRNA.up.D&quot; = ks3$statistic,</span>
+<span class="s">                           &quot;DNAGreaterThanRNA.down.pvalue&quot; = ks4$p.value,</span>
+<span class="s">                           &quot;DNAGreaterThanRNA.down.D&quot; = ks4$statistic)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(res, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, quote = F, row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="heatmapTaxaCogProportionMatrix"><a class="viewcode-back" href="../code.html#PipelineMetaomics.heatmapTaxaCogProportionMatrix">[docs]</a><span class="k">def</span> <span class="nf">heatmapTaxaCogProportionMatrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot the taxa associated with each cog on</span>
+<span class="sd">    a heatmap</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gplots)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names = 1)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">matrix</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;annotations &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">annotations</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(annotations) &lt;- annotations$gene&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># get genes present in both - not sure why these are different</span>
+    <span class="c"># in the first place - need to check</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;genes &lt;- intersect(rownames(annotations), colnames(dat))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[, genes]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[grep(&quot;unassigned&quot;, rownames(dat), invert = T),]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;genera &lt;- rownames(dat)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- genera&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;colnames(dat) &lt;- genes&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;annotations &lt;- annotations[genes,]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;annotations &lt;- annotations[order(annotations$pi_status),]&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># only for the COGs that have RNA fold &gt; DNA fold up-regulated</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;annotations &lt;- annotations[annotations$pi_status == &quot;diff.up.rna&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;annotations &lt;- na.omit(annotations)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,rownames(annotations)]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;annotation &lt;- data.frame(cluster = as.character(annotations$pi_status))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(annotation) &lt;- rownames(annotations)&#39;&#39;&#39;</span><span class="p">)</span>
+ 
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;colors1 &lt;- c(&quot;grey&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;names(colors1) &lt;- c(&quot;diff.up.rna&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;anno_colors &lt;- list(cluster = colors1)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;cols &lt;- colorRampPalette(c(&quot;white&quot;, &quot;darkBlue&quot;))(150)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,colSums(dat &gt; 50) &gt;= 1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[rowSums(dat &gt; 10) &gt;= 1,]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pdf(&quot;</span><span class="si">%s</span><span class="s">&quot;, height = 10, width = 15)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(pheatmap)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pheatmap(dat, </span>
+<span class="s">                  clustering_distance_cols = &quot;manhattan&quot;,</span>
+<span class="s">                  clustering_method = &quot;ward&quot;,</span>
+<span class="s">                  annotation = annotation,</span>
+<span class="s">                  annotation_colors = anno_colors,</span>
+<span class="s">                  cluster_rows = T,</span>
+<span class="s">                  cluster_cols = F,</span>
+<span class="s">                  color = cols,</span>
+<span class="s">                  fontsize = 8)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[</span><span class="s">&quot;dev.off&quot;</span><span class="p">]()</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="scatterplotPerCogTaxaDNAFoldRNAFold"><a class="viewcode-back" href="../code.html#PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold">[docs]</a><span class="k">def</span> <span class="nf">scatterplotPerCogTaxaDNAFoldRNAFold</span><span class="p">(</span><span class="n">taxa_cog_rnadiff</span><span class="p">,</span>
+                                        <span class="n">taxa_cog_dnadiff</span><span class="p">,</span>
+                                        <span class="n">cog_rnadiff</span><span class="p">,</span>
+                                        <span class="n">cog_dnadiff</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    scatterplot fold changes for per genus cog</span>
+<span class="sd">    differences for NOGs of interest</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># read in cogs + taxa</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">taxa_cog_dnadiff</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[dna$group2 == &quot;WT&quot; &amp; dna$group1 == &quot;HhaIL10R&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">taxa_cog_rnadiff</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[rna$group2 == &quot;WT&quot; &amp; rna$group1 == &quot;HhaIL10R&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># read in cogs alone</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.cog &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">cog_dnadiff</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.cog &lt;- dna.cog[dna.cog$group2 == &quot;WT&quot; &amp; dna.cog$group1 == &quot;HhaIL10R&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.cog &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">cog_rnadiff</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.cog &lt;- rna.cog[rna.cog$group2 == &quot;WT&quot; &amp; rna.cog$group1 == &quot;HhaIL10R&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># merge data</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dna, rna, </span>
+<span class="s">                      by.x = &quot;taxa&quot;, </span>
+<span class="s">                      by.y = &quot;taxa&quot;, </span>
+<span class="s">                      all.x = T, </span>
+<span class="s">                      all.y = T, </span>
+<span class="s">                      suffixes = c(&quot;dna&quot;, &quot;rna&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># add gene column</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$gene &lt;- unlist(strsplit(dat$taxa, &quot;-&quot;))[seq(1, nrow(dat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$genus &lt;- unlist(strsplit(dat$taxa, &quot;-&quot;))[seq(2, nrow(dat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># more merging</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dat, dna.cog, </span>
+<span class="s">                      by.x = &quot;gene&quot;, </span>
+<span class="s">                      by.y = &quot;taxa&quot;, </span>
+<span class="s">                      suffixes = c(&quot;taxa&quot;,&quot;dna.cog&quot;), </span>
+<span class="s">                      all.x = T, </span>
+<span class="s">                      all.y = T)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dat, rna.cog, </span>
+<span class="s">                      by.x = &quot;gene&quot;, </span>
+<span class="s">                      by.y = &quot;taxa&quot;, </span>
+<span class="s">                      suffixes = c(&quot;dna.cog&quot;, &quot;rna.cog&quot;), </span>
+<span class="s">                      all.x = T, </span>
+<span class="s">                      all.y = T)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># sub NA for 0</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat[is.na(dat)] &lt;- 0&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># NOTE these are specified and hardcoded </span>
+    <span class="c"># here - NOGs of interest</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;cogs &lt;- c(&quot;COG0783&quot;, &quot;COG2837&quot;, &quot;COG0435&quot;,&quot;COG5520&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># iterate over cogs and scatterplot</span>
+    <span class="c"># fold changes in DNA and RNA analysis.</span>
+    <span class="c"># if not present in one or other then fold change will</span>
+    <span class="c"># be 0</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;for (cog in cogs){</span>
+<span class="s">            dat2 &lt;- dat[grep(cog, dat$gene),]</span>
+<span class="s">             </span>
+<span class="s">            # add the data for COG fold changes and abundance</span>
+<span class="s">            dat3 &lt;- data.frame(&quot;genus&quot; = append(dat2$genus, cog),</span>
+<span class="s">                               &quot;dna.fold&quot; = append(dat2$logFCdna, unique(dat2$logFCdna.cog)),</span>
+<span class="s">                               &quot;rna.fold&quot; = append(dat2$logFCrna, unique(dat2$logFCrna.cog)),</span>
+<span class="s">                               &quot;abundance&quot; = append(dat2$AveExprdna, sum(dat2$AveExprdna.cog)))</span>
+<span class="s">                               </span>
+<span class="s">            suffix &lt;- paste(cog, &quot;scatters.pdf&quot;, sep = &quot;.&quot;)</span>
+<span class="s">            outname &lt;- paste(&quot;scatterplot_genus_cog_fold.dir&quot;, suffix, sep = &quot;/&quot;)</span>
+
+<span class="s">            plot1 &lt;- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = log10(abundance), label = genus))</span>
+<span class="s">            plot2 &lt;- plot1 + geom_point(shape = 18) </span>
+<span class="s">            plot3 &lt;- plot2 + geom_text(hjust = 0.5, vjust = 1, size = 5)</span>
+<span class="s">            plot4 &lt;- plot3 + geom_abline(intercept = 0, slope = 1, colour = &quot;blue&quot;) </span>
+<span class="s">            plot5 &lt;- plot4 + geom_hline(yintercept = c(-1,1), linetype = &quot;dashed&quot;)</span>
+<span class="s">            plot6 &lt;- plot5 + geom_vline(xintercept = c(-1,1), linetype = &quot;dashed&quot;)</span>
+<span class="s">            plot7 &lt;- plot6 + geom_hline(yintercept = 0) + geom_vline(xintercept = 0)</span>
+<span class="s">            ggsave(outname)</span>
+<span class="s">            }&#39;&#39;&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/kennedy_logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,92 @@
+===============================
+Alignment and counting
+===============================
+
+We are picking up the analysis at the point at which raw fastq files have
+been filtered for contaminating adapters, pairs have been flashed and reads
+mapping to rRNA and mouse have been removed. Details of these steps are in the 
+paper. 
+
+
+Alignment
+==========
+
+The first step in the analysis is to assign reads to taxa and functional groups.
+In order to do this we need some databases. We have used the NCBI non-redundant
+protein database (`nr`_) for taxanomic purposes and the integrated gene catalogue
+(`IGC`_) for assessing functions.
+
+.. _nr: ftp://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nr.gz
+
+.. _IGC: ftp://climb.genomics.cn/pub/10.5524/100001_101000/100064/1.GeneCatalogs/IGC.pep.gz
+
+
+We used DIAMOND to align sequences to the reference databases so first we built
+database indexes::
+
+    diamond makedb --db nr --in nr --threads 16
+
+and::
+
+    diamond makedb --db igc --in IGC.pep --threads 16
+
+
+
+NOTE: DIAMOND takes uncompressed files as input
+
+
+Next we ran the alignment for each fastq file (reads) to each database 
+(fastq files need to be converted to fasta format first e.g. using `fastx toolkit`_). As 
+an example:
+
+conversion::
+
+    fastq-to-fasta stool-HhaIL10R-R1.fastq.gz > stool-HhaIL10R-R1.fasta 
+
+alignment::
+
+    diamond blastx --db nr --query stool-HhaIL10R-R1.fasta -o stool-HhaIL10R-R1.diamond.tsv
+
+
+This was done for each sample (DNA-seq and RNA-seq) against each data base resulting in
+
+16x DNA-seq to nr
+16x RNA-seq to nr
+16x DNA-seq to IGC
+16x RNA-seq to IGC
+
+
+Counting
+=========
+
+Our main objective was to identify community structure and functional changes between mice
+with and without colitis. In order to do that we first needed to count the number of
+reads that mapped to each genus and each functional category. This is where the analysis
+of taxonomy and function diverge. 
+
+
+For taxnomic profiling We used the lowest common ancestor approach (LCA) to 
+assign reads to genera implemented using lcamapper.sh from mtools (see dependencies). This 
+requires the mapping file of gi number to taxonomy id that is distributed with mtools::
+
+    lcamapper.sh -i stool-HhaIL10R-R1.diamond.tsv -f Detect -ms 50 -me 0.01 -tp 50 -gt gi_taxid_prot.bin -o stool-HhaIL10R-R1.lca
+
+Again each file that was aligned to the ncbi nr database is used as input to lcamapper.sh. To obtain counts per
+genus we use the lca2table.py script that is in the scripts/ directory of this repository::
+
+    cat stool-HhaIL10R-R1.lca | python scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.counts.tsv.log > stool-HhaIL10R-R1.counts.tsv
+
+ 
+
+
+
+
+ 
+
+.. _fastx toolkit: http://hannonlab.cshl.edu/fastx_toolkit/
+
+
+
+
+
+

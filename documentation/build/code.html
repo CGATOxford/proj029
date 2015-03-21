@@ -1,0 +1,305 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Code &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Alignment and counting" href="alignmentAndCounting.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="alignmentAndCounting.html" title="Alignment and counting"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="code">
+<h1>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-LCA">
+<span id="lca"></span><h2>LCA<a class="headerlink" href="#module-LCA" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="LCA.LCA">
+<em class="property">class </em><tt class="descclassname">LCA.</tt><tt class="descname">LCA</tt><a class="reference internal" href="_modules/LCA.html#LCA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LCA.LCA" title="Permalink to this definition">¶</a></dt>
+<dd><p>lca class describing the taxa associateed with a sequence</p>
+<dl class="method">
+<dt id="LCA.LCA.parse">
+<tt class="descname">parse</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/LCA.html#LCA.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LCA.LCA.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse the line</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="LCA.iterate">
+<tt class="descclassname">LCA.</tt><tt class="descname">iterate</tt><big>(</big><em>infile</em><big>)</big><a class="reference internal" href="_modules/LCA.html#iterate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LCA.iterate" title="Permalink to this definition">¶</a></dt>
+<dd><p>LCA results iterator</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-Diamond">
+<span id="diamond"></span><h2>Diamond<a class="headerlink" href="#module-Diamond" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="Diamond.alignment_iterator">
+<tt class="descclassname">Diamond.</tt><tt class="descname">alignment_iterator</tt><big>(</big><em>alignment_file</em><big>)</big><a class="reference internal" href="_modules/Diamond.html#alignment_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Diamond.alignment_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>return an alignment</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Diamond.best_alignment_iterator">
+<tt class="descclassname">Diamond.</tt><tt class="descname">best_alignment_iterator</tt><big>(</big><em>query_iterator</em><big>)</big><a class="reference internal" href="_modules/Diamond.html#best_alignment_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Diamond.best_alignment_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>return stats for best alignment - best is determined
+by highest bit score. If there are multiple alignments
+with the same score return a random one</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Diamond.query_iterator">
+<tt class="descclassname">Diamond.</tt><tt class="descname">query_iterator</tt><big>(</big><em>alignment_iterator</em><big>)</big><a class="reference internal" href="_modules/Diamond.html#query_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Diamond.query_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>iterate over alignments by query
+return a list of alignments</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-PipelineMetaomics">
+<span id="pipelinemetaomics"></span><h2>PipelineMetaomics<a class="headerlink" href="#module-PipelineMetaomics" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="PipelineMetaomics.annotateRNADNARatio">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">annotateRNADNARatio</tt><big>(</big><em>RNADNARatio</em>, <em>dnalist</em>, <em>rnalist</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#annotateRNADNARatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.annotateRNADNARatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotate NOGs as to whether they were differentially
+regulated in metagenomic, metatranscriptomic or both
+data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.buildCommonList">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">buildCommonList</tt><big>(</big><em>rnadb</em>, <em>dnadb</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#buildCommonList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.buildCommonList" title="Permalink to this definition">¶</a></dt>
+<dd><p>build a list of NOGs/genera that were found in
+common after filtering between RNA and
+DNA data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.buildDetectionOverlap">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">buildDetectionOverlap</tt><big>(</big><em>rnacounts</em>, <em>dnacounts</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#buildDetectionOverlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.buildDetectionOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>build detection overlaps between RNA and DNA
+data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.buildDiffGeneOverlap">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">buildDiffGeneOverlap</tt><big>(</big><em>dnafile</em>, <em>rnafile</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#buildDiffGeneOverlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.buildDiffGeneOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>overlap differentially abundant NOGs between
+RNA and DNA data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.buildDiffStats">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">buildDiffStats</tt><big>(</big><em>infile</em>, <em>outfile</em>, <em>db</em>, <em>connection</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#buildDiffStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.buildDiffStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>build differential abundance statistics
+at different p-value and Fold change
+thresholds for each comparison</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.buildGeneDiffList">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">buildGeneDiffList</tt><big>(</big><em>db</em>, <em>commonset</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#buildGeneDiffList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.buildGeneDiffList" title="Permalink to this definition">¶</a></dt>
+<dd><p>build a list of differentially expressed
+NOGs between colitis and steady state</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.buildGenesOutsidePredictionInterval">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">buildGenesOutsidePredictionInterval</tt><big>(</big><em>infile</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#buildGenesOutsidePredictionInterval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.buildGenesOutsidePredictionInterval" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotate genes as being outside prediction
+interval - these are the NOGs that we are
+defining as colitis-responsive</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.buildGenusCogCountsMatrix">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">buildGenusCogCountsMatrix</tt><big>(</big><em>infile</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#buildGenusCogCountsMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.buildGenusCogCountsMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>build cog x genus proportion
+matrix</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.buildRNADNARatio">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">buildRNADNARatio</tt><big>(</big><em>dnadiff</em>, <em>rnadiff</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#buildRNADNARatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.buildRNADNARatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>build ratio of RNAfold/DNAfold</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.heatmapTaxaCogProportionMatrix">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">heatmapTaxaCogProportionMatrix</tt><big>(</big><em>matrix</em>, <em>annotations</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#heatmapTaxaCogProportionMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.heatmapTaxaCogProportionMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot the taxa associated with each cog on
+a heatmap</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.plotAbundanceLevelsOfOverlap">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">plotAbundanceLevelsOfOverlap</tt><big>(</big><em>rnacounts</em>, <em>dnacounts</em>, <em>outfile</em>, <em>of=None</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#plotAbundanceLevelsOfOverlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.plotAbundanceLevelsOfOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot abundance levels pf taxa/NOGs that do
+and don&#8217;t overlap between data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.plotMaxTaxaContribution">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">plotMaxTaxaContribution</tt><big>(</big><em>matrix</em>, <em>annotations</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#plotMaxTaxaContribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.plotMaxTaxaContribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot the distribution of maximum genus
+contribution per gene set</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.plotPCALoadings">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">plotPCALoadings</tt><big>(</big><em>infile</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#plotPCALoadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.plotPCALoadings" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot PCA loadings</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.plotSets">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">plotSets</tt><big>(</big><em>infile</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#plotSets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.plotSets" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot the fold changes in RNA and DNA analyses
+and label by how they are regulated in DNA and
+RNA analyses
+MUST HAVE GOI FILE IN WORKING DIR - not ideal</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.runPCA">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">runPCA</tt><big>(</big><em>infile</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#runPCA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.runPCA" title="Permalink to this definition">¶</a></dt>
+<dd><p>run pca analysis - this outputs
+a plot coloured by condition and
+also the loadings</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.scatterplotAbundanceEstimates">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">scatterplotAbundanceEstimates</tt><big>(</big><em>dnamatrix</em>, <em>rnamatrix</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#scatterplotAbundanceEstimates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.scatterplotAbundanceEstimates" title="Permalink to this definition">¶</a></dt>
+<dd><p>scatterplot abundance estimates between DNA and RNA
+data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">scatterplotPerCogTaxaDNAFoldRNAFold</tt><big>(</big><em>taxa_cog_rnadiff</em>, <em>taxa_cog_dnadiff</em>, <em>cog_rnadiff</em>, <em>cog_dnadiff</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#scatterplotPerCogTaxaDNAFoldRNAFold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold" title="Permalink to this definition">¶</a></dt>
+<dd><p>scatterplot fold changes for per genus cog
+differences for NOGs of interest</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.testSignificanceOfMaxTaxaContribution">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">testSignificanceOfMaxTaxaContribution</tt><big>(</big><em>matrix</em>, <em>annotations</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#testSignificanceOfMaxTaxaContribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.testSignificanceOfMaxTaxaContribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test significance of distribution differences. Compared to NS
+group</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PipelineMetaomics.testSignificanceOfOverlap">
+<tt class="descclassname">PipelineMetaomics.</tt><tt class="descname">testSignificanceOfOverlap</tt><big>(</big><em>common</em>, <em>overlap</em>, <em>outfile</em><big>)</big><a class="reference internal" href="_modules/PipelineMetaomics.html#testSignificanceOfOverlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineMetaomics.testSignificanceOfOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test significance of overlapping lists 
+bewteen RNA and DNA using hypergeometric test</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/kennedy_logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Code</a><ul>
+<li><a class="reference internal" href="#module-LCA">LCA</a></li>
+<li><a class="reference internal" href="#module-Diamond">Diamond</a></li>
+<li><a class="reference internal" href="#module-PipelineMetaomics">PipelineMetaomics</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="alignmentAndCounting.html"
+                        title="previous chapter">Alignment and counting</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/code.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="alignmentAndCounting.html" title="Alignment and counting"
+             >previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

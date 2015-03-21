@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Alignment and counting &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
+    <link rel="next" title="code" href="code.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="code.html" title="code"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="alignment-and-counting">
+<h1>Alignment and counting<a class="headerlink" href="#alignment-and-counting" title="Permalink to this headline">¶</a></h1>
+<p>We are picking up the analysis at the point at which raw fastq files have
+been filtered for contaminating adapters, pairs have been flashed and reads
+mapping to rRNA and mouse have been removed. Details of these steps are in the
+paper.</p>
+<div class="section" id="alignment">
+<h2>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h2>
+<p>The first step in the analysis is to assign reads to taxa and functional groups.
+In order to do this we need some databases. We have used the NCBI non-redundant
+protein database (<a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nr.gz">nr</a>) for taxanomic purposes and the integrated gene catalogue
+(<a class="reference external" href="ftp://climb.genomics.cn/pub/10.5524/100001_101000/100064/1.GeneCatalogs/IGC.pep.gz">IGC</a>) for assessing functions.</p>
+<p>We used DIAMOND to align sequences to the reference databases so first we built
+database indexes:</p>
+<div class="highlight-python"><div class="highlight"><pre>diamond makedb --db nr --in nr --threads 16
+</pre></div>
+</div>
+<p>and:</p>
+<div class="highlight-python"><div class="highlight"><pre>diamond makedb --db igc --in IGC.pep --threads 16
+</pre></div>
+</div>
+<p>NOTE: DIAMOND takes uncompressed files as input</p>
+<p>Next we ran the alignment for each fastq file (reads) to each database
+(fastq files need to be converted to fasta format first e.g. using <a class="reference external" href="http://hannonlab.cshl.edu/fastx_toolkit/">fastx toolkit</a>). As
+an example:</p>
+<p>conversion:</p>
+<div class="highlight-python"><div class="highlight"><pre>fastq-to-fasta stool-HhaIL10R-R1.fastq.gz &gt; stool-HhaIL10R-R1.fasta
+</pre></div>
+</div>
+<p>alignment:</p>
+<div class="highlight-python"><div class="highlight"><pre>diamond blastx --db nr --query stool-HhaIL10R-R1.fasta -o stool-HhaIL10R-R1.diamond.tsv
+</pre></div>
+</div>
+<p>This was done for each sample (DNA-seq and RNA-seq) against each data base resulting in</p>
+<p>16x DNA-seq to nr</p>
+<p>16x RNA-seq to nr</p>
+<p>16x DNA-seq to IGC</p>
+<p>16x RNA-seq to IGC</p>
+</div>
+<div class="section" id="counting">
+<h2>Counting<a class="headerlink" href="#counting" title="Permalink to this headline">¶</a></h2>
+<p>Our main objective was to identify community structure and functional changes between mice
+with and without colitis. In order to do that we first needed to count the number of
+reads that mapped to each genus and each functional category. This is where the analysis
+of taxonomy and function diverge.</p>
+<p>For taxnomic profiling We used the lowest common ancestor approach (LCA) to
+assign reads to genera implemented using lcamapper.sh from mtools (see dependencies). This
+requires the mapping file of gi number to taxonomy id that is distributed with mtools:</p>
+<div class="highlight-python"><div class="highlight"><pre>lcamapper.sh -i stool-HhaIL10R-R1.diamond.tsv -f Detect -ms 50 -me 0.01 -tp 50 -gt gi_taxid_prot.bin -o stool-HhaIL10R-R1.lca
+</pre></div>
+</div>
+<p>Again each file that was aligned to the ncbi nr database is used as input to lcamapper.sh. To obtain counts per
+genus we use the lca2table.py script that is in the scripts/ directory of this repository:</p>
+<div class="highlight-python"><div class="highlight"><pre>cat stool-HhaIL10R-R1.lca | python scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.counts.tsv.log &gt; stool-HhaIL10R-R1.counts.tsv
+</pre></div>
+</div>
+<p>At this point each file that contains taxa counts is loaded into an sqlite database. This makes subsetting etc easier
+downstream. We use the Pipeline.py module from the CGAT code collection to load the tables. As I mentioned
+these analyses are wrapped up in ruffus pipelines and are therefore in python scripts. However to
+load the table from python we simply do:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt;import CGAT.Pipeline as P
+&gt;&gt;P.load(&quot;stool-HhaIL10R-R1.lca&quot;, &quot;stool-HhaIL10R-R1.lca.load&quot;)
+</pre></div>
+</div>
+<p>This will create a database called &#8220;csvdb&#8221; in the working directory and will have loaded the table
+stool_HhaIL10R_R1_lca. In our analyses we were interested in genus abundances and so we create
+flat files from the database simply by:</p>
+<div class="highlight-python"><div class="highlight"><pre>sqlite3 csvdb &#39;SELECT taxa, count FROM stool_HhaIL10R_R1_lca WHERE taxa == &quot;genus&quot;&#39; &gt; stool-HhaIL10R-R1.lca.counts.tsv
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/kennedy_logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Alignment and counting</a><ul>
+<li><a class="reference internal" href="#alignment">Alignment</a></li>
+<li><a class="reference internal" href="#counting">Counting</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="code.html"
+                        title="next chapter">code</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/alignmentAndCounting.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="code.html" title="code"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
