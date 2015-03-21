@@ -1,19 +1,3 @@
-"""
-Diamond.py - Classes and methods for dealing with outfmt 6 formatted
-files from diamond
-=====================================================================
-
-:Author: Nick Ilott
-:Release: $Id$
-:Date: |today|
-:Tags: Python
-
-TODO::
-
-We assume that the files are created by running diamond against nr. This might
-not be the case and the module should be generalised further.
-
-"""
 
 import sys, re, os
 import collections
