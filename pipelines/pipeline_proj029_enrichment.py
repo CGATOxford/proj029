@@ -34,39 +34,20 @@ PARAMS = P.PARAMS
 #########################################
 
 @follows(mkdir("pathways.dir"))
-@transform("classes_ratio.tsv", regex("(\S+).tsv"), r"pathways.dir/\1.foreground.tsv.gz")
-def buildForegroundSets(infile, outfile):
+@transform("ratio_genes.annotated.outsidepi.tsv", regex("(\S+).tsv"), r"pathways.dir/\1.foreground.tsv.gz")
+def buildForegroundSet(infile, outfile):
     '''
     build foreground set of COGs
     '''
-    inf = open(infile)
-    inf.readline()
-    cogs = set()
-
-    outf = IOTools.openFile(outfile, "w")
-    outf.write("gene\tC1\tC2\tC3\tC4\tC5\tup\tdown\n")
-    for line in inf.readlines():
-        data = line[:-1].split("\t")
-        cog, cluster = data[0], data[5]
-        if cog in cogs: continue
-        cogs.add(cog)
-        if cluster == "1":
-            outf.write("%s\t1\t0\t0\t0\t0\t0\t1\n" % cog)
-        elif cluster == "2":
-            outf.write("%s\t0\t1\t0\t0\t0\t1\t0\n" % cog)
-        elif cluster == "3":
-            outf.write("%s\t0\t0\t1\t0\t0\t1\t0\n" % cog)
-        elif cluster == "4":
-            outf.write("%s\t0\t0\t0\t1\t0\t0\t1\n" % cog)
-        elif cluster == "5":
-            outf.write("%s\t0\t0\t0\t0\t1\t1\t0\n" % cog)
-    outf.close()
+    status = PARAMS.get("group_status")
+    statement = '''cat %(infile)s | grep %(status)s | cut -f1 | gzip > %(outfile)s'''
+    P.run()
 
 #########################################
 #########################################
 #########################################
 
-@split([buildForegroundSets,
+@split([buildForegroundSet,
         "common_genes.tsv",
         PARAMS.get("pathways_geneset")],
        "pathways.dir/*.overall")
@@ -101,13 +82,14 @@ def runPathwaysAnalysis(infiles, outfiles):
 #########################################
 #########################################
 
-@merge([buildForegroundSets, PARAMS.get("pathways_geneset")],
+@merge([buildForegroundSet, PARAMS.get("pathways_geneset")],
        "pathways.dir/cogs_pathways.tsv")
 def buildDiffCogsAndPathways(infiles, outfile):
     '''
     merge diff COGs and pathways
     '''
-    R('''cogs <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % infiles[0])
+    R('''cogs <- read.csv("%s", header = F, stringsAsFactors = F, sep = "\t")''' % infiles[0])
+    R('''colnames(cogs) <- "gene"''')
     R('''pathways <- read.csv("%s", header = F, stringsAsFactors = F, sep = "\t")''' % infiles[1])
     R('''dat <- merge(cogs, pathways, by.x = "gene", by.y = "V2", all.x = T, all.y = F)''')
     R('''write.table(dat, file = "%s", sep = "\t", row.names = F, quote = F)''' % outfile)
@@ -126,28 +108,14 @@ def plotPathways(infile, outfile):
     R('''dat <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % infile)
     R('''dat <- dat[,1:ncol(dat)-1]''')
 
-    R('''dat$cluster <- ifelse(dat$C1 == 1, "C1", NA)''')
-    R('''dat$cluster <- ifelse(dat$C2 == 1, "C2", dat$cluster)''')
-    R('''dat$cluster <- ifelse(dat$C3 == 1, "C3", dat$cluster)''')
-    R('''dat$cluster <- ifelse(dat$C4 == 1, "C4", dat$cluster)''')
-    R('''dat$cluster <- ifelse(dat$C5 == 1, "C5", dat$cluster)''')
-    
-    # remove NAs and unknown functions
-    R('''dat <- na.omit(dat)''')
-    R('''dat <- dat[grep("Function unknown", dat$V4, invert = T),]''')
-    R('''dat <- dat[grep("General function", dat$V4, invert = T),]''')
-
-    # get counts per cluster
-    R('''counts <- ddply(dat, c("cluster"), summarise, n = length(cluster))''')
-    R('''rownames(counts) <- counts$cluster''')
-
-    # add counts to main data
-    R('''dat$count <- counts[dat$cluster,]$n''')
+    # put NAs into "Function unknown"
+    # category
+    R('''dat$V4[is.na(dat$V4)] <- "Function unknown"''')
 
     # summarise per functional category
-    R('''dat2 <- ddply(dat, c("V4", "cluster"), summarise, prop = (length(cluster)/mean(count))*100)''')
-    R('''plot1 <- ggplot(dat2, aes(x = V4, y = prop, fill = cluster)) + geom_bar(stat = "identity", position = "dodge") + facet_grid(~cluster) + coord_flip()''')
-    R('''plot1 + scale_fill_manual(values = c("orange", "purple", "red", "brown", "darkGreen"))''')
+    R('''dat2 <- ddply(dat, c("V4"), summarise, n = length(V4))''')
+    R('''dat2 <- dat2[order(dat2$n),]''')
+    R('''plot1 <- ggplot(dat2, aes(x = factor(V4, levels = V4), y = n)) + geom_bar(stat = "identity", position = "dodge") + coord_flip()''')
     R('''ggsave("%s", width = 15)''' % outfile)
 
 #########################################
