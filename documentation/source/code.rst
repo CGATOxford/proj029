@@ -15,8 +15,16 @@ Diamond
     :members:
 
 
+PipelineMetagenomeCommunities
+===============================
+
+.. automodule:: PipelineMetagenomeCommunities
+    :members:
+
+
 PipelineMetaomics
 ==================
 
 .. automodule:: PipelineMetaomics
     :members:
+

@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Defining colitis-dependent NOGs &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
+    <link rel="next" title="Code" href="code.html" />
+    <link rel="prev" title="Principle components analysis" href="pca.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="code.html" title="Code"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pca.html" title="Principle components analysis"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="defining-colitis-dependent-nogs">
+<h1>Defining colitis-dependent NOGs<a class="headerlink" href="#defining-colitis-dependent-nogs" title="Permalink to this headline">¶</a></h1>
+<p>We can run the overlap analyses and PCA for NOGs as we did for genera (DNA) in the previous sections (in the comparison.dir/).
+We won&#8217;t therefore go over the same functions.</p>
+<p>Out metagenomeSeq analysis was performed on NOGs and we identified 1221 and 669 NOGs to be differentially abundant in
+metagenomic and metatranscriptomic data sets, respectively. The overlap between these sets suggested that there were
+some NOGs that were transcriptionally activated in colitis, leadingus to hypothesise that these were due to responses
+by bacteria to an alteration in the gut niche.</p>
+<p>A few tasks were performed before we produced Fig. 2f - some of which did not end up in the manuscript. For example we
+built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the comparison.dir:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetaomics
+&gt;&gt; PipelineMetaomics.buildRNADNARatio(&quot;&lt;path&gt;/DNA/gene_counts.diff.tsv&quot;,
+                                      &quot;&lt;path&gt;/DNA/gene_counts.diff.tsv&quot;,
+                                      &quot;rna_dna_ratio.tsv&quot;)
+</pre></div>
+</div>
+<p>Then we built a list of NOGs that were common between the DNA and RNA data sets from the databases that contain
+tables of differential expression results. First load the tables:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import CGAT.Pipeline as P
+&gt;&gt; P.load(&quot;&lt;path&gt;/DNA/genus_diamond_aggregated_counts_diff&quot;, &quot;&lt;path&gt;/DNA/genus_diamond_aggregated_counts_diff.load&quot;)
+&gt;&gt; P.load(&quot;&lt;path&gt;/RNA/genus_diamond_aggregated_counts_diff&quot;, &quot;&lt;path&gt;/DNA/genus_diamond_aggregated_counts_diff.load&quot;)
+</pre></div>
+</div>
+<p>then:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildCommonGeneList(&quot;&lt;path&gt;/RNA/csvdb&quot;,
+                                         &quot;&lt;path&gt;/DNA/csvdb&quot;,
+                                         &quot;common_genes.tsv&quot;)
+</pre></div>
+</div>
+<p>then we build the differentially abundant NOGs list from database (Hh + aIL10R vs. Steady state):</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;&lt;path&gt;/RNA/csvdb&quot;,
+                                       &quot;common_genes.tsv&quot;,
+                                       &quot;rna_diff_genes.tsv&quot;)
+
+&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;&lt;path&gt;/DNA/csvdb&quot;,
+                                       &quot;common_genes.tsv&quot;,
+                                       &quot;dna_diff_genes.tsv&quot;)
+</pre></div>
+</div>
+<p>and just before plotting we annotate NOGs with their differential abundance status i.e
+in DNA, RNA or both data sets:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.annotateRNADNARatio(&quot;rna_dna_ratio.tsv&quot;,
+                                         &quot;dna_diff_genes.tsv&quot;,
+                                         &quot;rna_diff_genes.tsv&quot;,
+                                         &quot;rna_dna_ratio.annotated.tsv&quot;)
+</pre></div>
+</div>
+<p>and we plot the DNA and RNA fold chagnes, fit a linear model and plot the 95% predition intervals. There is
+a little bit of sneakyness here as before we created the final plot we found NOGs of interest. This function
+picks up a file called goi.tsv that contains annotations for the plot. These annotations are for NOGs that
+are annotated as being involved in oxidative stress resistance and are up-regulated in metatranscriptomic
+data and defined as colitis-responsive (lying outside of the 95% prediction interval for the model fit):</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.PlotSets(&quot;rna_dna_ratio.annotated.tsv&quot;,
+                              &quot;rna_dna_ratio.annotated.png&quot;)
+</pre></div>
+</div>
+<p>And that is Fig. 2 done!</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pca.html"
+                        title="previous chapter">Principle components analysis</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="code.html"
+                        title="next chapter">Code</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/colitisResponsiveNOGs.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="code.html" title="Code"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pca.html" title="Principle components analysis"
+             >previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

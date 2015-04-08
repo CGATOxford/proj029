@@ -33,9 +33,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -398,7 +395,12 @@
 <span class="s">                               &quot;dna.common_vs_rna.distinct&quot; = wtest4$p.value,</span>
 <span class="s">                               &quot;dna.common_vs_rna.common&quot; = wtest5$p.value)&#39;&#39;&#39;</span><span class="p">)</span>
 
-    <span class="n">outname_sig</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.pdf&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.sig&quot;</span>
+    <span class="k">if</span> <span class="n">outfile</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.pdf&quot;</span><span class="p">):</span>
+        <span class="n">outname_sig</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.pdf&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.sig&quot;</span>
+
+    <span class="k">elif</span> <span class="n">outfile</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.png&quot;</span><span class="p">):</span>
+        <span class="n">outname_sig</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.png&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.sig&quot;</span>
+
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(res, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, row.names = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, quote = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outname_sig</span><span class="p">)</span>
 
     <span class="c"># create dataframe for plotting</span>
@@ -419,7 +421,7 @@
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
 </div>
-<div class="viewcode-block" id="runPCA"><a class="viewcode-back" href="../code.html#PipelineMetaomics.runPCA">[docs]</a><span class="k">def</span> <span class="nf">runPCA</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<div class="viewcode-block" id="runPCA"><a class="viewcode-back" href="../code.html#PipelineMetaomics.runPCA">[docs]</a><span class="k">def</span> <span class="nf">runPCA</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">plottype</span> <span class="o">=</span> <span class="s">&quot;pdf&quot;</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    run pca analysis - this outputs</span>
 <span class="sd">    a plot coloured by condition and</span>
@@ -434,7 +436,12 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span><span class="mi">7</span>
     
-    <span class="n">outname_plot</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.loadings.tsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="s">&quot;/</span><span class="si">%s</span><span class="s">_&quot;</span> <span class="o">%</span> <span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.pca.pdf&quot;</span>
+
+    <span class="k">if</span> <span class="n">plottype</span> <span class="o">==</span> <span class="s">&quot;png&quot;</span><span class="p">:</span>
+        <span class="n">outname_plot</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.loadings.tsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="s">&quot;/</span><span class="si">%s</span><span class="s">_&quot;</span> <span class="o">%</span> <span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.pca.png&quot;</span>
+    <span class="k">elif</span> <span class="n">plottype</span> <span class="o">==</span> <span class="s">&quot;pdf&quot;</span><span class="p">:</span>
+        <span class="n">outname_plot</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.loadings.tsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="s">&quot;/</span><span class="si">%s</span><span class="s">_&quot;</span> <span class="o">%</span> <span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.pca.pdf&quot;</span>
+
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[, 1:ncol(dat)-1]&#39;&#39;&#39;</span><span class="p">)</span>
@@ -446,6 +453,7 @@
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pcs &lt;- data.frame(pc$x)&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pcs$cond &lt;- conds&#39;&#39;&#39;</span><span class="p">)</span>
+
     <span class="c"># get variance explained</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;imps &lt;- c(summary(pc)$importance[2], summary(pc)$importance[5])&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;p &lt;- ggplot(pcs, aes(x = PC1, y = PC2, colour = cond, size = 3)) + geom_point()&#39;&#39;&#39;</span><span class="p">)</span>
@@ -889,8 +897,11 @@
     <span class="c"># read in cogs + taxa</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">taxa_cog_dnadiff</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[dna$group2 == &quot;WT&quot; &amp; dna$group1 == &quot;HhaIL10R&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dna) &lt;- dna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">taxa_cog_rnadiff</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[rna$group2 == &quot;WT&quot; &amp; rna$group1 == &quot;HhaIL10R&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(rna) &lt;- rna$taxa&#39;&#39;&#39;</span><span class="p">)</span>
 
     <span class="c"># read in cogs alone</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.cog &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">cog_dnadiff</span><span class="p">)</span>
@@ -898,34 +909,28 @@
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.cog &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">cog_rnadiff</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.cog &lt;- rna.cog[rna.cog$group2 == &quot;WT&quot; &amp; rna.cog$group1 == &quot;HhaIL10R&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
 
+    <span class="c"># get common taxa-cog pairs</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;keep &lt;- intersect(dna$taxa, rna$taxa)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna &lt;- dna[keep,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna &lt;- rna[keep,]&#39;&#39;&#39;</span><span class="p">)</span>
+
     <span class="c"># merge data</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dna, rna, </span>
 <span class="s">                      by.x = &quot;taxa&quot;, </span>
 <span class="s">                      by.y = &quot;taxa&quot;, </span>
 <span class="s">                      all.x = T, </span>
 <span class="s">                      all.y = T, </span>
-<span class="s">                      suffixes = c(&quot;dna&quot;, &quot;rna&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="s">                      suffixes = c(&quot;.dna.cog.taxa&quot;, &quot;.rna.cog.taxa&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
 
-    <span class="c"># add gene column</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$gene &lt;- unlist(strsplit(dat$taxa, &quot;-&quot;))[seq(1, nrow(dat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$genus &lt;- unlist(strsplit(dat$taxa, &quot;-&quot;))[seq(2, nrow(dat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
 
-    <span class="c"># more merging</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dat, dna.cog, </span>
-<span class="s">                      by.x = &quot;gene&quot;, </span>
-<span class="s">                      by.y = &quot;taxa&quot;, </span>
-<span class="s">                      suffixes = c(&quot;taxa&quot;,&quot;dna.cog&quot;), </span>
-<span class="s">                      all.x = T, </span>
-<span class="s">                      all.y = T)&#39;&#39;&#39;</span><span class="p">)</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dat, rna.cog, </span>
-<span class="s">                      by.x = &quot;gene&quot;, </span>
-<span class="s">                      by.y = &quot;taxa&quot;, </span>
-<span class="s">                      suffixes = c(&quot;dna.cog&quot;, &quot;rna.cog&quot;), </span>
-<span class="s">                      all.x = T, </span>
-<span class="s">                      all.y = T)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="c"># ignore phages</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[grep(&quot;virus&quot;, dat$taxa, invert = T),]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># add gene and genus columns</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$gene &lt;- unlist(strsplit(dat$taxa, &quot;-&quot;))[seq(2, nrow(dat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
 
     <span class="c"># sub NA for 0</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat[is.na(dat)] &lt;- 0&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="c">#    R(&#39;&#39;&#39;dat[is.na(dat)] &lt;- 0&#39;&#39;&#39;)</span>
 
     <span class="c"># NOTE these are specified and hardcoded </span>
     <span class="c"># here - NOGs of interest</span>
@@ -935,21 +940,30 @@
     <span class="c"># fold changes in DNA and RNA analysis.</span>
     <span class="c"># if not present in one or other then fold change will</span>
     <span class="c"># be 0</span>
+
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;for (cog in cogs){</span>
-<span class="s">            dat2 &lt;- dat[grep(cog, dat$gene),]</span>
-<span class="s">             </span>
-<span class="s">            # add the data for COG fold changes and abundance</span>
-<span class="s">            dat3 &lt;- data.frame(&quot;genus&quot; = append(dat2$genus, cog),</span>
-<span class="s">                               &quot;dna.fold&quot; = append(dat2$logFCdna, unique(dat2$logFCdna.cog)),</span>
-<span class="s">                               &quot;rna.fold&quot; = append(dat2$logFCrna, unique(dat2$logFCrna.cog)),</span>
-<span class="s">                               &quot;abundance&quot; = append(dat2$AveExprdna, sum(dat2$AveExprdna.cog)))</span>
+<span class="s">            dat2 &lt;- dat[grep(cog, dat$taxa),]</span>
+
+<span class="s">            if (cog == &quot;COG5520&quot;){</span>
+<span class="s">                dat2 &lt;- dat2[dat2$AveExpr.rna.cog.taxa &gt; 1,]}</span>
+
+<span class="s">            # overall cog fold changes</span>
+<span class="s">            d.cog &lt;- dna.cog[dna.cog$taxa == cog,]</span>
+<span class="s">            r.cog &lt;- rna.cog[rna.cog$taxa == cog,]</span>
+
+<span class="s">            # add the data for overall COG fold changes and abundance</span>
+<span class="s">            dat3 &lt;- data.frame(&quot;genus&quot; = append(dat2$taxa, cog),</span>
+<span class="s">                               &quot;dna.fold&quot; = append(dat2$logFC.dna.cog.taxa, d.cog$logFC),</span>
+<span class="s">                               &quot;rna.fold&quot; = append(dat2$logFC.rna.cog.taxa, r.cog$logFC),</span>
+<span class="s">                               &quot;abundance&quot; = append(dat2$AveExpr.rna.cog.taxa, r.cog$AveExpr))</span>
 <span class="s">                               </span>
+
 <span class="s">            suffix &lt;- paste(cog, &quot;scatters.pdf&quot;, sep = &quot;.&quot;)</span>
 <span class="s">            outname &lt;- paste(&quot;scatterplot_genus_cog_fold.dir&quot;, suffix, sep = &quot;/&quot;)</span>
 
-<span class="s">            plot1 &lt;- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = log10(abundance), label = genus))</span>
+<span class="s">            plot1 &lt;- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = scale(abundance), label = genus))</span>
 <span class="s">            plot2 &lt;- plot1 + geom_point(shape = 18) </span>
-<span class="s">            plot3 &lt;- plot2 + geom_text(hjust = 0.5, vjust = 1, size = 5)</span>
+<span class="s">            plot3 &lt;- plot2 + geom_text(hjust = 0.5, vjust = 1) + scale_size(range = c(5,9))</span>
 <span class="s">            plot4 &lt;- plot3 + geom_abline(intercept = 0, slope = 1, colour = &quot;blue&quot;) </span>
 <span class="s">            plot5 &lt;- plot4 + geom_hline(yintercept = c(-1,1), linetype = &quot;dashed&quot;)</span>
 <span class="s">            plot6 &lt;- plot5 + geom_vline(xintercept = c(-1,1), linetype = &quot;dashed&quot;)</span>
@@ -964,7 +978,7 @@
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/kennedy_logo.png" alt="Logo"/>
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
@@ -989,9 +1003,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
           <li><a href="index.html" >Module code</a> &raquo;</li> 
       </ul>

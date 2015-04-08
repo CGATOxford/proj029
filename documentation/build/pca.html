@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Principle components analysis &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
+    <link rel="next" title="Defining colitis-dependent NOGs" href="colitisResponsiveNOGs.html" />
+    <link rel="prev" title="Comparing metagenomic and metatranscriptomic data sets" href="compareDatasets.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="principle-components-analysis">
+<h1>Principle components analysis<a class="headerlink" href="#principle-components-analysis" title="Permalink to this headline">¶</a></h1>
+<p>In Fig. 1 and 2 we performed principle components analysis on metagenomeSeq normalised counts at the level of genus
+and NOG (metagenomics and metatranscriptomics). As this is done separately for each data set we return to the
+DNA/ and RNA/ directories we created to run the functions. Below we show the functions we ran to produce the figures and to
+test significance of sample clustering using the PERMANOVA implemented in the adonis test (vegan).</p>
+<p>In Fig. 1 we looked at genus abundances. Below is a representative example for the RNA analysis. This function
+produces the PCA plot for components 1 and 2 and also outputs the loadings. The name of the plot is consistent
+with the name of the loadings outfile (apologies but the outfile must end in .loadings.tsv). You must be in
+the directory where you want the files to be produced, otherwise there will be an error:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetaomics
+&gt;&gt; PipelineMetaomics.runPCA(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.loadings.tsv&quot;)
+</pre></div>
+</div>
+<p>And produces the following plot.</p>
+<a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.pca.png"><img alt="_images/genus.diamond.aggregated.counts.pca.png" class="align-center" src="_images/genus.diamond.aggregated.counts.pca.png" style="width: 300pt; height: 300pt;" /></a>
+<p>The adonis test in the module PipelineMetagenomeCommunities.py was run to test for significant clustering of conditions:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetagenomeCommunities
+&gt;&gt; PipelineMetagenomeCommunities.testDistSignificance(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.permanova.sig&quot;)
+</pre></div>
+</div>
+<p>The file &#8220;genus.diamond.aggregated.counts.norm.permanova.sig&#8221; contains the model fit and significance p-value.</p>
+<p>As we did not see much in the way of significant difference of individual genera in our metagenomeSeq analysis we were
+interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) using the following function:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotPCALoadings(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.loadings.tsv&quot;, &quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.loadings.png&quot;)
+</pre></div>
+</div>
+<p>This will produce the following plot</p>
+<a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.loadings.png"><img alt="_images/genus.diamond.aggregated.counts.loadings.png" class="align-center" src="_images/genus.diamond.aggregated.counts.loadings.png" style="width: 300pt; height: 300pt;" /></a>
+<p>And that is Fig. 1 and half of Fig. 2 done!</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compareDatasets.html"
+                        title="previous chapter">Comparing metagenomic and metatranscriptomic data sets</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="colitisResponsiveNOGs.html"
+                        title="next chapter">Defining colitis-dependent NOGs</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pca.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+             >previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

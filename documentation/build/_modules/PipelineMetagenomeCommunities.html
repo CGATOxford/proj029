@@ -1,0 +1,480 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PipelineMetagenomeCommunities &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for PipelineMetagenomeCommunities</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">classes and utility functions for pipeline_metagenomecommunities.py</span>
+
+<span class="sd">Different assembly tools will use different inputs. Some can take</span>
+<span class="sd">fasta files whereas others will take fastq and in either case can be</span>
+<span class="sd">paired-end (in the same or different files) or single end</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">import</span> <span class="nn">CGAT.IOTools</span> <span class="kn">as</span> <span class="nn">IOTools</span>
+<span class="kn">import</span> <span class="nn">CGAT.Pipeline</span> <span class="kn">as</span> <span class="nn">P</span>
+<span class="kn">import</span> <span class="nn">CGAT.Experiment</span> <span class="kn">as</span> <span class="nn">E</span>
+<span class="kn">import</span> <span class="nn">CGAT.FastaIterator</span> <span class="kn">as</span> <span class="nn">FastaIterator</span>
+<span class="kn">import</span> <span class="nn">CGAT.Fastq</span> <span class="kn">as</span> <span class="nn">Fastq</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">CGAT.Metaphlan</span> <span class="kn">as</span> <span class="nn">Metaphlan</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">r</span> <span class="k">as</span> <span class="n">R</span>
+<span class="kn">import</span> <span class="nn">CGAT.GTF</span> <span class="kn">as</span> <span class="nn">GTF</span>
+
+
+<div class="viewcode-block" id="normaliseKraken"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.normaliseKraken">[docs]</a><span class="k">def</span> <span class="nf">normaliseKraken</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    normalise kraken counts by nreads/million mapped</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">inf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;rel_abundance&quot;</span><span class="p">,</span> <span class="s">&quot;rpm&quot;</span><span class="p">)</span>
+    <span class="n">mapped</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c"># will have to iterate over the file twice </span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">mapped</span> <span class="o">+=</span> <span class="n">count</span>
+    <span class="n">inf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="n">inf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">outf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">mapped</span><span class="p">)</span><span class="o">/</span><span class="mi">1000000</span><span class="p">)</span>
+        <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">count</span><span class="p">]))</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+    </div>
+<div class="viewcode-block" id="countContributingReads"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.countContributingReads">[docs]</a><span class="k">def</span> <span class="nf">countContributingReads</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    count number of reads with a taxnomic assignment</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">levels</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&quot;phylum&quot;</span><span class="p">,</span> <span class="s">&quot;class&quot;</span><span class="p">,</span> <span class="s">&quot;order&quot;</span><span class="p">,</span> <span class="s">&quot;family&quot;</span><span class="p">,</span> <span class="s">&quot;genus&quot;</span><span class="p">,</span> <span class="s">&quot;species&quot;</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">inf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+
+    <span class="c"># column indices</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">13</span><span class="p">]</span> 
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">phylum</span><span class="p">,</span> <span class="n">_class</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">genus</span><span class="p">,</span> <span class="n">species</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">phylum</span> <span class="o">!=</span> <span class="s">&quot;NA&quot;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&quot;phylum&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">_class</span> <span class="o">!=</span> <span class="s">&quot;NA&quot;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&quot;class&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="o">!=</span> <span class="s">&quot;NA&quot;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&quot;order&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">family</span> <span class="o">!=</span> <span class="s">&quot;NA&quot;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&quot;family&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">genus</span> <span class="o">!=</span> <span class="s">&quot;NA&quot;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&quot;genus&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">species</span> <span class="o">!=</span> <span class="s">&quot;NA&quot;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&quot;species&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">outf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;level</span><span class="se">\t</span><span class="s">n_reads</span><span class="se">\t</span><span class="s">pct_reads</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">level</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">nreads</span><span class="p">,</span> <span class="n">prop</span> <span class="o">=</span> <span class="n">count</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span>
+        <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">level</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nreads</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">prop</span><span class="o">*</span><span class="mi">100</span><span class="p">)])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="plotMDS"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.plotMDS">[docs]</a><span class="k">def</span> <span class="nf">plotMDS</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    perform multidimensional scaling of normalised</span>
+<span class="sd">    counts</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">outname_matrix</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.pdf&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.tsv&quot;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa</span>
+<span class="s">         dat &lt;- dat[,1:ncol(dat)-1]</span>
+<span class="s">         dat &lt;- dat[, mixedsort(colnames(dat))]</span>
+<span class="s">         conds &lt;- unlist(strsplit(colnames(dat), &quot;.R[0-9]&quot;))[seq(1, ncol(dat)*2, 2)]</span>
+<span class="s">         conds &lt;- unlist(strsplit(conds, &quot;.&quot;, fixed = T))[seq(2, length(conds)*2, 2)]</span>
+<span class="s">         dat &lt;- as.matrix(t(dat))</span>
+<span class="s">         dist &lt;- dist(dat)</span>
+<span class="s">         ord1 &lt;- cmdscale(dist)</span>
+<span class="s">         ord2 &lt;- as.data.frame(ord1)</span>
+<span class="s">         ord2$cond &lt;- conds</span>
+<span class="s">         ggplot(ord2, aes(x = V1, y = V2, colour = cond)) + geom_point(size = 3) + scale_colour_manual(values = c(&quot;brown&quot;, &quot;darkGreen&quot;, &quot;slateGrey&quot;, &quot;darkBlue&quot;))</span>
+<span class="s">         ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="testDistSignificance"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.testDistSignificance">[docs]</a><span class="k">def</span> <span class="nf">testDistSignificance</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    use permanova to test significance of differences</span>
+<span class="sd">    in distance metrics</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(vegan)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa</span>
+<span class="s">         dat &lt;- dat[,1:ncol(dat)-1]</span>
+<span class="s">         dat &lt;- dat[, mixedsort(colnames(dat))]</span>
+<span class="s">         conds &lt;- unlist(strsplit(colnames(dat), &quot;.R[0-9]&quot;))[seq(1, ncol(dat)*2, 2)]</span>
+<span class="s">         conds &lt;- unlist(strsplit(conds, &quot;.&quot;, fixed = T))[seq(2, length(conds)*2, 2)]</span>
+<span class="s">         d &lt;- dist(t(dat))</span>
+<span class="s">         paov &lt;- adonis(d~conds)</span>
+<span class="s">         write.table(paov$aov.tab, file = &quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+         
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="barplotAbundance"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.barplotAbundance">[docs]</a><span class="k">def</span> <span class="nf">barplotAbundance</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    barplot normalised counts abundance</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,2:ncol(dat)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(reshape)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;sums &lt;- apply(dat, 2, sum)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2 &lt;- data.frame(t(apply(dat, 1, function (x) x/sums)))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2$taxa &lt;- rownames(dat)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2 &lt;- dat2[, mixedsort(colnames(dat2))]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2 &lt;- melt(dat2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggplot(dat2, aes(x = variable, y = value, fill = taxa, stat = &quot;identity&quot;)) + geom_bar() + opts(axis.text.x=theme_text(angle=90))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="MAPlot"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.MAPlot">[docs]</a><span class="k">def</span> <span class="nf">MAPlot</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span>
+           <span class="n">threshold_stat</span><span class="p">,</span>
+           <span class="n">p_threshold</span><span class="p">,</span> 
+           <span class="n">fc_threshold</span><span class="p">,</span>
+           <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    MA plot the results</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="k">if</span> <span class="n">threshold_stat</span><span class="o">==</span> <span class="s">&quot;p&quot;</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">=</span><span class="s">&quot;P.Value&quot;</span>
+    <span class="k">elif</span> <span class="n">threshold_stat</span> <span class="o">==</span> <span class="s">&quot;padj&quot;</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">=</span><span class="s">&quot;adj.P.Val&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">=</span><span class="s">&quot;adj.P.Val&quot;</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$sig &lt;- ifelse(dat$</span><span class="si">%s</span><span class="s"> &lt; </span><span class="si">%f</span><span class="s"> &amp; abs(dat$logFC) &gt; </span><span class="si">%f</span><span class="s">, 1, 0)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">p_threshold</span><span class="p">,</span> <span class="n">fc_threshold</span><span class="p">))</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggplot(dat, aes(x = AveExpr, y = logFC, colour = factor(sig))) + geom_point(alpha = 0.5) + scale_colour_manual(values = c(&quot;black&quot;, &quot;blue&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+   
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="plotHeatmap"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.plotHeatmap">[docs]</a><span class="k">def</span> <span class="nf">plotHeatmap</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> 
+                <span class="n">norm_matrix</span><span class="p">,</span> 
+                <span class="n">threshold_stat</span><span class="p">,</span>
+                <span class="n">p_threshold</span><span class="p">,</span> 
+                <span class="n">fc_threshold</span><span class="p">,</span>
+                <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot heatmap of differentially abundant genes</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">threshold_stat</span><span class="o">==</span> <span class="s">&quot;p&quot;</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">=</span><span class="s">&quot;P.Value&quot;</span>
+    <span class="k">elif</span> <span class="n">threshold_stat</span> <span class="o">==</span> <span class="s">&quot;padj&quot;</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">=</span><span class="s">&quot;adj.P.Val&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">=</span><span class="s">&quot;adj.P.Val&quot;</span>
+
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">getTempFilename</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gplots)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;reading data&quot;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">norm_matrix</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(mat) &lt;- mat$taxa</span>
+<span class="s">         mat &lt;- as.matrix(mat[,1:ncol(mat)-1])&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">results</span><span class="p">)</span>
+    <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;data loaded&quot;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;diff.genes &lt;- unique(dat$taxa[dat$</span><span class="si">%s</span><span class="s"> &lt; </span><span class="si">%f</span><span class="s"> &amp; abs(dat$logFC) &gt; </span><span class="si">%f</span><span class="s">])&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">p_threshold</span><span class="p">,</span> <span class="n">fc_threshold</span><span class="p">))</span>
+
+    <span class="c">##############################</span>
+    <span class="c"># this is a hack</span>
+    <span class="c"># to avoid errors when </span>
+    <span class="c"># a single differential</span>
+    <span class="c"># abundant feature is found</span>
+    <span class="c">##############################</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(diff.genes,file = &quot;</span><span class="si">%s</span><span class="s">&quot;, row.names = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">temp</span><span class="p">)</span>
+    
+    <span class="n">tmp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+    <span class="n">tmp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">readlines</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> 
+        <span class="n">P</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat &lt;- mat[as.character(diff.genes), ]</span>
+<span class="s">             samples &lt;- colnames(mat)</span>
+<span class="s">             mat &lt;- as.data.frame(t(apply(mat, 1, scale)))</span>
+<span class="s">             colnames(mat) &lt;- samples</span>
+<span class="s">         mat &lt;- mat[, mixedsort(colnames(mat))]</span>
+<span class="s">         colours = colorRampPalette(c(&quot;blue&quot;, &quot;white&quot;, &quot;red&quot;))(75)</span>
+<span class="s">         png(&quot;</span><span class="si">%s</span><span class="s">&quot;, height = 1000, width = 500)</span>
+<span class="s">         heatmap.2(as.matrix(mat), </span>
+<span class="s">                   trace = &quot;none&quot;, </span>
+<span class="s">                   scale = &quot;none&quot;, </span>
+<span class="s">                   col = colours,</span>
+<span class="s">                   Colv = F,</span>
+<span class="s">                   dendrogram = &quot;row&quot;,</span>
+<span class="s">                   margins = c(15, 15))</span>
+<span class="s">             dev.off()&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="annotate"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.annotate">[docs]</a><span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">annotation_file</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    annotate infile with annotations from </span>
+<span class="sd">    annotation gtf file</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">inf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">include</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;reading genes to keep&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">gene_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&#39;&quot;&#39;</span><span class="p">)</span>
+        <span class="n">include</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">gene_id</span><span class="p">)</span>
+
+    <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;reading annotations file&quot;</span><span class="p">)</span>
+    <span class="n">annotations</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">gtf</span> <span class="ow">in</span> <span class="n">GTF</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">annotation_file</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">gtf</span><span class="o">.</span><span class="n">gene_id</span> <span class="ow">in</span> <span class="n">include</span><span class="p">:</span>
+            <span class="n">annotations</span><span class="p">[</span><span class="n">gtf</span><span class="o">.</span><span class="n">gene_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">gtf</span><span class="o">.</span><span class="n">gene_name</span><span class="p">,</span> <span class="n">gtf</span><span class="o">.</span><span class="n">species</span><span class="p">,</span> <span class="n">gtf</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
+
+    <span class="n">inf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    
+    <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;writing results with annotations&quot;</span><span class="p">)</span>
+    <span class="n">outf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">gene_name</span><span class="se">\t</span><span class="s">species_centroid</span><span class="se">\t</span><span class="s">description</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">gene_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&#39;&quot;&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">annotations</span><span class="p">[</span><span class="n">gene_id</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="p">[</span><span class="s">&quot;NA&quot;</span><span class="p">,</span> <span class="s">&quot;NA&quot;</span><span class="p">,</span> <span class="s">&quot;NA&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="rarefactionCurve"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.rarefactionCurve">[docs]</a><span class="k">def</span> <span class="nf">rarefactionCurve</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> 
+                     <span class="n">outfile</span><span class="p">,</span>
+                     <span class="n">rdir</span><span class="p">,</span>
+                     <span class="n">f</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span>
+                     <span class="n">step</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    perform and plot rarefaction curves </span>
+<span class="sd">    on species richness - the max rarefaction sample</span>
+<span class="sd">    will be the minimum count across datasets</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;source(&quot;</span><span class="si">%s</span><span class="s">/metagenomic_diversity.R&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rdir</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,2:ncol(dat)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;tdat &lt;- data.frame(t(dat))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;sums &lt;- apply(tdat, 1, sum)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;min.count &lt;- min(sums)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;tdat &lt;- tdat[mixedsort(rownames(tdat)),]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(rownames(tdat), &quot;.R[0-9]&quot;))[seq(1, nrow(tdat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(conds, &quot;.&quot;, fixed = T))[seq(2, length(conds)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rf &lt;- rarefaction(tdat, from = </span><span class="si">%i</span><span class="s">, to = min.count, step = </span><span class="si">%i</span><span class="s">, groups = conds)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">step</span><span class="p">))</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plotRarefaction(rf)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="testRichness"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.testRichness">[docs]</a><span class="k">def</span> <span class="nf">testRichness</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> 
+                 <span class="n">outfile</span><span class="p">,</span>
+                 <span class="n">rdir</span><span class="p">,</span>
+                 <span class="n">sample</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    test significance of richness between</span>
+<span class="sd">    groups using kruskal wallis test</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;source(&quot;</span><span class="si">%s</span><span class="s">/metagenomic_diversity.R&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rdir</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names = 1)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;tdat &lt;- data.frame(t(dat))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(rownames(tdat), &quot;.R[0-9]&quot;))[seq(1, nrow(tdat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(conds, &quot;.&quot;, fixed = T))[seq(2, length(conds)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;k &lt;- richness.test(tdat, </span><span class="si">%i</span><span class="s">, groups = conds)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">sample</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(data.frame(p = k$p.value, stat = k$statistic), file = &quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="barplotDiversity"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.barplotDiversity">[docs]</a><span class="k">def</span> <span class="nf">barplotDiversity</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span>
+                     <span class="n">outfile</span><span class="p">,</span>
+                     <span class="n">rdir</span><span class="p">,</span>
+                     <span class="n">ind</span> <span class="o">=</span> <span class="s">&quot;shannon&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    barplot diversity</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;source(&quot;</span><span class="si">%s</span><span class="s">/metagenomic_diversity.R&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rdir</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,2:ncol(dat)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;tdat &lt;- data.frame(t(dat))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;tdat &lt;- tdat[mixedsort(rownames(tdat)),]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(rownames(tdat), &quot;.R[0-9]&quot;))[seq(1, nrow(tdat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(conds, &quot;.&quot;, fixed = T))[seq(2, length(conds)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plotDiversity(tdat, index = &quot;</span><span class="si">%s</span><span class="s">&quot;, groups = conds)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">ind</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+</div>
+<div class="viewcode-block" id="testDiversity"><a class="viewcode-back" href="../code.html#PipelineMetagenomeCommunities.testDiversity">[docs]</a><span class="k">def</span> <span class="nf">testDiversity</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span>
+                     <span class="n">outfile</span><span class="p">,</span>
+                     <span class="n">rdir</span><span class="p">,</span>
+                     <span class="n">ind</span> <span class="o">=</span> <span class="s">&quot;shannon&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    barplot diversity</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;source(&quot;</span><span class="si">%s</span><span class="s">/metagenomic_diversity.R&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">rdir</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,2:ncol(dat)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;tdat &lt;- data.frame(t(dat))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;tdat &lt;- tdat[mixedsort(rownames(tdat)),]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(rownames(tdat), &quot;.R[0-9]&quot;))[seq(1, nrow(tdat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(conds, &quot;.&quot;, fixed = T))[seq(2, length(conds)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;k &lt;- div.test(tdat, groups = factor(conds))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(data.frame(p = k$p.value, stat = k$statistic), file = &quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

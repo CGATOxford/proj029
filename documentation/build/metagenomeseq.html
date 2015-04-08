@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MetagenomeSeq Normalisation &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
+    <link rel="next" title="Comparing metagenomic and metatranscriptomic data sets" href="compareDatasets.html" />
+    <link rel="prev" title="Alignment and counting" href="alignmentAndCounting.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="alignmentAndCounting.html" title="Alignment and counting"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="metagenomeseq-normalisation">
+<h1>MetagenomeSeq Normalisation<a class="headerlink" href="#metagenomeseq-normalisation" title="Permalink to this headline">¶</a></h1>
+<p>Count data need to be normalised to account for differences in library depth between samples. We have used <a class="reference external" href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">metagenomeSeq</a>
+to normalise our data as well as to assess differential abundance of genera and NOGs in both DNA and RNA data sets (do this in RNA/ and DNA/ directories).
+The normalised counts are used for downstream analysis. In order to gain a matrix of normalised counts we use the run_metagenomeseq. R script
+in the R/ directory. This script produces two files - the first is the normalised counts table and the second is the
+results of the differential abundance analysis:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gunzip genus.diamond.aggregated.counts.tsv.gz
+
+$ Rscript &lt; R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.tsv -p genus.diamond.aggregated.counts
+</pre></div>
+</div>
+<p>The options specified control the number of samples (&#8211;k) that must contain the feature above a certain reads per million (RPM) (&#8211;a)
+threshold. The input counts table is specified with the -c option and the -p option specifies the output file prefix. The
+command above will produce the two files - genus_counts.norm.matrix and genus_counts.diff.tsv. We will use the .norm.matrix files
+in the next sections for looking at overlaps between DNA and RNA data sets as well as performing Principle components analysis.</p>
+<p>However first we load the tables into our csvdb databases:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import CGAT.Pipeline as P
+&gt;&gt; P.load(&quot;genus.diamond.aggregated.counts.tsv&quot;, &quot;genus.diamond.aggregated.counts.tsv.load&quot;)
+&gt;&gt; P.load(&quot;gene_counts.tsv&quot;, &quot;gene_counts.tsv.load&quot;)
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="alignmentAndCounting.html"
+                        title="previous chapter">Alignment and counting</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compareDatasets.html"
+                        title="next chapter">Comparing metagenomic and metatranscriptomic data sets</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/metagenomeseq.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="alignmentAndCounting.html" title="Alignment and counting"
+             >previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

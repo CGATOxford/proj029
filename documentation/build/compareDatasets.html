@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Comparing metagenomic and metatranscriptomic data sets &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
+    <link rel="next" title="Principle components analysis" href="pca.html" />
+    <link rel="prev" title="MetagenomeSeq Normalisation" href="metagenomeseq.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pca.html" title="Principle components analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="metagenomeseq.html" title="MetagenomeSeq Normalisation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="comparing-metagenomic-and-metatranscriptomic-data-sets">
+<h1>Comparing metagenomic and metatranscriptomic data sets<a class="headerlink" href="#comparing-metagenomic-and-metatranscriptomic-data-sets" title="Permalink to this headline">¶</a></h1>
+<p>So we are going to compare datasets. First we could make a separate working directory for the comparison:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mkdir comparison.dir
+$ cd comparison.dir
+</pre></div>
+</div>
+<p>The first analysis that we do is to do some simple comparisons between the DNA and RNA data sets (Fig. 1 in the paper).
+This involves looking at the number of genera/NOGs that were detected in each method (and the overlap) and how abundance
+as measured by DNA compares with abundance of RNA. Here we will use the PipelineMetaomics.py module
+to look at the overlaps. For genera we can type:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetaomics
+&gt;&gt; PipelineMetaomics.buildDetectionOverlap(&quot;&lt;path&gt;/RNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
+                                           &quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
+                                           &quot;genus_overlap.tsv&quot;)
+</pre></div>
+</div>
+<p>This will produce an outfile named genus_overlap.tsv that contains the number of genera detected with &gt; 1 read in &gt;= 1
+sample in DNA and RNA analyses as well as the overlap. We run this also for the NOG count tables.</p>
+<p>We then compared the abundances of features (e.g. genera) that were detected in DNA, RNA or both data sets (baseed on RPM values from
+counts tables). To do this we run the follwong functions:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotAbundanceLevelsOfOverlap(&quot;&lt;path&gt;/RNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
+                                                  &quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
+                                                  &quot;genus_abundance_distributions.png&quot;)
+</pre></div>
+</div>
+<p>This produces the following plot.</p>
+<a class="reference internal image-reference" href="_images/genus_abundance_distributions.png"><img alt="_images/genus_abundance_distributions.png" class="align-center" src="_images/genus_abundance_distributions.png" style="width: 300pt; height: 300pt;" /></a>
+<p>This function also produces the file &#8220;genus_abundance_distributions.sig&#8221; which contains the significance of the differences
+between sets of features based on the wilkoxon rank sum test.</p>
+<p>We can then compare abundance estimates for those commonly detected genera (or NOGs) based on metagenomeSeq normalised
+abundances.:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.scatterplotAbundanceEstimates(&quot;&lt;path&gt;DNA/genus.diamond.aggregated.counts.norm.matrix&quot;,
+                                                   &quot;&lt;path&gt;RNA/genus.diamond.aggregated.counts.norm.matrix&quot;,
+                                                   &quot;genus_abundance_correlation.pdf&quot;)
+</pre></div>
+</div>
+<p>This produces the plot below in the file genus_abundance_correlation.pdf and prints out our correlation coefficient of 0.98.</p>
+<a class="reference internal image-reference" href="_images/genus_abundance_correlations.png"><img alt="_images/genus_abundance_correlations.png" class="align-center" src="_images/genus_abundance_correlations.png" style="width: 300pt; height: 300pt;" /></a>
+<p>Again, this was repeated using the same functions for NOG-based counts and normalised counts (Fig. 2).</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="metagenomeseq.html"
+                        title="previous chapter">MetagenomeSeq Normalisation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pca.html"
+                        title="next chapter">Principle components analysis</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/compareDatasets.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pca.html" title="Principle components analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="metagenomeseq.html" title="MetagenomeSeq Normalisation"
+             >previous</a> |</li>
+        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

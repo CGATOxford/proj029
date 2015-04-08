@@ -13,6 +13,10 @@ Contents:
 
    introduction.rst
    alignmentAndCounting.rst
+   metagenomeseq.rst
+   compareDatasets.rst
+   pca.rst
+   colitisResponsiveNOGs.rst
    code.rst
 
 Indices and tables

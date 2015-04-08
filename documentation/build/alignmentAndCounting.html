@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
-    <link rel="next" title="code" href="code.html" />
+    <link rel="next" title="MetagenomeSeq Normalisation" href="metagenomeseq.html" />
     <link rel="prev" title="Introduction" href="introduction.html" /> 
   </head>
   <body>
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="code.html" title="code"
+          <a href="metagenomeseq.html" title="MetagenomeSeq Normalisation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="introduction.html" title="Introduction"
@@ -57,7 +57,13 @@
 <p>We are picking up the analysis at the point at which raw fastq files have
 been filtered for contaminating adapters, pairs have been flashed and reads
 mapping to rRNA and mouse have been removed. Details of these steps are in the
-paper.</p>
+paper. The RNA and DNA analyses were run separately using the same pipeline to avoid
+filename conflicts. Therefore if you want to follow some of the analyses then
+it is probably useful to create separate working directories e.g:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mkdir RNA
+$ mkdir DNA
+</pre></div>
+</div>
 <div class="section" id="alignment">
 <h2>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h2>
 <p>The first step in the analysis is to assign reads to taxa and functional groups.
@@ -66,11 +72,11 @@ protein database (<a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov
 (<a class="reference external" href="ftp://climb.genomics.cn/pub/10.5524/100001_101000/100064/1.GeneCatalogs/IGC.pep.gz">IGC</a>) for assessing functions.</p>
 <p>We used DIAMOND to align sequences to the reference databases so first we built
 database indexes:</p>
-<div class="highlight-python"><div class="highlight"><pre>diamond makedb --db nr --in nr --threads 16
+<div class="highlight-python"><div class="highlight"><pre>$ diamond makedb --db nr --in nr --threads 16
 </pre></div>
 </div>
 <p>and:</p>
-<div class="highlight-python"><div class="highlight"><pre>diamond makedb --db igc --in IGC.pep --threads 16
+<div class="highlight-python"><div class="highlight"><pre>$ diamond makedb --db igc --in IGC.pep --threads 16
 </pre></div>
 </div>
 <p>NOTE: DIAMOND takes uncompressed files as input</p>
@@ -78,11 +84,11 @@ database indexes:</p>
 (fastq files need to be converted to fasta format first e.g. using <a class="reference external" href="http://hannonlab.cshl.edu/fastx_toolkit/">fastx toolkit</a>). As
 an example:</p>
 <p>conversion:</p>
-<div class="highlight-python"><div class="highlight"><pre>fastq-to-fasta stool-HhaIL10R-R1.fastq.gz &gt; stool-HhaIL10R-R1.fasta
+<div class="highlight-python"><div class="highlight"><pre>$ fastq-to-fasta stool-HhaIL10R-R1.fastq.gz &gt; stool-HhaIL10R-R1.fasta
 </pre></div>
 </div>
 <p>alignment:</p>
-<div class="highlight-python"><div class="highlight"><pre>diamond blastx --db nr --query stool-HhaIL10R-R1.fasta -o stool-HhaIL10R-R1.diamond.tsv
+<div class="highlight-python"><div class="highlight"><pre>$ diamond blastx --db nr --query stool-HhaIL10R-R1.fasta -o stool-HhaIL10R-R1.diamond.tsv
 </pre></div>
 </div>
 <p>This was done for each sample (DNA-seq and RNA-seq) against each data base resulting in</p>
@@ -99,29 +105,78 @@ reads that mapped to each genus and each functional category. This is where the 
 of taxonomy and function diverge.</p>
 <p>For taxnomic profiling We used the lowest common ancestor approach (LCA) to
 assign reads to genera implemented using lcamapper.sh from mtools (see dependencies). This
-requires the mapping file of gi number to taxonomy id that is distributed with mtools:</p>
-<div class="highlight-python"><div class="highlight"><pre>lcamapper.sh -i stool-HhaIL10R-R1.diamond.tsv -f Detect -ms 50 -me 0.01 -tp 50 -gt gi_taxid_prot.bin -o stool-HhaIL10R-R1.lca
+requires the mapping file of gi number to taxonomy id that is distributed with mtools so for each
+sample for both DNA and RNA data sets we do for example:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ lcamapper.sh -i stool-HhaIL10R-R1.diamond.tsv -f Detect -ms 50 -me 0.01 -tp 50 -gt gi_taxid_prot.bin -o stool-HhaIL10R-R1.lca
 </pre></div>
 </div>
 <p>Again each file that was aligned to the ncbi nr database is used as input to lcamapper.sh. To obtain counts per
 genus we use the lca2table.py script that is in the scripts/ directory of this repository:</p>
-<div class="highlight-python"><div class="highlight"><pre>cat stool-HhaIL10R-R1.lca | python scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.counts.tsv.log &gt; stool-HhaIL10R-R1.counts.tsv
+<div class="highlight-python"><div class="highlight"><pre>$ cat stool-HhaIL10R-R1.lca | python scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.counts.tsv.log &gt; stool-HhaIL10R-R1.counts.tsv
 </pre></div>
 </div>
 <p>At this point each file that contains taxa counts is loaded into an sqlite database. This makes subsetting etc easier
 downstream. We use the Pipeline.py module from the CGAT code collection to load the tables. As I mentioned
 these analyses are wrapped up in ruffus pipelines and are therefore in python scripts. However to
 load the table from python we simply do:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt;import CGAT.Pipeline as P
-&gt;&gt;P.load(&quot;stool-HhaIL10R-R1.lca&quot;, &quot;stool-HhaIL10R-R1.lca.load&quot;)
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import CGAT.Pipeline as P
+&gt;&gt; P.load(&quot;stool-HhaIL10R-R1.lca&quot;, &quot;stool-HhaIL10R-R1.lca.load&quot;)
 </pre></div>
 </div>
 <p>This will create a database called &#8220;csvdb&#8221; in the working directory and will have loaded the table
 stool_HhaIL10R_R1_lca. In our analyses we were interested in genus abundances and so we create
 flat files from the database simply by:</p>
-<div class="highlight-python"><div class="highlight"><pre>sqlite3 csvdb &#39;SELECT taxa, count FROM stool_HhaIL10R_R1_lca WHERE taxa == &quot;genus&quot;&#39; &gt; stool-HhaIL10R-R1.lca.counts.tsv
+<div class="highlight-python"><div class="highlight"><pre>$ sqlite3 csvdb &#39;SELECT taxa, count FROM stool_HhaIL10R_R1_lca WHERE taxa == &quot;genus&quot;&#39; &gt; stool-HhaIL10R-R1.lca.counts.tsv
 </pre></div>
 </div>
+<p>Next we combine counts for each sample into a single table with rows as genera and samples as columns. We use a convenient
+script from CGAT code collection to do this - combine_tables.py.</p>
+<p>e.g for example if we are in the RNA analysis working directory we run combine_tables.py by specifying that we want missing
+genera from a sample to be given a 0 count, we want to merge on column1 (genera), we want to take the &#8220;count&#8221;
+column and we want to combine all tables that end in .lca.counts.tsv. We also specify the prefixes to be used
+for each column in the resulting combined table:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python cgat/scripts/combine_tables.py
+         --missing=0
+         --columns=1
+         --take=count
+         --glob=*.lca.counts.tsv
+         --prefixes=stool-HhaIL10R-R4.lca,
+                    stool-HhaIL10R-R3.lca,
+                    stool-Hh-R4.lca,
+                    stool-Hh-R3.lca,
+                    stool-WT-R4.lca,
+                    stool-aIL10R-R1.lca,
+                    stool-WT-R3.lca,
+                    stool-WT-R2.lca,
+                    stool-aIL10R-R4.lca,
+                    stool-Hh-R2.lca,
+                    stool-Hh-R1.lca,
+                    stool-aIL10R-R2.lca,
+                    stool-WT-R1.lca,
+                    stool-HhaIL10R-R1.lca,
+                    stool-HhaIL10R-R2.lca,
+                    stool-aIL10R-R3.lca
+ | gzip &gt; genus.diamond.aggregated.counts.tsv.gz
+</pre></div>
+</div>
+<p>Again we do this for both RNA and DNA data sets.</p>
+<p>The next task is to produce a counts table similar to the one above but for functions. We have aligned to the IGC and we use
+their annotations of eggNOG functions (NOGs) as the features to be counted. For counting per NOG, we extract the best hit DIAMOMD alignment
+for eac read, map the gene to NOG using an additional mapping file and count. To produce a count table for a single sample
+we use the diamond2counts.py script in the scripts/ directory. The input is the DIAMOND alignment file.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ zcat stool-HhaIL10R-R1.igc.tsv.gz | python scripts/diamond2counts.py
+                                             --method=best
+                                             --cog-map=data/gene2cog.tsv.gz
+                                             --sum-cog
+                                             --log=stool-HhaIL10R-R1.igc.counts.tsv.gz.log
+                                    | gzip &gt; stool-HhaIL10R-R1.nogs.counts.tsv.gz
+</pre></div>
+</div>
+<p>Again, we combine tables for each sample into a final counts table using combine_tables.py. Now we have count tables for genera and
+NOGs for both metagenomic and metatranscriptomic data we can start doing some analysis.</p>
+<p>So to recap, in our working directories, DNA/ and RNA/ we now have count tables for alignments to genera and NOGs. Given the large
+sizes of raw and alignment files these have been deposited at the EBI ENA (ADD LINK). However for reproducing our downstream analysis
+we have provided the count tables in the data/ directory.</p>
 </div>
 </div>
 
@@ -132,7 +187,7 @@ flat files from the database simply by:</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/kennedy_logo.png" alt="Logo"/>
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -147,8 +202,8 @@ flat files from the database simply by:</p>
   <p class="topless"><a href="introduction.html"
                         title="previous chapter">Introduction</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="code.html"
-                        title="next chapter">code</a></p>
+  <p class="topless"><a href="metagenomeseq.html"
+                        title="next chapter">MetagenomeSeq Normalisation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/alignmentAndCounting.txt"
@@ -181,7 +236,7 @@ flat files from the database simply by:</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="code.html" title="code"
+          <a href="metagenomeseq.html" title="MetagenomeSeq Normalisation"
              >next</a> |</li>
         <li class="right" >
           <a href="introduction.html" title="Introduction"
