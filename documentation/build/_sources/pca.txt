@@ -16,7 +16,7 @@ the directory where you want the files to be produced, otherwise there will be a
 
 
     >> import PipelineMetaomics
-    >> PipelineMetaomics.runPCA("<path>/DNA/genus.diamond.aggregated.counts.norm.matrix", "<path>/DNA/genus.diamond.aggregated.counts.loadings.tsv")
+    >> PipelineMetaomics.runPCA("<path>/DNA/genus.diamond.aggregated.counts.norm.matrix", "dna_genus.diamond.aggregated.counts.loadings.tsv")
 
 
 And produces the following plot.
@@ -31,7 +31,7 @@ The adonis test in the module PipelineMetagenomeCommunities.py was run to test f
 
 
     >> import PipelineMetagenomeCommunities
-    >> PipelineMetagenomeCommunities.testDistSignificance("<path>/DNA/genus.diamond.aggregated.counts.norm.matrix", "<path>/DNA/genus.diamond.aggregated.counts.norm.permanova.sig")
+    >> PipelineMetagenomeCommunities.testDistSignificance("<path>/DNA/genus.diamond.aggregated.counts.norm.matrix", "dna_genus.diamond.aggregated.counts.norm.permanova.sig")
 
 The file "genus.diamond.aggregated.counts.norm.permanova.sig" contains the model fit and significance p-value.
 
@@ -39,7 +39,7 @@ The file "genus.diamond.aggregated.counts.norm.permanova.sig" contains the model
 As we did not see much in the way of significant difference of individual genera in our metagenomeSeq analysis we were
 interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) using the following function::
 
-   >> PipelineMetaomics.plotPCALoadings("<path>/DNA/genus.diamond.aggregated.counts.loadings.tsv", "<path>/DNA/genus.diamond.aggregated.counts.loadings.png")
+   >> PipelineMetaomics.plotPCALoadings("<path>/DNA/genus.diamond.aggregated.counts.loadings.tsv", "dna_genus.diamond.aggregated.counts.loadings.png")
 
 
 This will produce the following plot

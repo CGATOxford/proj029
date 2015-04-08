@@ -8,7 +8,7 @@
     
     <title>Code &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -26,38 +26,303 @@
     <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
     <link rel="prev" title="Defining colitis-dependent NOGs" href="colitisResponsiveNOGs.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="code">
 <h1>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="lca">
-<h2>LCA<a class="headerlink" href="#lca" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-CGAT.LCA">
+<span id="lca"></span><h2>LCA<a class="headerlink" href="#module-CGAT.LCA" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="CGAT.LCA.LCA">
+<em class="property">class </em><code class="descclassname">CGAT.LCA.</code><code class="descname">LCA</code><a class="reference internal" href="_modules/CGAT/LCA.html#LCA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGAT.LCA.LCA" title="Permalink to this definition">¶</a></dt>
+<dd><p>lca class describing the taxa associateed with a sequence</p>
+<dl class="method">
+<dt id="CGAT.LCA.LCA.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGAT/LCA.html#LCA.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGAT.LCA.LCA.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse the line</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="CGAT.LCA.iterate">
+<code class="descclassname">CGAT.LCA.</code><code class="descname">iterate</code><span class="sig-paren">(</span><em>infile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGAT/LCA.html#iterate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGAT.LCA.iterate" title="Permalink to this definition">¶</a></dt>
+<dd><p>LCA results iterator</p>
+</dd></dl>
+
 </div>
-<div class="section" id="diamond">
-<h2>Diamond<a class="headerlink" href="#diamond" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-CGAT.Diamond">
+<span id="diamond"></span><h2>Diamond<a class="headerlink" href="#module-CGAT.Diamond" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="CGAT.Diamond.alignment_iterator">
+<code class="descclassname">CGAT.Diamond.</code><code class="descname">alignment_iterator</code><span class="sig-paren">(</span><em>alignment_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGAT/Diamond.html#alignment_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGAT.Diamond.alignment_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>return an alignment</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGAT.Diamond.best_alignment_iterator">
+<code class="descclassname">CGAT.Diamond.</code><code class="descname">best_alignment_iterator</code><span class="sig-paren">(</span><em>query_iterator</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGAT/Diamond.html#best_alignment_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGAT.Diamond.best_alignment_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>return stats for best alignment - best is determined
+by highest bit score. If there are multiple alignments
+with the same score return a random one</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGAT.Diamond.query_iterator">
+<code class="descclassname">CGAT.Diamond.</code><code class="descname">query_iterator</code><span class="sig-paren">(</span><em>alignment_iterator</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGAT/Diamond.html#query_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGAT.Diamond.query_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>iterate over alignments by query
+return a list of alignments</p>
+</dd></dl>
+
 </div>
-<div class="section" id="pipelinemetagenomecommunities">
-<h2>PipelineMetagenomeCommunities<a class="headerlink" href="#pipelinemetagenomecommunities" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-CGATPipelines.PipelineMetagenomeCommunities">
+<span id="pipelinemetagenomecommunities"></span><h2>PipelineMetagenomeCommunities<a class="headerlink" href="#module-CGATPipelines.PipelineMetagenomeCommunities" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pipelinemetagenomecommunities-py">
+<h3>PipelineMetagenomeCommunities.py<a class="headerlink" href="#pipelinemetagenomecommunities-py" title="Permalink to this headline">¶</a></h3>
+<p>classes and utility functions for pipeline_metagenomecommunities.py</p>
+<p>Different assembly tools will use different inputs. Some can take
+fasta files whereas others will take fastq and in either case can be
+paired-end (in the same or different files) or single end</p>
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.MAPlot">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">MAPlot</code><span class="sig-paren">(</span><em>infile</em>, <em>threshold_stat</em>, <em>p_threshold</em>, <em>fc_threshold</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#MAPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.MAPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>MA plot the results</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.annotate">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">annotate</code><span class="sig-paren">(</span><em>infile</em>, <em>annotation_file</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#annotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.annotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotate infile with annotations from
+annotation gtf file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.barplotAbundance">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">barplotAbundance</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#barplotAbundance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.barplotAbundance" title="Permalink to this definition">¶</a></dt>
+<dd><p>barplot normalised counts abundance</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.barplotDiversity">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">barplotDiversity</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>rdir</em>, <em>ind='shannon'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#barplotDiversity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.barplotDiversity" title="Permalink to this definition">¶</a></dt>
+<dd><p>barplot diversity</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.countContributingReads">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">countContributingReads</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#countContributingReads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.countContributingReads" title="Permalink to this definition">¶</a></dt>
+<dd><p>count number of reads with a taxnomic assignment</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.normaliseKraken">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">normaliseKraken</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#normaliseKraken"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.normaliseKraken" title="Permalink to this definition">¶</a></dt>
+<dd><p>normalise kraken counts by nreads/million mapped</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.plotHeatmap">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">plotHeatmap</code><span class="sig-paren">(</span><em>results</em>, <em>norm_matrix</em>, <em>threshold_stat</em>, <em>p_threshold</em>, <em>fc_threshold</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#plotHeatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.plotHeatmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot heatmap of differentially abundant genes</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.plotMDS">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">plotMDS</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#plotMDS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.plotMDS" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform multidimensional scaling of normalised
+counts</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.rarefactionCurve">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">rarefactionCurve</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>rdir</em>, <em>f=1000000</em>, <em>step=1000000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#rarefactionCurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.rarefactionCurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform and plot rarefaction curves
+on species richness - the max rarefaction sample
+will be the minimum count across datasets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.testDistSignificance">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">testDistSignificance</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#testDistSignificance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.testDistSignificance" title="Permalink to this definition">¶</a></dt>
+<dd><p>use permanova to test significance of differences
+in distance metrics</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.testDiversity">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">testDiversity</code><span class="sig-paren">(</span><em>infile</em>, <em>poutfile</em>, <em>rdir</em>, <em>ind='shannon'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#testDiversity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.testDiversity" title="Permalink to this definition">¶</a></dt>
+<dd><p>barplot diversity</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.testRichness">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">testRichness</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>rdir</em>, <em>sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#testRichness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.testRichness" title="Permalink to this definition">¶</a></dt>
+<dd><p>test significance of richness between
+groups using kruskal wallis test</p>
+</dd></dl>
+
 </div>
-<div class="section" id="pipelinemetaomics">
-<h2>PipelineMetaomics<a class="headerlink" href="#pipelinemetaomics" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-Proj029Pipelines.PipelineMetaomics">
+<span id="pipelinemetaomics"></span><h2>PipelineMetaomics<a class="headerlink" href="#module-Proj029Pipelines.PipelineMetaomics" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.annotateRNADNARatio">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">annotateRNADNARatio</code><span class="sig-paren">(</span><em>RNADNARatio</em>, <em>dnalist</em>, <em>rnalist</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#annotateRNADNARatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.annotateRNADNARatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotate NOGs as to whether they were differentially
+regulated in metagenomic, metatranscriptomic or both
+data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.buildCommonList">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">buildCommonList</code><span class="sig-paren">(</span><em>rnadb</em>, <em>dnadb</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#buildCommonList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.buildCommonList" title="Permalink to this definition">¶</a></dt>
+<dd><p>build a list of NOGs/genera that were found in
+common after filtering between RNA and
+DNA data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.buildDetectionOverlap">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">buildDetectionOverlap</code><span class="sig-paren">(</span><em>rnacounts</em>, <em>dnacounts</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#buildDetectionOverlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.buildDetectionOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>build detection overlaps between RNA and DNA
+data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.buildDiffGeneOverlap">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">buildDiffGeneOverlap</code><span class="sig-paren">(</span><em>dnafile</em>, <em>rnafile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#buildDiffGeneOverlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.buildDiffGeneOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>overlap differentially abundant NOGs between
+RNA and DNA data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.buildDiffStats">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">buildDiffStats</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>db</em>, <em>connection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#buildDiffStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.buildDiffStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>build differential abundance statistics
+at different p-value and Fold change
+thresholds for each comparison</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.buildGeneDiffList">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">buildGeneDiffList</code><span class="sig-paren">(</span><em>db</em>, <em>commonset</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#buildGeneDiffList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.buildGeneDiffList" title="Permalink to this definition">¶</a></dt>
+<dd><p>build a list of differentially expressed
+NOGs between colitis and steady state</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.buildGenesOutsidePredictionInterval">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">buildGenesOutsidePredictionInterval</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#buildGenesOutsidePredictionInterval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.buildGenesOutsidePredictionInterval" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotate genes as being outside prediction
+interval - these are the NOGs that we are
+defining as colitis-responsive</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.buildGenusCogCountsMatrix">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">buildGenusCogCountsMatrix</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#buildGenusCogCountsMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.buildGenusCogCountsMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>build cog x genus proportion
+matrix</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.buildRNADNARatio">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">buildRNADNARatio</code><span class="sig-paren">(</span><em>dnadiff</em>, <em>rnadiff</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#buildRNADNARatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.buildRNADNARatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>build ratio of RNAfold/DNAfold</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.heatmapTaxaCogProportionMatrix">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">heatmapTaxaCogProportionMatrix</code><span class="sig-paren">(</span><em>matrix</em>, <em>annotations</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#heatmapTaxaCogProportionMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.heatmapTaxaCogProportionMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot the taxa associated with each cog on
+a heatmap</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.plotAbundanceLevelsOfOverlap">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">plotAbundanceLevelsOfOverlap</code><span class="sig-paren">(</span><em>rnacounts</em>, <em>dnacounts</em>, <em>outfile</em>, <em>of=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#plotAbundanceLevelsOfOverlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.plotAbundanceLevelsOfOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot abundance levels pf taxa/NOGs that do
+and don&#8217;t overlap between data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.plotMaxTaxaContribution">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">plotMaxTaxaContribution</code><span class="sig-paren">(</span><em>matrix</em>, <em>annotations</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#plotMaxTaxaContribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.plotMaxTaxaContribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot the distribution of maximum genus
+contribution per gene set</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.plotPCALoadings">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">plotPCALoadings</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#plotPCALoadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.plotPCALoadings" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot PCA loadings</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.plotSets">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">plotSets</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#plotSets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.plotSets" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot the fold changes in RNA and DNA analyses
+and label by how they are regulated in DNA and
+RNA analyses
+MUST HAVE GOI FILE IN WORKING DIR - not ideal</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.runPCA">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">runPCA</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#runPCA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.runPCA" title="Permalink to this definition">¶</a></dt>
+<dd><p>run pca analysis - this outputs
+a plot coloured by condition and
+also the loadings</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.scatterplotAbundanceEstimates">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">scatterplotAbundanceEstimates</code><span class="sig-paren">(</span><em>dnamatrix</em>, <em>rnamatrix</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#scatterplotAbundanceEstimates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.scatterplotAbundanceEstimates" title="Permalink to this definition">¶</a></dt>
+<dd><p>scatterplot abundance estimates between DNA and RNA
+data sets</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">scatterplotPerCogTaxaDNAFoldRNAFold</code><span class="sig-paren">(</span><em>taxa_cog_rnadiff</em>, <em>taxa_cog_dnadiff</em>, <em>cog_rnadiff</em>, <em>cog_dnadiff</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#scatterplotPerCogTaxaDNAFoldRNAFold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold" title="Permalink to this definition">¶</a></dt>
+<dd><p>scatterplot fold changes for per genus cog
+differences for NOGs of interest</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.testSignificanceOfMaxTaxaContribution">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">testSignificanceOfMaxTaxaContribution</code><span class="sig-paren">(</span><em>matrix</em>, <em>annotations</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#testSignificanceOfMaxTaxaContribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.testSignificanceOfMaxTaxaContribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test significance of distribution differences. Compared to NS
+group</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Proj029Pipelines.PipelineMetaomics.testSignificanceOfOverlap">
+<code class="descclassname">Proj029Pipelines.PipelineMetaomics.</code><code class="descname">testSignificanceOfOverlap</code><span class="sig-paren">(</span><em>common</em>, <em>overlap</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Proj029Pipelines/PipelineMetaomics.html#testSignificanceOfOverlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Proj029Pipelines.PipelineMetaomics.testSignificanceOfOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test significance of overlapping lists 
+bewteen RNA and DNA using hypergeometric test</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -65,7 +330,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
@@ -73,10 +338,13 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Code</a><ul>
-<li><a class="reference internal" href="#lca">LCA</a></li>
-<li><a class="reference internal" href="#diamond">Diamond</a></li>
-<li><a class="reference internal" href="#pipelinemetagenomecommunities">PipelineMetagenomeCommunities</a></li>
-<li><a class="reference internal" href="#pipelinemetaomics">PipelineMetaomics</a></li>
+<li><a class="reference internal" href="#module-CGAT.LCA">LCA</a></li>
+<li><a class="reference internal" href="#module-CGAT.Diamond">Diamond</a></li>
+<li><a class="reference internal" href="#module-CGATPipelines.PipelineMetagenomeCommunities">PipelineMetagenomeCommunities</a><ul>
+<li><a class="reference internal" href="#pipelinemetagenomecommunities-py">PipelineMetagenomeCommunities.py</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-Proj029Pipelines.PipelineMetaomics">PipelineMetaomics</a></li>
 </ul>
 </li>
 </ul>
@@ -84,12 +352,14 @@
   <h4>Previous topic</h4>
   <p class="topless"><a href="colitisResponsiveNOGs.html"
                         title="previous chapter">Defining colitis-dependent NOGs</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/code.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/code.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -106,21 +376,24 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
              >previous</a> |</li>
-        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Nick Ilott.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
     </div>
   </body>
 </html>

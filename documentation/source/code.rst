@@ -5,26 +5,26 @@ Code
 LCA
 ====
 
-.. automodule:: LCA
+.. automodule:: CGAT.LCA
     :members:
 
 Diamond
 ========
 
-.. automodule:: Diamond
+.. automodule:: CGAT.Diamond
     :members:
 
 
 PipelineMetagenomeCommunities
 ===============================
 
-.. automodule:: PipelineMetagenomeCommunities
+.. automodule:: CGATPipelines.PipelineMetagenomeCommunities
     :members:
 
 
 PipelineMetaomics
 ==================
 
-.. automodule:: PipelineMetaomics
+.. automodule:: Proj029Pipelines.PipelineMetaomics
     :members:
 

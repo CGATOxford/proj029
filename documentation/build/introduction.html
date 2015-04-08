@@ -8,7 +8,7 @@
     
     <title>Introduction &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -27,37 +27,34 @@
     <link rel="next" title="Alignment and counting" href="alignmentAndCounting.html" />
     <link rel="prev" title="Combined microbiome and host profiling in a mouse model of colitis" href="index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="alignmentAndCounting.html" title="Alignment and counting"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Combined microbiome and host profiling in a mouse model of colitis"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <p>The purpose of this documentation is to allow those that were interested enough to
 read our metagenomics paper to follow the analyses that we used step by step and
 recreate results and figures from our analyses. As with all high-throughput
-sequencing experiments a number of tasks take a long time to run and so where
+sequencing experiments, a number of tasks take a long time to run and so where
 possible we have provided the output files so that these tasks can be skipped. We
 will however show you the code that generated the output.</p>
 <div class="section" id="overview">
@@ -66,18 +63,48 @@ will however show you the code that generated the output.</p>
 to the fact that some of it is R code, some python, some is used in scripts and
 some is part of module files for pipelines. The directory structure should enable
 people to easily locate the source code i.e. modules are in modules/ scripts are
-in scripts/ etc. etc. For ouur purposes and to enable re-running of analyses and
+in scripts/ etc. etc. For our purposes and to enable re-running of analyses and
 facilitate reproducibity, scripts and module functions are wrapped up in <a class="reference external" href="http://www.ruffus.org.uk/">ruffus</a>
 pipelines. We also extensively use functions and scripts that are part of the
 <a class="reference external" href="https://github.com/CGATOxford/cgat">CGAT code collection</a>.</p>
 <p>However, this documentation will take you through the running of 3rd party tools,
 custom scripts and functions for analyses without having to specifically set up
-your environment for using <a class="reference external" href="https://www.cgat.org/downloads/public/cgat/documentation/UsingPipelines.html">CGAT pipelines</a></p>
+your environment for using <a class="reference external" href="https://www.cgat.org/downloads/public/cgat/documentation/UsingPipelines.html">CGAT pipelines</a>. Nevertheless, pipelines are publically
+available at <a class="reference external" href="https://github.com/CGATOxford/CGATPipelines">CGATOxford/CGATPiplines</a> and <a class="reference external" href="https://github.com/CGATOxford/proj029/">CGATOxford/proj029/Proj029Pipelines</a></p>
+<div class="section" id="disclaimer">
+<h3>Disclaimer<a class="headerlink" href="#disclaimer" title="Permalink to this headline">¶</a></h3>
+<p>The code used in the analysis was not designed for running on all systems. As such
+we know that it works on our system (Red Hat Enterprise Linux Server release 6.6 (Santiago)).</p>
+</div>
 </div>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
 <p>To run the analyses you will have to install a bit of software. Shown are the versions
-used in the analysis although newer versions may now be available and could be substituted</p>
+used in the analysis although newer versions may now be available and could be substituted.</p>
+<p>First of all though make sure that you have the CGAT code collection installed. It is recommended
+that with third party python modules that you use a virtual environment:</p>
+<div class="highlight-rst"><div class="highlight"><pre># install virtualenv
+pip install virtualenv
+
+# setup virtual environment
+virtualenv --no-site-packages metagenomics
+
+# start using the virtual environment
+source metagenomics/bin/activate
+
+# clone the CGAT repository and install (scripts and modules)
+git clone https://github.com/CGATOxford/cgat.git
+cd cgat
+python setup.py install
+
+# clone CGAT pipelines (we use Pipeline.py module extensively)
+git clone https://github.com/CGATOxford/CGATPipelines.git
+cd CGATPipelines
+python setup.py install
+</pre></div>
+</div>
+<div class="section" id="rd-party-software">
+<h3>3rd party software<a class="headerlink" href="#rd-party-software" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="46%" />
@@ -153,12 +180,13 @@ toolkit</td>
 </table>
 </div>
 </div>
+</div>
 
 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
@@ -166,8 +194,14 @@ toolkit</td>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Introduction</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#disclaimer">Disclaimer</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a><ul>
+<li><a class="reference internal" href="#rd-party-software">3rd party software</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -178,12 +212,14 @@ toolkit</td>
   <h4>Next topic</h4>
   <p class="topless"><a href="alignmentAndCounting.html"
                         title="next chapter">Alignment and counting</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/introduction.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/introduction.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -200,27 +236,24 @@ toolkit</td>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="alignmentAndCounting.html" title="Alignment and counting"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Combined microbiome and host profiling in a mouse model of colitis"
              >previous</a> |</li>
-        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Nick Ilott.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
     </div>
   </body>
 </html>

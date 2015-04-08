@@ -8,7 +8,7 @@
     
     <title>Principle components analysis &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -27,8 +27,8 @@
     <link rel="next" title="Defining colitis-dependent NOGs" href="colitisResponsiveNOGs.html" />
     <link rel="prev" title="Comparing metagenomic and metatranscriptomic data sets" href="compareDatasets.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,14 +40,14 @@
         <li class="right" >
           <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="principle-components-analysis">
 <h1>Principle components analysis<a class="headerlink" href="#principle-components-analysis" title="Permalink to this headline">¶</a></h1>
@@ -60,20 +60,20 @@ produces the PCA plot for components 1 and 2 and also outputs the loadings. The 
 with the name of the loadings outfile (apologies but the outfile must end in .loadings.tsv). You must be in
 the directory where you want the files to be produced, otherwise there will be an error:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetaomics
-&gt;&gt; PipelineMetaomics.runPCA(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.loadings.tsv&quot;)
+&gt;&gt; PipelineMetaomics.runPCA(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;dna_genus.diamond.aggregated.counts.loadings.tsv&quot;)
 </pre></div>
 </div>
 <p>And produces the following plot.</p>
 <a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.pca.png"><img alt="_images/genus.diamond.aggregated.counts.pca.png" class="align-center" src="_images/genus.diamond.aggregated.counts.pca.png" style="width: 300pt; height: 300pt;" /></a>
 <p>The adonis test in the module PipelineMetagenomeCommunities.py was run to test for significant clustering of conditions:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetagenomeCommunities
-&gt;&gt; PipelineMetagenomeCommunities.testDistSignificance(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.permanova.sig&quot;)
+&gt;&gt; PipelineMetagenomeCommunities.testDistSignificance(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;dna_genus.diamond.aggregated.counts.norm.permanova.sig&quot;)
 </pre></div>
 </div>
 <p>The file &#8220;genus.diamond.aggregated.counts.norm.permanova.sig&#8221; contains the model fit and significance p-value.</p>
 <p>As we did not see much in the way of significant difference of individual genera in our metagenomeSeq analysis we were
 interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) using the following function:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotPCALoadings(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.loadings.tsv&quot;, &quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.loadings.png&quot;)
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotPCALoadings(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.loadings.tsv&quot;, &quot;dna_genus.diamond.aggregated.counts.loadings.png&quot;)
 </pre></div>
 </div>
 <p>This will produce the following plot</p>
@@ -85,7 +85,7 @@ interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
@@ -96,12 +96,14 @@ interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) 
   <h4>Next topic</h4>
   <p class="topless"><a href="colitisResponsiveNOGs.html"
                         title="next chapter">Defining colitis-dependent NOGs</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/pca.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pca.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -118,7 +120,7 @@ interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) 
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -130,12 +132,12 @@ interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) 
         <li class="right" >
           <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
              >previous</a> |</li>
-        <li><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Nick Ilott.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
     </div>
   </body>
 </html>

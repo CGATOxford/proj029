@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CGAT.Diamond &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for CGAT.Diamond</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">CGAT.Experiment</span> <span class="kn">as</span> <span class="nn">E</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+
+<span class="c">#######################################################</span>
+<span class="c">#######################################################</span>
+<span class="c">#######################################################</span>
+
+
+<span class="k">class</span> <span class="nc">Diamond</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qid</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gi</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ngaps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evalue</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nmismatches</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identity</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">qid</span><span class="p">,</span>
+             <span class="n">gi</span><span class="p">,</span>
+             <span class="n">ref</span><span class="p">,</span>
+             <span class="n">ngaps</span><span class="p">,</span>
+             <span class="n">length</span><span class="p">,</span>
+             <span class="n">evalue</span><span class="p">,</span>
+             <span class="n">nmismatches</span><span class="p">,</span>
+             <span class="n">identity</span><span class="p">,</span>
+             <span class="n">score</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        read input</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qid</span><span class="p">,</span> \
+        <span class="bp">self</span><span class="o">.</span><span class="n">gi</span><span class="p">,</span> \
+        <span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">,</span> \
+        <span class="bp">self</span><span class="o">.</span><span class="n">ngaps</span><span class="p">,</span> \
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> \
+        <span class="bp">self</span><span class="o">.</span><span class="n">evalue</span><span class="p">,</span> \
+        <span class="bp">self</span><span class="o">.</span><span class="n">nmismatches</span><span class="p">,</span> \
+        <span class="bp">self</span><span class="o">.</span><span class="n">identity</span><span class="p">,</span> \
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> \
+        <span class="n">qid</span><span class="p">,</span> \
+        <span class="n">gi</span><span class="p">,</span> \
+        <span class="n">ref</span><span class="p">,</span> \
+        <span class="n">ngaps</span><span class="p">,</span> \
+        <span class="n">length</span><span class="p">,</span> \
+        <span class="n">evalue</span><span class="p">,</span> \
+        <span class="n">nmismatches</span><span class="p">,</span> \
+        <span class="n">identity</span><span class="p">,</span> \
+        <span class="n">score</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+<span class="c">#######################################################</span>
+<span class="c">#######################################################</span>
+<span class="c">#######################################################</span>
+
+
+<span class="k">def</span> <span class="nf">alignment_iterator</span><span class="p">(</span><span class="n">alignment_file</span><span class="p">):</span>
+<div class="viewcode-block" id="alignment_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.alignment_iterator">[docs]</a>    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    return an alignment</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c"># replaced .readlines()</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">alignment_file</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;|&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c"># set ref to reference and leave gi as None</span>
+            <span class="n">gi</span><span class="p">,</span> <span class="n">ref</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">ref</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gi</span><span class="p">,</span> <span class="n">ref</span> <span class="o">=</span> <span class="n">ref</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ref</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">read</span><span class="p">,</span> <span class="n">ngaps</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">evalue</span><span class="p">,</span> <span class="n">nmismatches</span><span class="p">,</span> <span class="n">identity</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span>
+        <span class="k">yield</span> <span class="n">Diamond</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">read</span><span class="p">,</span>
+                             <span class="n">gi</span><span class="p">,</span>
+                             <span class="n">ref</span><span class="p">,</span>
+                             <span class="n">ngaps</span><span class="p">,</span>
+                             <span class="n">length</span><span class="p">,</span>
+                             <span class="n">evalue</span><span class="p">,</span>
+                             <span class="n">nmismatches</span><span class="p">,</span>
+                             <span class="n">identity</span><span class="p">,</span>
+                             <span class="n">score</span><span class="p">)</span>
+
+<span class="c">#######################################################</span>
+<span class="c">#######################################################</span>
+<span class="c">#######################################################</span>
+
+
+<span class="k">def</span> <span class="nf">query_iterator</span><span class="p">(</span><span class="n">alignment_iterator</span><span class="p">):</span></div>
+<div class="viewcode-block" id="query_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.query_iterator">[docs]</a>    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    iterate over alignments by query</span>
+<span class="sd">    return a list of alignments</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">reads_found</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">alignments</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">alignment</span> <span class="ow">in</span> <span class="n">alignment_iterator</span><span class="p">:</span>
+        <span class="n">this</span> <span class="o">=</span> <span class="n">alignment</span><span class="o">.</span><span class="n">qid</span>
+        <span class="k">if</span> <span class="n">this</span> <span class="o">!=</span> <span class="n">last</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">last</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">alignments</span>
+            <span class="n">alignments</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">reads_found</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">alignment</span><span class="o">.</span><span class="n">qid</span><span class="p">)</span>
+        <span class="n">alignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alignment</span><span class="p">)</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">this</span>
+    <span class="k">if</span> <span class="n">last</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">alignments</span>
+
+<span class="c">#######################################################</span>
+<span class="c">#######################################################</span>
+<span class="c">#######################################################</span>
+
+
+<span class="k">def</span> <span class="nf">best_alignment_iterator</span><span class="p">(</span><span class="n">query_iterator</span><span class="p">):</span></div>
+<div class="viewcode-block" id="best_alignment_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.best_alignment_iterator">[docs]</a>    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    return stats for best alignment - best is determined</span>
+<span class="sd">    by highest bit score. If there are multiple alignments</span>
+<span class="sd">    with the same score return a random one</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">alignments</span> <span class="ow">in</span> <span class="n">query_iterator</span><span class="p">:</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">alignment</span> <span class="ow">in</span> <span class="n">alignments</span><span class="p">:</span>
+            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alignment</span><span class="o">.</span><span class="n">score</span><span class="p">)</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+        <span class="n">best_alignments</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">alignments</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">score</span> <span class="o">==</span> <span class="n">best</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_alignments</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">best_alignments</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">best_alignments</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">best_alignment</span> <span class="o">=</span> <span class="n">best_alignments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">yield</span> <span class="n">best_alignment</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
+    </div>
+  </body>
+</html>

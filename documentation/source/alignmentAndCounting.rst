@@ -5,7 +5,10 @@ Alignment and counting
 We are picking up the analysis at the point at which raw fastq files have
 been filtered for contaminating adapters, pairs have been flashed and reads
 mapping to rRNA and mouse have been removed. Details of these steps are in the 
-paper. The RNA and DNA analyses were run separately using the same pipeline to avoid 
+paper. Both raw fastq files and processed fastq files are available at the EBI ENA
+under accession number EMTAB-XXXX. 
+
+The RNA and DNA analyses were run separately using the same pipeline to avoid 
 filename conflicts. Therefore if you want to follow some of the analyses then
 it is probably useful to create separate working directories e.g::
 

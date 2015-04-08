@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CGAT.LCA &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for CGAT.LCA</h1><div class="highlight"><pre>
+<span class="c">########################################</span>
+<span class="c">########################################</span>
+<span class="c"># classes and functions for parsing</span>
+<span class="c"># output from lcamapper.sh</span>
+<span class="c">########################################</span>
+<span class="c">########################################</span>
+
+
+<div class="viewcode-block" id="LCA"><a class="viewcode-back" href="../../code.html#CGAT.LCA.LCA">[docs]</a><span class="k">class</span> <span class="nc">LCA</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    lca class describing the taxa associateed with a sequence</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kingdom</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kingdom_plus</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phylum</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phylum_plus</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_class</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_class_plus</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order_plus</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">family_plus</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">genus</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">genus_plus</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">species_plus</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subspecies</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subspecies_plus</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="LCA.parse"><a class="viewcode-back" href="../../code.html#CGAT.LCA.LCA.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        parse the line</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">taxa</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:]:</span>
+            <span class="n">taxa</span> <span class="o">=</span> <span class="n">taxa</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="c"># ignore root</span>
+            <span class="k">if</span> <span class="s">&quot;root&quot;</span> <span class="ow">in</span> <span class="n">taxa</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="s">&quot;[&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">taxa</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">taxa</span> <span class="o">=</span> <span class="n">taxa</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+            <span class="n">level</span><span class="p">,</span> <span class="n">tax</span> <span class="o">=</span> <span class="n">taxa</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">taxa</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tax</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">tax</span> <span class="o">=</span> <span class="s">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tax</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tax</span> <span class="o">=</span> <span class="n">tax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s">&quot;Kingdom+&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kingdom_plus</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Kingdom&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kingdon</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Phylum+&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">phylum_plus</span> <span class="o">=</span> <span class="n">level</span>
+            <span class="k">elif</span> <span class="s">&quot;Phylum&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">phylum</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Class+&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_class_plus</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Class&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_class</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Order+&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">order_plus</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Order&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Family+&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">family_plus</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Family&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Genus+&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">genus_plus</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Genus&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">genus</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Species+&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">species_plus</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Species&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Subspecies+&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subspecies_plus</span> <span class="o">=</span> <span class="n">tax</span>
+            <span class="k">elif</span> <span class="s">&quot;Subspecies&quot;</span> <span class="ow">in</span> <span class="n">level</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subspecies</span> <span class="o">=</span> <span class="n">tax</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kingdom</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kingdom</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kingdom_plus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kingdom_plus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">phylum</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phylum</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">phylum_plus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phylum_plus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_class</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_plus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_class_plus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_plus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">order_plus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">family_plus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">family_plus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">genus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">genus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">genus_plus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">genus_plus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">species_plus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">species_plus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">subspecies</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subspecies</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">subspecies_plus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subspecies_plus</span> <span class="o">=</span> <span class="s">&quot;NA&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+<span class="c">###############################</span>
+<span class="c">###############################</span>
+<span class="c">###############################</span>
+
+</div></div>
+<div class="viewcode-block" id="iterate"><a class="viewcode-back" href="../../code.html#CGAT.LCA.iterate">[docs]</a><span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="n">infile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    LCA results iterator</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">infile</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">lca</span> <span class="o">=</span> <span class="n">LCA</span><span class="p">()</span>
+        <span class="n">lca</span> <span class="o">=</span> <span class="n">lca</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">lca</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Nick Ilott.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
+    </div>
+  </body>
+</html>
