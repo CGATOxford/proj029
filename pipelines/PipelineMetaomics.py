@@ -437,32 +437,32 @@ def plotPCALoadings(infile, outfile):
     R('''p2 + geom_text(data = totext, aes(x = PC1, y = PC2, label = totext$taxa, size = 6)) + xlim(c(-0.5,0.5)) + ylim(c(-0.5,0.25))''')
     R('''ggsave("%s")''' % outfile)
 
-    rna = [x for x in infiles if "RNA" in x][0]
-    dna = [x for x in infiles if "DNA" in x][0]
+    # rna = [x for x in infiles if "RNA" in x][0]
+    # dna = [x for x in infiles if "DNA" in x][0]
 
-    R('''rna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % rna)
-    R('''dna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % dna)
-    R('''rna <- rna[rna$group1 == "HhaIL10R" & rna$group2 == "WT",]''')
-    R('''dna <- dna[dna$group1 == "HhaIL10R" & dna$group2 == "WT",]''')
+    # R('''rna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % rna)
+    # R('''dna <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % dna)
+    # R('''rna <- rna[rna$group1 == "HhaIL10R" & rna$group2 == "WT",]''')
+    # R('''dna <- dna[dna$group1 == "HhaIL10R" & dna$group2 == "WT",]''')
     
-    R('''rownames(rna) <- rna$taxa''')
-    R('''rownames(dna) <- dna$taxa''')
+    # R('''rownames(rna) <- rna$taxa''')
+    # R('''rownames(dna) <- dna$taxa''')
 
-    R('''rna <- rna[,1:ncol(rna)-1]''')
-    R('''dna <- dna[,1:ncol(dna)-1]''')
+    # R('''rna <- rna[,1:ncol(rna)-1]''')
+    # R('''dna <- dna[,1:ncol(dna)-1]''')
 
-    # only look at those that are present in both
-    R('''keep <- intersect(rownames(rna), rownames(dna))''')
-    R('''rna <- rna[keep,]''')
-    R('''dna <- dna[keep,]''')
+    # # only look at those that are present in both
+    # R('''keep <- intersect(rownames(rna), rownames(dna))''')
+    # R('''rna <- rna[keep,]''')
+    # R('''dna <- dna[keep,]''')
 
-    R('''rna.ratio <- rna$logFC''')
-    R('''dna.ratio <- dna$logFC''')
-    R('''rna.p <- rna$adj.P.Val''')
-    R('''dna.p <- dna$adj.P.Val''')
+    # R('''rna.ratio <- rna$logFC''')
+    # R('''dna.ratio <- dna$logFC''')
+    # R('''rna.p <- rna$adj.P.Val''')
+    # R('''dna.p <- dna$adj.P.Val''')
     
-    R('''ratio <- data.frame(gene = keep, dna = dna.ratio, rna = rna.ratio, pdna = dna.p, prna = rna.p, ratio = rna.ratio - dna.ratio)''')
-    R('''write.table(ratio, file = "%s", sep = "\t", row.names = F, quote = F)''' % outfile)
+    # R('''ratio <- data.frame(gene = keep, dna = dna.ratio, rna = rna.ratio, pdna = dna.p, prna = rna.p, ratio = rna.ratio - dna.ratio)''')
+    # R('''write.table(ratio, file = "%s", sep = "\t", row.names = F, quote = F)''' % outfile)
 
 ####################################################
 ####################################################
