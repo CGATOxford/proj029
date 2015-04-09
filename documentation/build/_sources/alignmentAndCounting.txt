@@ -6,14 +6,24 @@ We are picking up the analysis at the point at which raw fastq files have
 been filtered for contaminating adapters, pairs have been flashed and reads
 mapping to rRNA and mouse have been removed. Details of these steps are in the 
 paper. Both raw fastq files and processed fastq files are available at the EBI ENA
-under accession number EMTAB-XXXX. 
+under accession number EMTAB-XXXX so the analysis can be run without having to 
+perform the pre-processing steps yourself::
 
-The RNA and DNA analyses were run separately using the same pipeline to avoid 
-filename conflicts. Therefore if you want to follow some of the analyses then
-it is probably useful to create separate working directories e.g::
+    NOTE: The alignment and counting steps can take a long time and large amount of memory. If
+    you do not want to run these steps then we have provided the counts tables for genera
+    and functional groups (NOGs) - see bottom of this page.
+
+
+The RNA and DNA analyses were run separately using the same pipeline. For the our
+purposes we will run the analyses separately in two separate directories. Create these
+directories::
 
     $ mkdir RNA
     $ mkdir DNA 
+
+
+Now download the .fastq files from the EBI ENA into their respective directories.
+
 
 
 Alignment
@@ -21,15 +31,20 @@ Alignment
 
 The first step in the analysis is to assign reads to taxa and functional groups.
 In order to do this we need some databases. We have used the NCBI non-redundant
-protein database (`nr`_) for taxanomic purposes and the integrated gene catalogue
-(`IGC`_) for assessing functions.
+protein database (`nr`_) for taxonomic purposes and the integrated gene catalogue
+(`IGC`_) for assessing functions. Download these into a directory of your choice::
+
+    $ mkdir databases
+    $ cd databases
+    $ wget ftp://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nr.gz
+    $ wget ftp://climb.genomics.cn/pub/10.5524/100001_101000/100064/1.GeneCatalogs/IGC.pep.gz
 
 .. _nr: ftp://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nr.gz
 
 .. _IGC: ftp://climb.genomics.cn/pub/10.5524/100001_101000/100064/1.GeneCatalogs/IGC.pep.gz
 
 
-We used DIAMOND to align sequences to the reference databases so first we built
+We used DIAMOND to align sequences to the reference databases so first we build
 database indexes::
 
     $ diamond makedb --db nr --in nr --threads 16
@@ -39,13 +54,14 @@ and::
     $ diamond makedb --db igc --in IGC.pep --threads 16
 
 
-
-NOTE: DIAMOND takes uncompressed files as input
-
+NOTE: DIAMOND takes uncompressed files as input so you will need to unzip first
 
 Next we ran the alignment for each fastq file (reads) to each database 
 (fastq files need to be converted to fasta format first e.g. using `fastx toolkit`_). As 
 an example:
+
+    # change into the RNA directory (contains raw data) for example
+    $ cd RNA
 
 conversion::
 
@@ -53,10 +69,10 @@ conversion::
 
 alignment::
 
-    $ diamond blastx --db nr --query stool-HhaIL10R-R1.fasta -o stool-HhaIL10R-R1.diamond.tsv
+    $ diamond blastx --db ../databases/nr --query stool-HhaIL10R-R1.fasta -o stool-HhaIL10R-R1.diamond.tsv
 
 
-This was done for each sample (DNA-seq and RNA-seq) against each data base resulting in
+This was done for each sample (DNA-seq and RNA-seq) against each database, resulting in
 
 16x DNA-seq to nr
 
@@ -75,28 +91,33 @@ with and without colitis. In order to do that we first needed to count the numbe
 reads that mapped to each genus and each functional category. This is where the analysis
 of taxonomy and function diverge. 
 
-
-For taxnomic profiling We used the lowest common ancestor approach (LCA) to 
+For taxonomic profiling We used the lowest common ancestor approach (LCA) to 
 assign reads to genera implemented using lcamapper.sh from mtools (see dependencies). This 
 requires the mapping file of gi number to taxonomy id that is distributed with mtools so for each 
-sample for both DNA and RNA data sets we do for example::
+sample for both DNA and RNA data sets we did for example::
 
     $ lcamapper.sh -i stool-HhaIL10R-R1.diamond.tsv -f Detect -ms 50 -me 0.01 -tp 50 -gt gi_taxid_prot.bin -o stool-HhaIL10R-R1.lca
 
 Again each file that was aligned to the ncbi nr database is used as input to lcamapper.sh. To obtain counts per
-genus we use the lca2table.py script that is in the scripts/ directory of this repository::
+genus (we used genus level analysis throughout) we use the lca2table.py script that is in the scripts/ directory 
+of the `CGATOxford/cgat`_ repository::
 
-    $ cat stool-HhaIL10R-R1.lca | python scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.counts.tsv.log > stool-HhaIL10R-R1.counts.tsv
+    $ cat stool-HhaIL10R-R1.lca | python cgat/scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.counts.tsv.log > stool-HhaIL10R-R1.counts.tsv
+
+
+.. _CGATOxford/cgat: https://github.com/CGATOxford/cgat 
 
  
 At this point each file that contains taxa counts is loaded into an sqlite database. This makes subsetting etc easier
-downstream. We use the Pipeline.py module from the CGAT code collection to load the tables. As I mentioned
+downstream. We use the Pipeline.py module from the `CGATOxford/CGATPipelines`_ repository to load the tables. As I mentioned
 these analyses are wrapped up in ruffus pipelines and are therefore in python scripts. However to 
 load the table from python we simply do::
 
-
-    >> import CGAT.Pipeline as P
+    >> import CGATPipelines.Pipeline as P
     >> P.load("stool-HhaIL10R-R1.lca", "stool-HhaIL10R-R1.lca.load")
+
+
+.. _CGATOxford/CGATPipelines: https://github.com/CGATOxford/CGATPipelines 
 
 This will create a database called "csvdb" in the working directory and will have loaded the table
 stool_HhaIL10R_R1_lca. In our analyses we were interested in genus abundances and so we create
@@ -119,26 +140,41 @@ for each column in the resulting combined table::
              --columns=1                    
              --take=count                    
              --glob=*.lca.counts.tsv 
-             --prefixes=stool-HhaIL10R-R4.lca,
-                        stool-HhaIL10R-R3.lca, 
-                        stool-Hh-R4.lca,
-                        stool-Hh-R3.lca,
-                        stool-WT-R4.lca,
-                        stool-aIL10R-R1.lca,
-                        stool-WT-R3.lca,
-                        stool-WT-R2.lca,
-                        stool-aIL10R-R4.lca,
-                        stool-Hh-R2.lca,
-                        stool-Hh-R1.lca,
-                        stool-aIL10R-R2.lca,
-                        stool-WT-R1.lca,
-                        stool-HhaIL10R-R1.lca,
-                        stool-HhaIL10R-R2.lca,
-                        stool-aIL10R-R3.lca 
+             --prefixes=stool-HhaIL10R-R4,
+                        stool-HhaIL10R-R3, 
+                        stool-Hh-R4,
+                        stool-Hh-R3,
+                        stool-WT-R4,
+                        stool-aIL10R-R1,
+                        stool-WT-R3,
+                        stool-WT-R2,
+                        stool-aIL10R-R4,
+                        stool-Hh-R2,
+                        stool-Hh-R1,
+                        stool-aIL10R-R2,
+                        stool-WT-R1,
+                        stool-HhaIL10R-R1,
+                        stool-HhaIL10R-R2,
+                        stool-aIL10R-R3 
      | gzip > genus.diamond.aggregated.counts.tsv.gz
 
 
-Again we do this for both RNA and DNA data sets. 
+Again we do this for both RNA and DNA data sets. This produces a table (truncated for visual reasons)::
+    
+    +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
+    |taxa             |stool-WT-R1_count|stool-WT-R3_count|stool-aIL10R-R1_count|stool-Hh-R2_count|stool-Hh-R1_count|stool-HhaIL10R-R4_count|
+    +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
+    |Methylobacillus  |228              |517              |560                  |406              |201              |353                    |
+    +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
+    |Methanosphaera   |98               |224              |194                  |175              |65               |132                    |
+    +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
+    |Desulfarculus    |3                |6                |12                   |2                |5                |2                      |
+    +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
+    |Polaromonas      |859              |2021             |2034                 |1111             |616              |1806                   |
+    +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
+    |Caldanaerobacter |3330             |5367             |5847                 |3645             |2072             |6571                   |
+    +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
+
 
 
 The next task is to produce a counts table similar to the one above but for functions. We have aligned to the IGC and we use
@@ -155,14 +191,49 @@ we use the diamond2counts.py script in the scripts/ directory. The input is the 
                                         | gzip > stool-HhaIL10R-R1.nogs.counts.tsv.gz
 
 
-Again, we combine tables for each sample into a final counts table using combine_tables.py. Now we have count tables for genera and
-NOGs for both metagenomic and metatranscriptomic data we can start doing some analysis.
+Again, we combine tables for each sample into a final counts table using combine_tables.py to give::
 
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |ref         |stool-HhaIL10R-R4.diamond_count|stool-HhaIL10R-R3.diamond_count|stool-Hh-R4.diamond_count|stool-Hh-R3.diamond_count|stool-WT-R4.diamond_count|stool-aIL10R-R1.diamond_count|
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |NOG243840   |2                              |4                              |6                        |10                       |1                        |0                            |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |NOG281778   |1                              |5                              |4                        |4                        |2                        |1                            |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |NOG41625    |113                            |744                            |414                      |1273                     |404                      |567                          |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |bactNOG18808|1                              |2                              |8                        |8                        |15                       |21                           |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |COG3010     |2118                           |2395                           |1061                     |1738                     |2483                     |1043                         |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |proNOG56664 |7                              |2                              |3                        |2                        |4                        |5                            |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |COG3012     |15                             |60                             |34                       |101                      |38                       |22                           |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |COG3014     |27                             |18                             |32                       |92                       |41                       |17                           |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    |COG3015     |13                             |298                            |91                       |206                      |73                       |1148                         |
+    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+
+
+
+
+Now we have count tables for genera and NOGs for both metagenomic and metatranscriptomic data we can start doing some analysis.
 
 So to recap, in our working directories, DNA/ and RNA/ we now have count tables for alignments to genera and NOGs. Given the large 
 sizes of raw and alignment files these have been deposited at the EBI ENA (ADD LINK). However for reproducing our downstream analysis
-we have provided the count tables in the data/ directory.
+we have provided the count tables in the data/DNA/ and data/RNA/ directories (genus.diamond.aggregated.counts.tsv.gz and gene_counts.tsv.gz).
+These can therefore be used for downstream analysis. 
 
+If you have not run the above steps yourself then link to the counts tables we have provided::
+
+    $ cd RNA
+    $ ln -s ../data/RNA/genus.diamond.aggregated.counts.tsv.gz .
+    $ ln -s ../data/RNA/gene_counts.tsv.gz .
+
+    $ cd ../DNA
+    $ ln -s ../data/RNA/genus.diamond.aggregated.counts.tsv.gz .
+    $ ln -s ../data/RNA/gene_counts.tsv.gz .
 
 
 .. _fastx toolkit: http://hannonlab.cshl.edu/fastx_toolkit/

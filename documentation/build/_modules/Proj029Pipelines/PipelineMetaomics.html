@@ -8,7 +8,7 @@
     
     <title>Proj029Pipelines.PipelineMetaomics &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -398,7 +398,8 @@
 <span class="s">                               &quot;dna.common_vs_rna.distinct&quot; = wtest4$p.value,</span>
 <span class="s">                               &quot;dna.common_vs_rna.common&quot; = wtest5$p.value)&#39;&#39;&#39;</span><span class="p">)</span>
 
-    <span class="n">outname_sig</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.pdf&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.sig&quot;</span>
+    <span class="n">outname_sig</span> <span class="o">=</span> <span class="n">outfile</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;.sig&quot;</span>
+    
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(res, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, row.names = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, quote = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outname_sig</span><span class="p">)</span>
 
     <span class="c"># create dataframe for plotting</span>

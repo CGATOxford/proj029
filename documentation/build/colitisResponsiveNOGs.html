@@ -8,7 +8,7 @@
     
     <title>Defining colitis-dependent NOGs &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -35,6 +35,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="code.html" title="Code"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -51,39 +54,37 @@
             
   <div class="section" id="defining-colitis-dependent-nogs">
 <h1>Defining colitis-dependent NOGs<a class="headerlink" href="#defining-colitis-dependent-nogs" title="Permalink to this headline">¶</a></h1>
-<p>We can run the overlap analyses and PCA for NOGs as we did for genera (DNA) in the previous sections (in the comparison.dir/).
+<p>Create a link to the goi.tsv file in the data/ directory. This will become clearer in a little while:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ln -s ../data/goi.tsv .
+</pre></div>
+</div>
+<p>We can run the overlap analyses and PCA for NOGs as we did for genera (DNA) in the previous sections (in the compare_datasets/ directory).
 We won&#8217;t therefore go over the same functions.</p>
 <p>Out metagenomeSeq analysis was performed on NOGs and we identified 1221 and 669 NOGs to be differentially abundant in
 metagenomic and metatranscriptomic data sets, respectively. The overlap between these sets suggested that there were
-some NOGs that were transcriptionally activated in colitis, leadingus to hypothesise that these were due to responses
+some NOGs that were transcriptionally activated in colitis, leading us to hypothesise that these were due to responses
 by bacteria to an alteration in the gut niche.</p>
-<p>A few tasks were performed before we produced Fig. 2f - some of which did not end up in the manuscript. For example we
+<p>A few tasks were performed before we produced Fig. 2g - some of which did not end up in the manuscript. For example we
 built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the comparison.dir:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetaomics
-&gt;&gt; PipelineMetaomics.buildRNADNARatio(&quot;&lt;path&gt;/DNA/gene_counts.diff.tsv&quot;,
-                                      &quot;&lt;path&gt;/DNA/gene_counts.diff.tsv&quot;,
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
+&gt;&gt; PipelineMetaomics.buildRNADNARatio(&quot;../DNA/gene_counts.diff.tsv&quot;,
+                                      &quot;../RNA/gene_counts.diff.tsv&quot;,
                                       &quot;rna_dna_ratio.tsv&quot;)
 </pre></div>
 </div>
 <p>Then we built a list of NOGs that were common between the DNA and RNA data sets from the databases that contain
 tables of differential expression results. First load the tables:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import CGAT.Pipeline as P
-&gt;&gt; P.load(&quot;&lt;path&gt;/DNA/genus_diamond_aggregated_counts_diff&quot;, &quot;&lt;path&gt;/DNA/genus_diamond_aggregated_counts_diff.load&quot;)
-&gt;&gt; P.load(&quot;&lt;path&gt;/RNA/genus_diamond_aggregated_counts_diff&quot;, &quot;&lt;path&gt;/DNA/genus_diamond_aggregated_counts_diff.load&quot;)
-</pre></div>
-</div>
-<p>then:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildCommonGeneList(&quot;&lt;path&gt;/RNA/csvdb&quot;,
-                                         &quot;&lt;path&gt;/DNA/csvdb&quot;,
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildCommonList(&quot;../RNA/csvdb&quot;,
+                                         &quot;../DNA/csvdb&quot;,
                                          &quot;common_genes.tsv&quot;)
 </pre></div>
 </div>
 <p>then we build the differentially abundant NOGs list from database (Hh + aIL10R vs. Steady state):</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;&lt;path&gt;/RNA/csvdb&quot;,
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;../RNA/csvdb&quot;,
                                        &quot;common_genes.tsv&quot;,
                                        &quot;rna_diff_genes.tsv&quot;)
 
-&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;&lt;path&gt;/DNA/csvdb&quot;,
+&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;../DNA/csvdb&quot;,
                                        &quot;common_genes.tsv&quot;,
                                        &quot;dna_diff_genes.tsv&quot;)
 </pre></div>
@@ -92,19 +93,23 @@ tables of differential expression results. First load the tables:</p>
 in DNA, RNA or both data sets:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.annotateRNADNARatio(&quot;rna_dna_ratio.tsv&quot;,
                                          &quot;dna_diff_genes.tsv&quot;,
-                                         &quot;rna_diff_genes.tsv&quot;,
-                                         &quot;rna_dna_ratio.annotated.tsv&quot;)
 </pre></div>
 </div>
-<p>and we plot the DNA and RNA fold chagnes, fit a linear model and plot the 95% predition intervals. There is
+<dl class="docutils">
+<dt>1                                             &#8220;rna_diff_genes.tsv&#8221;,</dt>
+<dd>&#8220;rna_dna_ratio.annotated.tsv&#8221;)</dd>
+</dl>
+<p>and we plot the DNA and RNA fold changes, fit a linear model and plot the 95% prediction intervals. There is
 a little bit of sneakyness here as before we created the final plot we found NOGs of interest. This function
 picks up a file called goi.tsv that contains annotations for the plot. These annotations are for NOGs that
 are annotated as being involved in oxidative stress resistance and are up-regulated in metatranscriptomic
 data and defined as colitis-responsive (lying outside of the 95% prediction interval for the model fit):</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.PlotSets(&quot;rna_dna_ratio.annotated.tsv&quot;,
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotSets(&quot;rna_dna_ratio.annotated.tsv&quot;,
                               &quot;rna_dna_ratio.annotated.png&quot;)
 </pre></div>
 </div>
+<p>This will produce Fig.2g.</p>
+<a class="reference internal image-reference" href="_images/rna_dna_ratio.annotated.png"><img alt="_images/rna_dna_ratio.annotated.png" class="align-center" src="_images/rna_dna_ratio.annotated.png" style="width: 400pt; height: 400pt;" /></a>
 <p>And that is Fig. 2 done!</p>
 </div>
 
@@ -153,6 +158,9 @@ data and defined as colitis-responsive (lying outside of the 95% prediction inte
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="code.html" title="Code"
              >next</a> |</li>

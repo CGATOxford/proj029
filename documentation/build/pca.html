@@ -8,7 +8,7 @@
     
     <title>Principle components analysis &mdash; Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -35,6 +35,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -56,28 +59,28 @@ and NOG (metagenomics and metatranscriptomics). As this is done separately for e
 DNA/ and RNA/ directories we created to run the functions. Below we show the functions we ran to produce the figures and to
 test significance of sample clustering using the PERMANOVA implemented in the adonis test (vegan).</p>
 <p>In Fig. 1 we looked at genus abundances. Below is a representative example for the RNA analysis. This function
-produces the PCA plot for components 1 and 2 and also outputs the loadings. The name of the plot is consistent
-with the name of the loadings outfile (apologies but the outfile must end in .loadings.tsv). You must be in
+produces the PCA plot (genus.diamond.aggregated.counts.pca.png) for components 1 and 2 and also outputs the loadings.
+The name of the plot is consistent with the name of the loadings outfile (apologies but the outfile must end in .loadings.tsv). You must be in
 the directory where you want the files to be produced, otherwise there will be an error:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetaomics
-&gt;&gt; PipelineMetaomics.runPCA(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;dna_genus.diamond.aggregated.counts.loadings.tsv&quot;)
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
+&gt;&gt; PipelineMetaomics.runPCA(&quot;genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;genus.diamond.aggregated.counts.loadings.tsv&quot;)
 </pre></div>
 </div>
 <p>And produces the following plot.</p>
-<a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.pca.png"><img alt="_images/genus.diamond.aggregated.counts.pca.png" class="align-center" src="_images/genus.diamond.aggregated.counts.pca.png" style="width: 300pt; height: 300pt;" /></a>
+<a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.pca.png"><img alt="_images/genus.diamond.aggregated.counts.pca.png" class="align-center" src="_images/genus.diamond.aggregated.counts.pca.png" style="width: 400pt; height: 400pt;" /></a>
 <p>The adonis test in the module PipelineMetagenomeCommunities.py was run to test for significant clustering of conditions:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import PipelineMetagenomeCommunities
-&gt;&gt; PipelineMetagenomeCommunities.testDistSignificance(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;dna_genus.diamond.aggregated.counts.norm.permanova.sig&quot;)
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import CGATPipelines.PipelineMetagenomeCommunities as PipelineMetagenomeCommunities
+&gt;&gt; PipelineMetagenomeCommunities.testDistSignificance(&quot;genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;genus.diamond.aggregated.counts.norm.permanova.sig&quot;)
 </pre></div>
 </div>
 <p>The file &#8220;genus.diamond.aggregated.counts.norm.permanova.sig&#8221; contains the model fit and significance p-value.</p>
 <p>As we did not see much in the way of significant difference of individual genera in our metagenomeSeq analysis we were
 interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) using the following function:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotPCALoadings(&quot;&lt;path&gt;/DNA/genus.diamond.aggregated.counts.loadings.tsv&quot;, &quot;dna_genus.diamond.aggregated.counts.loadings.png&quot;)
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotPCALoadings(&quot;genus.diamond.aggregated.counts.loadings.tsv&quot;, &quot;genus.diamond.aggregated.counts.loadings.png&quot;)
 </pre></div>
 </div>
 <p>This will produce the following plot</p>
-<a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.loadings.png"><img alt="_images/genus.diamond.aggregated.counts.loadings.png" class="align-center" src="_images/genus.diamond.aggregated.counts.loadings.png" style="width: 300pt; height: 300pt;" /></a>
+<a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.loadings.png"><img alt="_images/genus.diamond.aggregated.counts.loadings.png" class="align-center" src="_images/genus.diamond.aggregated.counts.loadings.png" style="width: 400pt; height: 400pt;" /></a>
 <p>And that is Fig. 1 and half of Fig. 2 done!</p>
 </div>
 
@@ -126,6 +129,9 @@ interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) 
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
              >next</a> |</li>
