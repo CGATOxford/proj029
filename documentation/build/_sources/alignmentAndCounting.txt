@@ -102,19 +102,20 @@ Again each file that was aligned to the ncbi nr database is used as input to lca
 genus (we used genus level analysis throughout) we use the lca2table.py script that is in the scripts/ directory 
 of the `CGATOxford/cgat`_ repository::
 
-    $ cat stool-HhaIL10R-R1.lca | python cgat/scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.counts.tsv.log > stool-HhaIL10R-R1.counts.tsv
+    $ cat stool-HhaIL10R-R1.lca | python cgat/scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.lca.counts.tsv.log > stool-HhaIL10R-R1.lca.counts.tsv
 
 
 .. _CGATOxford/cgat: https://github.com/CGATOxford/cgat 
 
  
 At this point each file that contains taxa counts is loaded into an sqlite database. This makes subsetting etc easier
-downstream. We use the Pipeline.py module from the `CGATOxford/CGATPipelines`_ repository to load the tables. As I mentioned
-these analyses are wrapped up in ruffus pipelines and are therefore in python scripts. However to 
-load the table from python we simply do::
+downstream. We use the c2v2db.py script from cgat/ respository to do this::
 
-    >> import CGATPipelines.Pipeline as P
-    >> P.load("stool-HhaIL10R-R1.lca", "stool-HhaIL10R-R1.lca.load")
+    $ cat stool-HhaIL10R-R1.counts.tsv | python cgat/scripts/csv2db.py
+                                    --backend=sqlite 
+                                    --retry                              
+                                    --table=stool_HhaIL10R_R1_lca_counts
+                                    > stool-HhaIL10R-R1.lca.counts.tsv.load
 
 
 .. _CGATOxford/CGATPipelines: https://github.com/CGATOxford/CGATPipelines 
@@ -123,7 +124,7 @@ This will create a database called "csvdb" in the working directory and will hav
 stool_HhaIL10R_R1_lca. In our analyses we were interested in genus abundances and so we create
 flat files from the database simply by::
 
-   $ sqlite3 csvdb 'SELECT taxa, count FROM stool_HhaIL10R_R1_lca WHERE taxa == "genus"' > stool-HhaIL10R-R1.lca.counts.tsv
+   $ sqlite3 csvdb 'SELECT taxa, count FROM stool_HhaIL10R_R1_lca_counts WHERE taxa == "genus"' > stool-HhaIL10R-R1.lca.counts.tsv
 
 
 Next we combine counts for each sample into a single table with rows as genera and samples as columns. We use a convenient
@@ -159,11 +160,11 @@ for each column in the resulting combined table::
      | gzip > genus.diamond.aggregated.counts.tsv.gz
 
 
-Again we do this for both RNA and DNA data sets. This produces a table (truncated for visual reasons)::
+Again we do this for both RNA and DNA data sets. This produces a table (truncated for visual reasons)
     
     +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
     |taxa             |stool-WT-R1_count|stool-WT-R3_count|stool-aIL10R-R1_count|stool-Hh-R2_count|stool-Hh-R1_count|stool-HhaIL10R-R4_count|
-    +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
+    +=================+=================+=================+=====================+=================+=================+=======================+
     |Methylobacillus  |228              |517              |560                  |406              |201              |353                    |
     +-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
     |Methanosphaera   |98               |224              |194                  |175              |65               |132                    |
@@ -191,11 +192,11 @@ we use the diamond2counts.py script in the scripts/ directory. The input is the 
                                         | gzip > stool-HhaIL10R-R1.nogs.counts.tsv.gz
 
 
-Again, we combine tables for each sample into a final counts table using combine_tables.py to give::
+Again, we combine tables for each sample into a final counts table using combine_tables.py to give
 
     +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
     |ref         |stool-HhaIL10R-R4.diamond_count|stool-HhaIL10R-R3.diamond_count|stool-Hh-R4.diamond_count|stool-Hh-R3.diamond_count|stool-WT-R4.diamond_count|stool-aIL10R-R1.diamond_count|
-    +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
+    +============+===============================+===============================+=========================+=========================+=========================+=============================+
     |NOG243840   |2                              |4                              |6                        |10                       |1                        |0                            |
     +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
     |NOG281778   |1                              |5                              |4                        |4                        |2                        |1                            |
@@ -225,15 +226,43 @@ sizes of raw and alignment files these have been deposited at the EBI ENA (ADD L
 we have provided the count tables in the data/DNA/ and data/RNA/ directories (genus.diamond.aggregated.counts.tsv.gz and gene_counts.tsv.gz).
 These can therefore be used for downstream analysis. 
 
-If you have not run the above steps yourself then link to the counts tables we have provided::
+If you have not run the above steps yourself then link to the counts tables we have provided and load into the csvdb database.
+
+For RNA::
 
     $ cd RNA
     $ ln -s ../data/RNA/genus.diamond.aggregated.counts.tsv.gz .
     $ ln -s ../data/RNA/gene_counts.tsv.gz .
+    $ zcat genus.diamond.aggregated.counts.tsv.gz | python cgat/scripts/csv2db.py
+                                                    --backend=sqlite 
+                                                    --retry                              
+                                                    --table=genus_diamond_aggregated_counts
+                                                    > genus.diamond.aggregated.counts.tsv.gz.load
+
+    $ zcat gene_counts.tsv.gz | python cgat/scripts/csv2db.py
+                                --backend=sqlite 
+                                --retry                              
+                                --table=gene_counts
+                                > gene_counts.tsv.gz.load
+
+
+For DNA::
 
     $ cd ../DNA
-    $ ln -s ../data/RNA/genus.diamond.aggregated.counts.tsv.gz .
-    $ ln -s ../data/RNA/gene_counts.tsv.gz .
+    $ ln -s ../data/DNA/genus.diamond.aggregated.counts.tsv.gz .
+    $ ln -s ../data/DNA/gene_counts.tsv.gz .
+    $ zcat genus.diamond.aggregated.counts.tsv.gz | python cgat/scripts/csv2db.py
+                                                    --backend=sqlite 
+                                                    --retry                              
+                                                    --table=genus_diamond_aggregated_counts
+                                                    > genus.diamond.aggregated.counts.tsv.gz.load
+
+
+    $ zcat gene_counts.tsv.gz | python cgat/scripts/csv2db.py
+                                --backend=sqlite 
+                                --retry                              
+                                --table=gene_counts
+                                > gene_counts.tsv.gz.load
 
 
 .. _fastx toolkit: http://hannonlab.cshl.edu/fastx_toolkit/

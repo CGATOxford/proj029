@@ -604,7 +604,7 @@ def buildCountTaxaInCogsRNA(infiles, outfile):
     alignment_taxa = [
         x for x in infiles[1] if os.path.basename(x).startswith(track)][0]
 
-    statement = '''python %(projscripts)s/diff2genera.py 
+    statement = '''python %(projscripts)s/nogs2genera.py 
                    -m %(m)s
                    -d rna_dna_ratio.dir/ratio_genes.annotated.list
                    --alignment-taxa=%(alignment_taxa)s
@@ -661,7 +661,7 @@ def buildProportionTaxaInCogsRNA(infiles, outfile):
     track = P.snip(os.path.basename(alignment_genes), ".diamond.genes.tsv.gz")
     alignment_taxa = [x for x in infiles[1] if os.path.basename(x).startswith(track)][0]
 
-    statement = '''python %(projscripts)s/diff2genera.py 
+    statement = '''python %(projscripts)s/nogs2genera.py 
                    -m %(m)s
                    -d rna_dna_ratio.dir/ratio_genes.annotated.list
                    --alignment-taxa=%(alignment_taxa)s
@@ -733,7 +733,7 @@ def buildCountTaxaInCogsDNA(infiles, outfile):
     alignment_taxa = [
         x for x in infiles[1] if os.path.basename(x).startswith(track)][0]
 
-    statement = '''python %(projscripts)s/diff2genera.py 
+    statement = '''python %(projscripts)s/nogs2genera.py 
                    -m %(m)s
                    -d rna_dna_ratio.dir/ratio_genes.annotated.list
                    --alignment-taxa=%(alignment_taxa)s

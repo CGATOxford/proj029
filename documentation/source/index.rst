@@ -15,8 +15,10 @@ Contents:
    alignmentAndCounting.rst
    metagenomeseq.rst
    compareDatasets.rst
+   metagenomeseq_restrict.rst
    pca.rst
    colitisResponsiveNOGs.rst
+   assigningNogsToGenera.rst
    code.rst
 
 Indices and tables

@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
-    <link rel="next" title="MetagenomeSeq Normalisation" href="metagenomeseq.html" />
+    <link rel="next" title="Comparing metagenomic and metatranscriptomic data sets" href="compareDatasets.html" />
     <link rel="prev" title="Introduction" href="introduction.html" /> 
   </head>
   <body role="document">
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="metagenomeseq.html" title="MetagenomeSeq Normalisation"
+          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="introduction.html" title="Introduction"
@@ -131,21 +131,22 @@ sample for both DNA and RNA data sets we did for example:</p>
 <p>Again each file that was aligned to the ncbi nr database is used as input to lcamapper.sh. To obtain counts per
 genus (we used genus level analysis throughout) we use the lca2table.py script that is in the scripts/ directory
 of the <a class="reference external" href="https://github.com/CGATOxford/cgat">CGATOxford/cgat</a> repository:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cat stool-HhaIL10R-R1.lca | python cgat/scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.counts.tsv.log &gt; stool-HhaIL10R-R1.counts.tsv
+<div class="highlight-python"><div class="highlight"><pre>$ cat stool-HhaIL10R-R1.lca | python cgat/scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.lca.counts.tsv.log &gt; stool-HhaIL10R-R1.lca.counts.tsv
 </pre></div>
 </div>
 <p>At this point each file that contains taxa counts is loaded into an sqlite database. This makes subsetting etc easier
-downstream. We use the Pipeline.py module from the <a class="reference external" href="https://github.com/CGATOxford/CGATPipelines">CGATOxford/CGATPipelines</a> repository to load the tables. As I mentioned
-these analyses are wrapped up in ruffus pipelines and are therefore in python scripts. However to
-load the table from python we simply do:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import CGATPipelines.Pipeline as P
-&gt;&gt; P.load(&quot;stool-HhaIL10R-R1.lca&quot;, &quot;stool-HhaIL10R-R1.lca.load&quot;)
+downstream. We use the c2v2db.py script from cgat/ respository to do this:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cat stool-HhaIL10R-R1.counts.tsv | python cgat/scripts/csv2db.py
+                                --backend=sqlite
+                                --retry
+                                --table=stool_HhaIL10R_R1_lca_counts
+                                &gt; stool-HhaIL10R-R1.lca.counts.tsv.load
 </pre></div>
 </div>
 <p>This will create a database called &#8220;csvdb&#8221; in the working directory and will have loaded the table
 stool_HhaIL10R_R1_lca. In our analyses we were interested in genus abundances and so we create
 flat files from the database simply by:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sqlite3 csvdb &#39;SELECT taxa, count FROM stool_HhaIL10R_R1_lca WHERE taxa == &quot;genus&quot;&#39; &gt; stool-HhaIL10R-R1.lca.counts.tsv
+<div class="highlight-python"><div class="highlight"><pre>$ sqlite3 csvdb &#39;SELECT taxa, count FROM stool_HhaIL10R_R1_lca_counts WHERE taxa == &quot;genus&quot;&#39; &gt; stool-HhaIL10R-R1.lca.counts.tsv
 </pre></div>
 </div>
 <p>Next we combine counts for each sample into a single table with rows as genera and samples as columns. We use a convenient
@@ -178,22 +179,72 @@ for each column in the resulting combined table:</p>
  | gzip &gt; genus.diamond.aggregated.counts.tsv.gz
 </pre></div>
 </div>
-<p>Again we do this for both RNA and DNA data sets. This produces a table (truncated for visual reasons):</p>
-<div class="highlight-python"><div class="highlight"><pre>+-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
-|taxa             |stool-WT-R1_count|stool-WT-R3_count|stool-aIL10R-R1_count|stool-Hh-R2_count|stool-Hh-R1_count|stool-HhaIL10R-R4_count|
-+-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
-|Methylobacillus  |228              |517              |560                  |406              |201              |353                    |
-+-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
-|Methanosphaera   |98               |224              |194                  |175              |65               |132                    |
-+-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
-|Desulfarculus    |3                |6                |12                   |2                |5                |2                      |
-+-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
-|Polaromonas      |859              |2021             |2034                 |1111             |616              |1806                   |
-+-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
-|Caldanaerobacter |3330             |5367             |5847                 |3645             |2072             |6571                   |
-+-----------------+-----------------+-----------------+---------------------+-----------------+-----------------+-----------------------+
-</pre></div>
-</div>
+<p>Again we do this for both RNA and DNA data sets. This produces a table (truncated for visual reasons)</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="16%" />
+<col width="13%" />
+<col width="13%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">taxa</th>
+<th class="head">stool-WT-R1_count</th>
+<th class="head">stool-WT-R3_count</th>
+<th class="head">stool-aIL10R-R1_count</th>
+<th class="head">stool-Hh-R2_count</th>
+<th class="head">stool-Hh-R1_count</th>
+<th class="head">stool-HhaIL10R-R4_count</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Methylobacillus</td>
+<td>228</td>
+<td>517</td>
+<td>560</td>
+<td>406</td>
+<td>201</td>
+<td>353</td>
+</tr>
+<tr class="row-odd"><td>Methanosphaera</td>
+<td>98</td>
+<td>224</td>
+<td>194</td>
+<td>175</td>
+<td>65</td>
+<td>132</td>
+</tr>
+<tr class="row-even"><td>Desulfarculus</td>
+<td>3</td>
+<td>6</td>
+<td>12</td>
+<td>2</td>
+<td>5</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>Polaromonas</td>
+<td>859</td>
+<td>2021</td>
+<td>2034</td>
+<td>1111</td>
+<td>616</td>
+<td>1806</td>
+</tr>
+<tr class="row-even"><td>Caldanaerobacter</td>
+<td>3330</td>
+<td>5367</td>
+<td>5847</td>
+<td>3645</td>
+<td>2072</td>
+<td>6571</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
 <p>The next task is to produce a counts table similar to the one above but for functions. We have aligned to the IGC and we use
 their annotations of eggNOG functions (NOGs) as the features to be counted. For counting per NOG, we extract the best hit DIAMOMD alignment
 for eac read, map the gene to NOG using an additional mapping file and count. To produce a count table for a single sample
@@ -206,43 +257,143 @@ we use the diamond2counts.py script in the scripts/ directory. The input is the 
                                     | gzip &gt; stool-HhaIL10R-R1.nogs.counts.tsv.gz
 </pre></div>
 </div>
-<p>Again, we combine tables for each sample into a final counts table using combine_tables.py to give:</p>
-<div class="highlight-python"><div class="highlight"><pre>+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|ref         |stool-HhaIL10R-R4.diamond_count|stool-HhaIL10R-R3.diamond_count|stool-Hh-R4.diamond_count|stool-Hh-R3.diamond_count|stool-WT-R4.diamond_count|stool-aIL10R-R1.diamond_count|
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|NOG243840   |2                              |4                              |6                        |10                       |1                        |0                            |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|NOG281778   |1                              |5                              |4                        |4                        |2                        |1                            |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|NOG41625    |113                            |744                            |414                      |1273                     |404                      |567                          |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|bactNOG18808|1                              |2                              |8                        |8                        |15                       |21                           |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|COG3010     |2118                           |2395                           |1061                     |1738                     |2483                     |1043                         |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|proNOG56664 |7                              |2                              |3                        |2                        |4                        |5                            |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|COG3012     |15                             |60                             |34                       |101                      |38                       |22                           |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|COG3014     |27                             |18                             |32                       |92                       |41                       |17                           |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-|COG3015     |13                             |298                            |91                       |206                      |73                       |1148                         |
-+------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-</pre></div>
-</div>
+<p>Again, we combine tables for each sample into a final counts table using combine_tables.py to give</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="17%" />
+<col width="17%" />
+<col width="14%" />
+<col width="14%" />
+<col width="14%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">ref</th>
+<th class="head">stool-HhaIL10R-R4.diamond_count</th>
+<th class="head">stool-HhaIL10R-R3.diamond_count</th>
+<th class="head">stool-Hh-R4.diamond_count</th>
+<th class="head">stool-Hh-R3.diamond_count</th>
+<th class="head">stool-WT-R4.diamond_count</th>
+<th class="head">stool-aIL10R-R1.diamond_count</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>NOG243840</td>
+<td>2</td>
+<td>4</td>
+<td>6</td>
+<td>10</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>NOG281778</td>
+<td>1</td>
+<td>5</td>
+<td>4</td>
+<td>4</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>NOG41625</td>
+<td>113</td>
+<td>744</td>
+<td>414</td>
+<td>1273</td>
+<td>404</td>
+<td>567</td>
+</tr>
+<tr class="row-odd"><td>bactNOG18808</td>
+<td>1</td>
+<td>2</td>
+<td>8</td>
+<td>8</td>
+<td>15</td>
+<td>21</td>
+</tr>
+<tr class="row-even"><td>COG3010</td>
+<td>2118</td>
+<td>2395</td>
+<td>1061</td>
+<td>1738</td>
+<td>2483</td>
+<td>1043</td>
+</tr>
+<tr class="row-odd"><td>proNOG56664</td>
+<td>7</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr class="row-even"><td>COG3012</td>
+<td>15</td>
+<td>60</td>
+<td>34</td>
+<td>101</td>
+<td>38</td>
+<td>22</td>
+</tr>
+<tr class="row-odd"><td>COG3014</td>
+<td>27</td>
+<td>18</td>
+<td>32</td>
+<td>92</td>
+<td>41</td>
+<td>17</td>
+</tr>
+<tr class="row-even"><td>COG3015</td>
+<td>13</td>
+<td>298</td>
+<td>91</td>
+<td>206</td>
+<td>73</td>
+<td>1148</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
 <p>Now we have count tables for genera and NOGs for both metagenomic and metatranscriptomic data we can start doing some analysis.</p>
 <p>So to recap, in our working directories, DNA/ and RNA/ we now have count tables for alignments to genera and NOGs. Given the large
 sizes of raw and alignment files these have been deposited at the EBI ENA (ADD LINK). However for reproducing our downstream analysis
 we have provided the count tables in the data/DNA/ and data/RNA/ directories (genus.diamond.aggregated.counts.tsv.gz and gene_counts.tsv.gz).
 These can therefore be used for downstream analysis.</p>
-<p>If you have not run the above steps yourself then link to the counts tables we have provided:</p>
+<p>If you have not run the above steps yourself then link to the counts tables we have provided and load into the csvdb database.</p>
+<p>For RNA:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ cd RNA
 $ ln -s ../data/RNA/genus.diamond.aggregated.counts.tsv.gz .
 $ ln -s ../data/RNA/gene_counts.tsv.gz .
+$ zcat genus.diamond.aggregated.counts.tsv.gz | python cgat/scripts/csv2db.py
+                                                --backend=sqlite
+                                                --retry
+                                                --table=genus_diamond_aggregated_counts
+                                                &gt; genus.diamond.aggregated.counts.tsv.gz.load
 
-$ cd ../DNA
-$ ln -s ../data/RNA/genus.diamond.aggregated.counts.tsv.gz .
-$ ln -s ../data/RNA/gene_counts.tsv.gz .
+$ zcat gene_counts.tsv.gz | python cgat/scripts/csv2db.py
+                            --backend=sqlite
+                            --retry
+                            --table=gene_counts
+                            &gt; gene_counts.tsv.gz.load
+</pre></div>
+</div>
+<p>For DNA:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd ../DNA
+$ ln -s ../data/DNA/genus.diamond.aggregated.counts.tsv.gz .
+$ ln -s ../data/DNA/gene_counts.tsv.gz .
+$ zcat genus.diamond.aggregated.counts.tsv.gz | python cgat/scripts/csv2db.py
+                                                --backend=sqlite
+                                                --retry
+                                                --table=genus_diamond_aggregated_counts
+                                                &gt; genus.diamond.aggregated.counts.tsv.gz.load
+
+
+$ zcat gene_counts.tsv.gz | python cgat/scripts/csv2db.py
+                            --backend=sqlite
+                            --retry
+                            --table=gene_counts
+                            &gt; gene_counts.tsv.gz.load
 </pre></div>
 </div>
 </div>
@@ -270,8 +421,8 @@ $ ln -s ../data/RNA/gene_counts.tsv.gz .
   <p class="topless"><a href="introduction.html"
                         title="previous chapter">Introduction</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="metagenomeseq.html"
-                        title="next chapter">MetagenomeSeq Normalisation</a></p>
+  <p class="topless"><a href="compareDatasets.html"
+                        title="next chapter">Comparing metagenomic and metatranscriptomic data sets</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -306,7 +457,7 @@ $ ln -s ../data/RNA/gene_counts.tsv.gz .
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="metagenomeseq.html" title="MetagenomeSeq Normalisation"
+          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
              >next</a> |</li>
         <li class="right" >
           <a href="introduction.html" title="Introduction"

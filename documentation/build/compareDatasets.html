@@ -24,8 +24,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
-    <link rel="next" title="Principle components analysis" href="pca.html" />
-    <link rel="prev" title="MetagenomeSeq Normalisation" href="metagenomeseq.html" /> 
+    <link rel="next" title="MetagenomeSeq filtered analysis" href="metagenomeseq_restrict.html" />
+    <link rel="prev" title="MetagenomeSeq initial normalisation" href="metagenomeseq.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,10 +38,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pca.html" title="Principle components analysis"
+          <a href="metagenomeseq_restrict.html" title="MetagenomeSeq filtered analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="metagenomeseq.html" title="MetagenomeSeq Normalisation"
+          <a href="metagenomeseq.html" title="MetagenomeSeq initial normalisation"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
@@ -63,6 +63,8 @@ we performed these analyses.</p>
 $ cd compare_datasets
 </pre></div>
 </div>
+<div class="section" id="detection-overlap">
+<h2>Detection overlap<a class="headerlink" href="#detection-overlap" title="Permalink to this headline">¶</a></h2>
 <p>The first analysis that we do is to do some simple comparisons between the DNA and RNA data sets (Fig. 1 in the paper).
 This involves looking at the number of genera/NOGs that were detected in each method (and the overlap) and how abundance
 as measured by DNA compares with abundance of RNA. Here we will use the PipelineMetaomics.py module
@@ -76,6 +78,9 @@ for genera we can type:</p>
 </div>
 <p>This will produce an outfile named genus_overlap.tsv that contains the number of genera detected with &gt; 1 read in &gt;= 1
 sample in DNA and RNA analyses as well as the overlap. We run this also for the NOG count tables.</p>
+</div>
+<div class="section" id="abundance-distributions">
+<h2>Abundance distributions<a class="headerlink" href="#abundance-distributions" title="Permalink to this headline">¶</a></h2>
 <p>We then compared the feature abundance distributions (e.g. genera) that were detected in DNA, RNA or both data sets (based on reads
 per million (RPM) values from counts tables). To do this we run the following functions againg with RNA counts, DNA coutns and outfile
 as positional arguments:</p>
@@ -88,6 +93,9 @@ as positional arguments:</p>
 <a class="reference internal image-reference" href="_images/genus_abundance_distributions.png"><img alt="_images/genus_abundance_distributions.png" class="align-center" src="_images/genus_abundance_distributions.png" style="width: 300pt; height: 300pt;" /></a>
 <p>This function also produces the file &#8220;genus_abundance_distributions.sig&#8221; which contains the significance of the differences
 between sets of features based on the wilkoxon rank sum test.</p>
+</div>
+<div class="section" id="abundance-correlations">
+<h2>Abundance correlations<a class="headerlink" href="#abundance-correlations" title="Permalink to this headline">¶</a></h2>
 <p>We can then compare abundance estimates for those commonly detected genera (or NOGs) based on metagenomeSeq normalised
 abundances.:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.scatterplotAbundanceEstimates(&quot;../DNA/genus.diamond.aggregated.counts.norm.matrix&quot;,
@@ -97,8 +105,21 @@ abundances.:</p>
 </div>
 <p>This produces the plot below in the file genus_abundance_correlation.png and prints out our correlation coefficient of 0.98.</p>
 <a class="reference internal image-reference" href="_images/genus_abundance_correlations.png"><img alt="_images/genus_abundance_correlations.png" class="align-center" src="_images/genus_abundance_correlations.png" style="width: 300pt; height: 300pt;" /></a>
-<p>This was repeated using the same functions for NOG-based counts and normalised counts (Fig. 2). And that is a general
-comparison between data sets completed.</p>
+<p>This was repeated using the same functions for NOG-based counts and normalised counts (Fig. 2). At this point we have to build
+a restricted set of genera/NOGs that were found to be present in both DNA and RNA data sets above the 0.1RPM threshold. To do
+this we use the counts tables that we loaded into our database and run the following functions. These files will be used to
+restrict our downstream analyses:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildCommonList(&quot;../RNA/csvdb&quot;,
+                                     &quot;../DNA/csvdb&quot;,
+                                     &quot;common_genera.tsv&quot;)
+
+
+&gt;&gt; PipelineMetaomics.buildCommonList(&quot;../RNA/csvdb&quot;,
+                                     &quot;../DNA/csvdb&quot;,
+                                     &quot;common_genes.tsv&quot;)
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -110,12 +131,22 @@ comparison between data sets completed.</p>
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Comparing metagenomic and metatranscriptomic data sets</a><ul>
+<li><a class="reference internal" href="#detection-overlap">Detection overlap</a></li>
+<li><a class="reference internal" href="#abundance-distributions">Abundance distributions</a></li>
+<li><a class="reference internal" href="#abundance-correlations">Abundance correlations</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="metagenomeseq.html"
-                        title="previous chapter">MetagenomeSeq Normalisation</a></p>
+                        title="previous chapter">MetagenomeSeq initial normalisation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pca.html"
-                        title="next chapter">Principle components analysis</a></p>
+  <p class="topless"><a href="metagenomeseq_restrict.html"
+                        title="next chapter">MetagenomeSeq filtered analysis</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -150,10 +181,10 @@ comparison between data sets completed.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pca.html" title="Principle components analysis"
+          <a href="metagenomeseq_restrict.html" title="MetagenomeSeq filtered analysis"
              >next</a> |</li>
         <li class="right" >
-          <a href="metagenomeseq.html" title="MetagenomeSeq Normalisation"
+          <a href="metagenomeseq.html" title="MetagenomeSeq initial normalisation"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>

@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
-    <link rel="next" title="Code" href="code.html" />
+    <link rel="next" title="Assigning NOGs to genera" href="assigningNogsToGenera.html" />
     <link rel="prev" title="Principle components analysis" href="pca.html" /> 
   </head>
   <body role="document">
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="code.html" title="Code"
+          <a href="assigningNogsToGenera.html" title="Assigning NOGs to genera"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pca.html" title="Principle components analysis"
@@ -72,13 +72,6 @@ built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differentia
                                       &quot;rna_dna_ratio.tsv&quot;)
 </pre></div>
 </div>
-<p>Then we built a list of NOGs that were common between the DNA and RNA data sets from the databases that contain
-tables of differential expression results. First load the tables:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildCommonList(&quot;../RNA/csvdb&quot;,
-                                         &quot;../DNA/csvdb&quot;,
-                                         &quot;common_genes.tsv&quot;)
-</pre></div>
-</div>
 <p>then we build the differentially abundant NOGs list from database (Hh + aIL10R vs. Steady state):</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;../RNA/csvdb&quot;,
                                        &quot;common_genes.tsv&quot;,
@@ -93,12 +86,10 @@ tables of differential expression results. First load the tables:</p>
 in DNA, RNA or both data sets:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.annotateRNADNARatio(&quot;rna_dna_ratio.tsv&quot;,
                                          &quot;dna_diff_genes.tsv&quot;,
+                                         &quot;rna_diff_genes.tsv&quot;,
+                                         &quot;rna_dna_ratio.annotated.tsv&quot;)
 </pre></div>
 </div>
-<dl class="docutils">
-<dt>1                                             &#8220;rna_diff_genes.tsv&#8221;,</dt>
-<dd>&#8220;rna_dna_ratio.annotated.tsv&#8221;)</dd>
-</dl>
 <p>and we plot the DNA and RNA fold changes, fit a linear model and plot the 95% prediction intervals. There is
 a little bit of sneakyness here as before we created the final plot we found NOGs of interest. This function
 picks up a file called goi.tsv that contains annotations for the plot. These annotations are for NOGs that
@@ -110,6 +101,143 @@ data and defined as colitis-responsive (lying outside of the 95% prediction inte
 </div>
 <p>This will produce Fig.2g.</p>
 <a class="reference internal image-reference" href="_images/rna_dna_ratio.annotated.png"><img alt="_images/rna_dna_ratio.annotated.png" class="align-center" src="_images/rna_dna_ratio.annotated.png" style="width: 400pt; height: 400pt;" /></a>
+<p>We were interested predominantly in those NOGs that were defined as colitis responsive. We therefore annotated them
+as such - defined as being outside of the 95% prediction interval:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildGenesOutsidePredictionInterval(&quot;rna_dna_ratio.annotated.tsv&quot;, &quot;rna_dna_ratio.annotated.outsidepi.tsv&quot;)
+</pre></div>
+</div>
+<p>This produces the following file with a column describing the status of each NOG (pi_status) that determines whether or not it falls
+outside of the 95% prediction interval and in which direction</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="9%" />
+<col width="9%" />
+<col width="13%" />
+<col width="13%" />
+<col width="11%" />
+<col width="5%" />
+<col width="13%" />
+<col width="11%" />
+<col width="9%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">gene</th>
+<th class="head">dna</th>
+<th class="head">rna</th>
+<th class="head">pdna</th>
+<th class="head">prna</th>
+<th class="head">ratio</th>
+<th class="head">status</th>
+<th class="head">lwr</th>
+<th class="head">upr</th>
+<th class="head">pi_status</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>NOG318244</td>
+<td>-1.03311983427</td>
+<td>-3.88099075439</td>
+<td>0.227566146514034</td>
+<td>0.000732213528700738</td>
+<td>-2.84787092012783</td>
+<td>down.RNA</td>
+<td>-2.29189879455845</td>
+<td>0.924539008671926</td>
+<td>diff.down.rna</td>
+</tr>
+<tr class="row-odd"><td>NOG130535</td>
+<td>1.57674408446</td>
+<td>4.10185194239</td>
+<td>0.0489497441044796</td>
+<td>0.000732213528700738</td>
+<td>2.52510785792768</td>
+<td>up.both</td>
+<td>-0.500617727281953</td>
+<td>2.71597876719476</td>
+<td>diff.up.rna</td>
+</tr>
+<tr class="row-even"><td>NOG134793</td>
+<td>2.23869128315</td>
+<td>4.54943410575</td>
+<td>0.0328705226009625</td>
+<td>0.000732707448196766</td>
+<td>2.31074282259625</td>
+<td>up.both</td>
+<td>-0.0463574163834217</td>
+<td>3.17041411560104</td>
+<td>diff.up.rna</td>
+</tr>
+<tr class="row-odd"><td>NOG288530</td>
+<td>4.52461981525</td>
+<td>5.2148699462</td>
+<td>0.00435113290891389</td>
+<td>0.000732707448196766</td>
+<td>0.69025013094869</td>
+<td>up.both</td>
+<td>1.52214814358271</td>
+<td>4.73994333954382</td>
+<td>diff.up.rna</td>
+</tr>
+<tr class="row-even"><td>NOG73003</td>
+<td>2.93026599661</td>
+<td>4.60138832113</td>
+<td>0.0171404768468839</td>
+<td>0.000798074756693038</td>
+<td>1.67112232452162</td>
+<td>up.both</td>
+<td>0.428205612895006</td>
+<td>3.64521825858309</td>
+<td>diff.up.rna</td>
+</tr>
+<tr class="row-odd"><td>NOG242700</td>
+<td>2.70090741616</td>
+<td>4.5185334849</td>
+<td>0.0291946059040304</td>
+<td>0.000798074756693038</td>
+<td>1.81762606873595</td>
+<td>up.both</td>
+<td>0.270821573253439</td>
+<td>3.48774765892459</td>
+<td>diff.up.rna</td>
+</tr>
+<tr class="row-even"><td>COG0418</td>
+<td>7.40633864052</td>
+<td>4.87181180102</td>
+<td>0.00161195783102831</td>
+<td>0.000801401399329138</td>
+<td>-2.53452683949718</td>
+<td>up.both</td>
+<td>3.4989965428968</td>
+<td>6.71900772759713</td>
+<td>NA</td>
+</tr>
+<tr class="row-odd"><td>COG0435</td>
+<td>2.81674412896</td>
+<td>4.933419462</td>
+<td>0.0292484323181148</td>
+<td>0.000801401399329138</td>
+<td>2.11667533304774</td>
+<td>up.both</td>
+<td>0.350308216294483</td>
+<td>3.56727720073607</td>
+<td>diff.up.rna</td>
+</tr>
+<tr class="row-even"><td>NOG310959</td>
+<td>2.94747733379</td>
+<td>4.63709916181</td>
+<td>0.0234651617179669</td>
+<td>0.00113572329548064</td>
+<td>1.68962182801844</td>
+<td>up.both</td>
+<td>0.440015764023919</td>
+<td>3.6570351692761</td>
+<td>diff.up.rna</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
 <p>And that is Fig. 2 done!</p>
 </div>
 
@@ -126,8 +254,8 @@ data and defined as colitis-responsive (lying outside of the 95% prediction inte
   <p class="topless"><a href="pca.html"
                         title="previous chapter">Principle components analysis</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="code.html"
-                        title="next chapter">Code</a></p>
+  <p class="topless"><a href="assigningNogsToGenera.html"
+                        title="next chapter">Assigning NOGs to genera</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -162,7 +290,7 @@ data and defined as colitis-responsive (lying outside of the 95% prediction inte
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="code.html" title="Code"
+          <a href="assigningNogsToGenera.html" title="Assigning NOGs to genera"
              >next</a> |</li>
         <li class="right" >
           <a href="pca.html" title="Principle components analysis"

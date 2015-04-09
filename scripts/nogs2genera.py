@@ -1,5 +1,5 @@
 '''
-diff2genera.py
+nogs2genera.py
 ===============
 
 :Author: Nick Ilott
@@ -10,7 +10,7 @@ diff2genera.py
 Purpose
 -------
 
-Take differentially expressed genes from a metatranscriptomic study and associate genes
+Take a set of NOGs from a metatranscriptomic study and associate genes
 with genera 
 
 Usage
@@ -18,11 +18,11 @@ Usage
 
 Example::
 
-   python cgat_script_template.py 
+   python nogs2genera.py 
 
 Type::
 
-   python cgat_script_template.py --help
+   python nogs2genera.py --help
 
 for command line help.
 
