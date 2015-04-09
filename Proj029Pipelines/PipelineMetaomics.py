@@ -349,7 +349,8 @@ def plotAbundanceLevelsOfOverlap(rnacounts,
                                "dna.common_vs_rna.distinct" = wtest4$p.value,
                                "dna.common_vs_rna.common" = wtest5$p.value)''')
 
-    outname_sig = P.snip(outfile, ".pdf") + ".sig"
+    outname_sig = outfile[:-4] + ".sig"
+    
     R('''write.table(res, file = "%s", row.names = F, sep = "\t", quote = F)''' % outname_sig)
 
     # create dataframe for plotting
