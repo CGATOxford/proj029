@@ -4,8 +4,8 @@
 Introduction
 ==============
 
-The aims and analysis are explained in the paper. Briefly, we were interested to discover 
-community structure and functional changes in the microbiota associated with 
+The aims of the project and analysis are explained in the paper. Briefly, we were 
+interested to discover community structure and functional changes in the microbiota associated with 
 inflammation in a mouse model of Helicobacter hepaticus + aIL10R colitis. To this
 end we used shotgun metagenomic and metatranscriptomic sequencing. Using these two
 methods we were interested in comparing RNA- and DNA-based methods for microbiome
@@ -33,9 +33,7 @@ locate the source code i.e. modules are in modules/ scripts are
 in scripts/ etc. For our purposes and to enable re-running of analyses and
 facilitate reproducibity, scripts and module functions are wrapped up in `ruffus`_
 pipelines. We also extensively use functions and scripts that are part of the 
-`CGAT code collection`_. 
-
-This documentation will take you through the running of 3rd party tools,
+`CGAT code collection`_. This documentation will take you through the running of 3rd party tools,
 custom scripts and functions for analyses without having to specifically set up
 your environment for using `CGAT pipelines`_. Nevertheless, pipelines are publically
 available at `CGATOxford/CGATPiplines`_ and `CGATOxford/proj029/Proj029Pipelines`_ 
@@ -68,8 +66,8 @@ Dependencies
 To run the analyses you will have to install a bit of software. Shown are the versions
 used in the analysis although newer versions may now be available and could be substituted.
 
-First of all though make sure that you have the CGAT code collection installed. It is recommended
-that with third party python modules that you use a virtual environment::
+First of all make sure that you have the CGAT code collection installed - this includes cgat and
+CGATPipelines. It is recommended that with third party python modules that you use a virtual environment::
   
     # install virtualenv
     pip install virtualenv
@@ -90,6 +88,13 @@ that with third party python modules that you use a virtual environment::
     cd CGATPipelines
     python setup.py install
     
+You will also have to install the proj029 respository::
+
+    git clone https://github.com/CGATOxford/proj029.git
+    cd proj029
+    python setup.py install
+
+
 
 3rd party software
 -------------------

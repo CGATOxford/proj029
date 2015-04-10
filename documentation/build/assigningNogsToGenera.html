@@ -54,7 +54,292 @@
             
   <div class="section" id="assigning-nogs-to-genera">
 <h1>Assigning NOGs to genera<a class="headerlink" href="#assigning-nogs-to-genera" title="Permalink to this headline">¶</a></h1>
-<p>Next we were interested in defining NOGs that</p>
+<p>We were interested in defining which genera were responsible for the expression of differentially
+abundant NOGs. Since we have read assignments to genera and NOGs, all we had to do was to select
+reads that were aligned to both and count the number of reads per genus-NOG pair. For each sample
+we take the RNA-seq read assignments and do the counting. By default the following script will output
+the percentage of reads from each genus that map to a NOG. This is the basic input for the generation
+of Fig. 3a. The script takes as input a gene2cog mapping file (-m), the list of NOGs
+which we wish to calculate % genus reads over (-d), the level at which to count (&#8211;level),
+the taxa assignments file and the alignment to the IGC:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python &lt;path_to_proj029&gt;/scripts/nogs2genera.py
+         -m gene2cog.tsv.gz
+         -d common_genes.tsv
+         --level=genus
+         --alignment-taxa=stool-HhaIL10R-R1.lca
+         --alignment-genes=stool-HhaIL10R-R1.igc.tsv.gz
+         --log=stool-HhaIL10R-R1.diamond.ptaxa.tsv.gz.log
+         | gzip &gt; associate_taxa.dir/stool-HhaIL10R-R1.diamond.ptaxa.tsv.gz
+</pre></div>
+</div>
+<p>Once we have a .ptaxa.tsv.gz file for each sample, we combine the tables using combine_tables.py. This proces is somewhat
+time-consuming and uses a lot of memory. We have therefore provided the .ptaxa.tsv.gz combined files in the data/RNA/directory.
+The file is called associated_ptaxa.tsv.gz. You can link this file to your RNA/ working directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd RNA
+$ ln -s &lt;path_to_proj029&gt;/data/RNA/associated_ptaxa.tsv.gz .
+</pre></div>
+</div>
+<p>It will look like this (truncated for visual purposes):</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="12%" />
+<col width="19%" />
+<col width="17%" />
+<col width="17%" />
+<col width="14%" />
+<col width="14%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>cog</td>
+<td>taxa</td>
+<td>stool-HhaIL10R-R2_preads</td>
+<td>stool-aIL10R-R3_preads</td>
+<td>stool-aIL10R-R2_preads</td>
+<td>stool-WT-R4_preads</td>
+<td>stool-WT-R1_preads</td>
+</tr>
+<tr class="row-even"><td>NOG243842</td>
+<td>unassigned</td>
+<td>100.000000</td>
+<td>100.000000</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>NOG243840</td>
+<td>unassigned</td>
+<td>50.000000</td>
+<td>0</td>
+<td>50.000000</td>
+<td>100.000000</td>
+<td>100.000000</td>
+</tr>
+<tr class="row-even"><td>NOG243840</td>
+<td>Clostridium</td>
+<td>50.000000</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>NOG281778</td>
+<td>unassigned</td>
+<td>100.000000</td>
+<td>0.000000</td>
+<td>0.000000</td>
+<td>50.000000</td>
+<td>66.666667</td>
+</tr>
+<tr class="row-even"><td>NOG41625</td>
+<td>unassigned</td>
+<td>33.510638</td>
+<td>46.000000</td>
+<td>40.909091</td>
+<td>48.762376</td>
+<td>48.958333</td>
+</tr>
+<tr class="row-odd"><td>NOG41625</td>
+<td>Parabacteroides</td>
+<td>2.393617</td>
+<td>1.000000</td>
+<td>0</td>
+<td>1.485149</td>
+<td>3.125000</td>
+</tr>
+<tr class="row-even"><td>NOG41625</td>
+<td>Bacteroides</td>
+<td>48.670213</td>
+<td>29.000000</td>
+<td>31.818182</td>
+<td>22.772277</td>
+<td>23.958333</td>
+</tr>
+<tr class="row-odd"><td>NOG41625</td>
+<td>Porphyromonas</td>
+<td>11.436170</td>
+<td>19.000000</td>
+<td>18.181818</td>
+<td>19.554455</td>
+<td>9.375000</td>
+</tr>
+<tr class="row-even"><td>NOG41625</td>
+<td>Flavobacterium</td>
+<td>0.265957</td>
+<td>0</td>
+<td>1.515152</td>
+<td>0.247525</td>
+<td>2.083333</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Where a read has a NOG assignment but not a genus assignment it contributes to the percentage of reads annotated as unassigned.</p>
+<div class="section" id="build-the-nog-genus-counts-matrix">
+<h2>Build the NOG genus counts matrix<a class="headerlink" href="#build-the-nog-genus-counts-matrix" title="Permalink to this headline">¶</a></h2>
+<p>We needed to transform this data into average percentages across samples for each NOG-genus combination. To do this we use the following
+function:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
+&gt;&gt; PipelineMetaomics.buildGenusCogCountsMatrix(&quot;associated_ptaxa.tsv.gz&quot;, &quot;associated_ptaxa_average.matrix&quot;)
+</pre></div>
+</div>
+<p>This will give us this file:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="9%" />
+<col width="15%" />
+<col width="6%" />
+<col width="9%" />
+<col width="6%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="16%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>&nbsp;</td>
+<td>COG0001</td>
+<td>COG0002</td>
+<td>COG0003</td>
+<td>COG0004</td>
+<td>COG0005</td>
+<td>COG0006</td>
+<td>COG0007</td>
+<td>COG0008</td>
+<td>COG0009</td>
+</tr>
+<tr class="row-even"><td>Abiotrophia</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>Acaryochloris</td>
+<td>0.002159625</td>
+<td>0</td>
+<td>0</td>
+<td>0.0186110625</td>
+<td>0</td>
+<td>0.009047375</td>
+<td>0</td>
+<td>0</td>
+<td>0.0021784375</td>
+</tr>
+<tr class="row-even"><td>Acetivibrio</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>Acetobacter</td>
+<td>0</td>
+<td>0.003267125</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0.0112120625</td>
+<td>0</td>
+<td>0.0004040625</td>
+<td>0.011865875000000001</td>
+</tr>
+<tr class="row-even"><td>Acetobacterium</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>Acholeplasma</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0.0198231875</td>
+<td>0.003799375</td>
+</tr>
+<tr class="row-even"><td>Achromobacter</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>Acidaminococcus</td>
+<td>0</td>
+<td>0.17178093749999998</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0.056347</td>
+<td>0.2652984375</td>
+<td>0.005379875</td>
+<td>0.10410106250000001</td>
+</tr>
+<tr class="row-even"><td>Acidianus</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>We can use this data and our previously described NOG annotations to assess the maximum percentage that any genus contributes to the expression
+of a NOG</p>
+</div>
+<div class="section" id="plotting-the-maximum-contribution-of-a-genus-to-nog-expression">
+<h2>Plotting the maximum contribution of a genus to NOG expression<a class="headerlink" href="#plotting-the-maximum-contribution-of-a-genus-to-nog-expression" title="Permalink to this headline">¶</a></h2>
+<p>We can recreate Fig. 3a by running:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotMaxTaxaContribution(&quot;associated_ptaxa_average.matrix&quot;,
+                                             &quot;../compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv&quot;,
+                                             &quot;associated_ptaxa_max_contribution.png&quot;)
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/associated_ptaxa_max_contribution.png"><img alt="_images/associated_ptaxa_max_contribution.png" class="align-center" src="_images/associated_ptaxa_max_contribution.png" style="width: 400pt; height: 400pt;" /></a>
+<p>The cumulative proportion plot shows us that the NOGs annotated as being up-regulated and colitis-responsive are more likely
+to be expressed by a dominant genus than the other NOG sets.</p>
+</div>
+<div class="section" id="plotting-dominant-genera-for-colitis-responsive-nogs">
+<h2>Plotting dominant genera for colitis-responsive NOGs<a class="headerlink" href="#plotting-dominant-genera-for-colitis-responsive-nogs" title="Permalink to this headline">¶</a></h2>
+<p>To see which genera are dominating the expression of these NOGs we use the following function:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.heatmapTaxaCogProportionMatrix(&quot;associated_ptaxa_average.matrix&quot;,
+                                                    &quot;../compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv&quot;,
+                                                    &quot;associated_ptaxa_heatmap.pdf&quot;)
+</pre></div>
+</div>
+<p>This will produce the plot below, representing genera that contribute &gt;=10% to NOG expression of up-regulated, colitis-
+responsive NOGs that have a dominant genus (&gt;=50% maximum genus contribution).</p>
+<a class="reference internal image-reference" href="_images/associated_ptaxa_heatmap.png"><img alt="_images/associated_ptaxa_heatmap.png" class="align-center" src="_images/associated_ptaxa_heatmap.png" style="width: 700pt; height: 400pt;" /></a>
+</div>
 </div>
 
 
@@ -66,6 +351,16 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Assigning NOGs to genera</a><ul>
+<li><a class="reference internal" href="#build-the-nog-genus-counts-matrix">Build the NOG genus counts matrix</a></li>
+<li><a class="reference internal" href="#plotting-the-maximum-contribution-of-a-genus-to-nog-expression">Plotting the maximum contribution of a genus to NOG expression</a></li>
+<li><a class="reference internal" href="#plotting-dominant-genera-for-colitis-responsive-nogs">Plotting dominant genera for colitis-responsive NOGs</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="colitisResponsiveNOGs.html"
                         title="previous chapter">Defining colitis-dependent NOGs</a></p>

@@ -23,7 +23,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" /> 
+    <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
+    <link rel="next" title="Principle components analysis" href="pca.html" />
+    <link rel="prev" title="Comparing metagenomic and metatranscriptomic data sets" href="compareDatasets.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -35,6 +37,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="pca.html" title="Principle components analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+             accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -46,10 +54,9 @@
             
   <div class="section" id="metagenomeseq-filtered-analysis">
 <h1>MetagenomeSeq filtered analysis<a class="headerlink" href="#metagenomeseq-filtered-analysis" title="Permalink to this headline">¶</a></h1>
-<p>Now we have analysed the RNA and DNA data sets in isolation we can start pulling them together. The first
-thing to do is to re-run the metagenomeSeq analysis on a filtered dataset. This means restricting the
-analysis to those features that were present at &gt; 0.1RPM in both DNA and RNA data sets.</p>
-<p>For genera we can do:</p>
+<p>Now we have compared the RNA and DNA data sets and have sets of features that we want to analyse,
+we can run metagenomeSeq on a filtered set of features (using common_genera.tsv and common_genes.tsv).</p>
+<p>For example to produce new counts tables with filtered features for genera we can do:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ cd RNA
 $ zcat genus.diamond.aggregated.counts.tsv.gz | python proj029/scripts/counts2restrictedcounts.py
                                               --restrict-to=../compare_datasets/common_genera.tsv
@@ -58,9 +65,27 @@ $ zcat genus.diamond.aggregated.counts.tsv.gz | python proj029/scripts/counts2re
 </pre></div>
 </div>
 <p>We can then use this filtered counts table for metagenomeSeq analysis:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ Rscript cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.restricted.tsv -p genus.diamond.aggregated.counts.restricted
+<div class="highlight-python"><div class="highlight"><pre>$ Rscript cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.restricted.tsv -p genus.diamond.aggregated.counts
 </pre></div>
 </div>
+<dl class="docutils">
+<dt>::</dt>
+<dd>NOTE: here we have overwritten the previous results tables from metagenomeSeq.</dd>
+</dl>
+<p>The resulting .norm.matrix files are used in subsequent principle components analysis and the .diff.tsv files are the final
+results of differential abundance testing.</p>
+<p>Load the differential abundance table into the database:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cat genus.diamond.aggregated.counts.diff.tsv |
+  python &lt;path_to_cgat&gt;/cgat/scripts/csv2db.py --backend=sqlite
+                                               --retry
+                                               --table=genus_diamond_aggregated_counts_diff
+                                               &gt; genus.diamond.aggregated.counts.diff.tsv.load
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>::</dt>
+<dd>NOTE: here we have overwritten the database tables</dd>
+</dl>
 </div>
 
 
@@ -72,6 +97,12 @@ $ zcat genus.diamond.aggregated.counts.tsv.gz | python proj029/scripts/counts2re
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compareDatasets.html"
+                        title="previous chapter">Comparing metagenomic and metatranscriptomic data sets</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pca.html"
+                        title="next chapter">Principle components analysis</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -105,6 +136,12 @@ $ zcat genus.diamond.aggregated.counts.tsv.gz | python proj029/scripts/counts2re
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="pca.html" title="Principle components analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+             >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>

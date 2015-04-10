@@ -4,11 +4,10 @@ MetagenomeSeq filtered analysis
 =================================
 
 
-Now we have analysed the RNA and DNA data sets in isolation we can start pulling them together. The first
-thing to do is to re-run the metagenomeSeq analysis on a filtered dataset. This means restricting the
-analysis to those features that were present at > 0.1RPM in both DNA and RNA data sets.
+Now we have compared the RNA and DNA data sets and have sets of features that we want to analyse,
+we can run metagenomeSeq on a filtered set of features (using common_genera.tsv and common_genes.tsv).
 
-For genera we can do::
+For example to produce new counts tables with filtered features for genera we can do::
  
     $ cd RNA
     $ zcat genus.diamond.aggregated.counts.tsv.gz | python proj029/scripts/counts2restrictedcounts.py 
@@ -19,8 +18,27 @@ For genera we can do::
 
 We can then use this filtered counts table for metagenomeSeq analysis::
 
-    $ Rscript cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.restricted.tsv -p genus.diamond.aggregated.counts.restricted
+    $ Rscript cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.restricted.tsv -p genus.diamond.aggregated.counts
 
+::
+    NOTE: here we have overwritten the previous results tables from metagenomeSeq.
+
+
+The resulting .norm.matrix files are used in subsequent principle components analysis and the .diff.tsv files are the final
+results of differential abundance testing.
+
+Load the differential abundance table into the database::
+
+    $ cat genus.diamond.aggregated.counts.diff.tsv | 
+      python <path_to_cgat>/cgat/scripts/csv2db.py --backend=sqlite 
+                                                   --retry                              
+                                                   --table=genus_diamond_aggregated_counts_diff    
+                                                   > genus.diamond.aggregated.counts.diff.tsv.load
+
+
+
+::
+    NOTE: here we have overwritten the database tables
 
 
 

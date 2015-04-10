@@ -105,10 +105,11 @@ abundances.:</p>
 </div>
 <p>This produces the plot below in the file genus_abundance_correlation.png and prints out our correlation coefficient of 0.98.</p>
 <a class="reference internal image-reference" href="_images/genus_abundance_correlations.png"><img alt="_images/genus_abundance_correlations.png" class="align-center" src="_images/genus_abundance_correlations.png" style="width: 300pt; height: 300pt;" /></a>
-<p>This was repeated using the same functions for NOG-based counts and normalised counts (Fig. 2). At this point we have to build
-a restricted set of genera/NOGs that were found to be present in both DNA and RNA data sets above the 0.1RPM threshold. To do
-this we use the counts tables that we loaded into our database and run the following functions. These files will be used to
-restrict our downstream analyses:</p>
+<p>This was repeated using the same functions for NOG-based counts and normalised counts (Fig. 2). For furhter analysis
+we need to build a set of genera/NOGs that were found to be present in both DNA and RNA data sets above the 0.1 RPM threshold. To do
+this we use differential abundance tables (i.e. all features that were originally tested for significnace in either RNA or DNA data sets)
+that we loaded into our database and run the following functions. common_genera.tsv and common_genes.tsv will be used to
+restrict our &#8220;proper&#8221; metagenomeSeq analysis to those features:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildCommonList(&quot;../RNA/csvdb&quot;,
                                      &quot;../DNA/csvdb&quot;,
                                      &quot;common_genera.tsv&quot;)

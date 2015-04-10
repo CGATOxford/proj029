@@ -17,7 +17,7 @@ import os
 
 # Redefine supported_image_types for the HTML builder
 from sphinx.builders.html import StandaloneHTMLBuilder
-StandaloneHTMLBuilder.supported_image_types = ['image/png', 'image/svg+xml', 
+StandaloneHTMLBuilder.supported_image_types = ['image/png', 'image/pdf','image/svg+xml', 
                                                'image/gif', 'image/jpeg',
                                                'application/pdf']
 

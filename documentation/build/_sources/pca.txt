@@ -19,7 +19,7 @@ the directory where you want the files to be produced, otherwise there will be a
     >> PipelineMetaomics.runPCA("genus.diamond.aggregated.counts.norm.matrix", "genus.diamond.aggregated.counts.loadings.tsv")
 
 
-And produces the following plot.
+This produces the following plot.
 
 .. image:: ../images/genus.diamond.aggregated.counts.pca.png
     :align: center
@@ -27,7 +27,7 @@ And produces the following plot.
     :height: 400pt
 
 
-The adonis test in the module PipelineMetagenomeCommunities.py was run to test for significant clustering of conditions::
+The adonis test in the module PipelineMetagenomeCommunities.py from `CGATPipelines`_ was run to test for significant clustering of conditions::
 
 
     >> import CGATPipelines.PipelineMetagenomeCommunities as PipelineMetagenomeCommunities
@@ -50,10 +50,12 @@ This will produce the following plot
     :width: 400pt
     :height: 400pt
 
-
 And that is Fig. 1 and half of Fig. 2 done!
+
+We did not see any striking differences in genera abundance in our metagenomeSeq anlaysis. However we did see a number of
+NOGs that were significantly differentially abundant in both DNA and RNA analyses. We therefore concentrate on these in the
+rest of the analysis.
+
  
-
-
-
+.. _CGATOxford/CGATPiplines: https://github.com/CGATOxford/CGATPipelines
 

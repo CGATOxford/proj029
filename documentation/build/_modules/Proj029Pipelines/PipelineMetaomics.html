@@ -859,7 +859,7 @@
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,colSums(dat &gt; 50) &gt;= 1]&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[rowSums(dat &gt; 10) &gt;= 1,]&#39;&#39;&#39;</span><span class="p">)</span>
 
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pdf(&quot;</span><span class="si">%s</span><span class="s">&quot;, height = 10, width = 15)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;png(&quot;</span><span class="si">%s</span><span class="s">&quot;, height = 500, width = 1000)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(pheatmap)&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pheatmap(dat, </span>
 <span class="s">                  clustering_distance_cols = &quot;manhattan&quot;,</span>
@@ -869,7 +869,7 @@
 <span class="s">                  cluster_rows = T,</span>
 <span class="s">                  cluster_cols = F,</span>
 <span class="s">                  color = cols,</span>
-<span class="s">                  fontsize = 8)&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="s">                  fontsize = 12)&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">[</span><span class="s">&quot;dev.off&quot;</span><span class="p">]()</span>
 
 <span class="c">####################################################</span>

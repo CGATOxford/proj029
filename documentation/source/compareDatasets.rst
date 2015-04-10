@@ -78,10 +78,12 @@ This produces the plot below in the file genus_abundance_correlation.png and pri
     :height: 300pt
 
 
-This was repeated using the same functions for NOG-based counts and normalised counts (Fig. 2). At this point we have to build
-a restricted set of genera/NOGs that were found to be present in both DNA and RNA data sets above the 0.1RPM threshold. To do
-this we use the counts tables that we loaded into our database and run the following functions. These files will be used to
-restrict our downstream analyses::
+This was repeated using the same functions for NOG-based counts and normalised counts (Fig. 2). For furhter analysis
+we need to build a set of genera/NOGs that were found to be present in both DNA and RNA data sets above the 0.1 RPM threshold. To do
+this we use differential abundance tables (i.e. all features that were originally tested for significnace in either RNA or DNA data sets)
+that we loaded into our database and run the following functions. common_genera.tsv and common_genes.tsv will be used to
+restrict our "proper" metagenomeSeq analysis to those features::
+
 
     >> PipelineMetaomics.buildCommonList("../RNA/csvdb",
                                          "../DNA/csvdb",

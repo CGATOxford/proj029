@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
     <link rel="next" title="Defining colitis-dependent NOGs" href="colitisResponsiveNOGs.html" />
-    <link rel="prev" title="Comparing metagenomic and metatranscriptomic data sets" href="compareDatasets.html" /> 
+    <link rel="prev" title="MetagenomeSeq filtered analysis" href="metagenomeseq_restrict.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -41,7 +41,7 @@
           <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+          <a href="metagenomeseq_restrict.html" title="MetagenomeSeq filtered analysis"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
@@ -66,9 +66,9 @@ the directory where you want the files to be produced, otherwise there will be a
 &gt;&gt; PipelineMetaomics.runPCA(&quot;genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;genus.diamond.aggregated.counts.loadings.tsv&quot;)
 </pre></div>
 </div>
-<p>And produces the following plot.</p>
+<p>This produces the following plot.</p>
 <a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.pca.png"><img alt="_images/genus.diamond.aggregated.counts.pca.png" class="align-center" src="_images/genus.diamond.aggregated.counts.pca.png" style="width: 400pt; height: 400pt;" /></a>
-<p>The adonis test in the module PipelineMetagenomeCommunities.py was run to test for significant clustering of conditions:</p>
+<p>The adonis test in the module PipelineMetagenomeCommunities.py from <a href="#id1"><span class="problematic" id="id2">`CGATPipelines`_</span></a> was run to test for significant clustering of conditions:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import CGATPipelines.PipelineMetagenomeCommunities as PipelineMetagenomeCommunities
 &gt;&gt; PipelineMetagenomeCommunities.testDistSignificance(&quot;genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;genus.diamond.aggregated.counts.norm.permanova.sig&quot;)
 </pre></div>
@@ -82,6 +82,9 @@ interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) 
 <p>This will produce the following plot</p>
 <a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.loadings.png"><img alt="_images/genus.diamond.aggregated.counts.loadings.png" class="align-center" src="_images/genus.diamond.aggregated.counts.loadings.png" style="width: 400pt; height: 400pt;" /></a>
 <p>And that is Fig. 1 and half of Fig. 2 done!</p>
+<p>We did not see any striking differences in genera abundance in our metagenomeSeq anlaysis. However we did see a number of
+NOGs that were significantly differentially abundant in both DNA and RNA analyses. We therefore concentrate on these in the
+rest of the analysis.</p>
 </div>
 
 
@@ -94,8 +97,8 @@ interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) 
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
   <h4>Previous topic</h4>
-  <p class="topless"><a href="compareDatasets.html"
-                        title="previous chapter">Comparing metagenomic and metatranscriptomic data sets</a></p>
+  <p class="topless"><a href="metagenomeseq_restrict.html"
+                        title="previous chapter">MetagenomeSeq filtered analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="colitisResponsiveNOGs.html"
                         title="next chapter">Defining colitis-dependent NOGs</a></p>
@@ -136,7 +139,7 @@ interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) 
           <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
              >next</a> |</li>
         <li class="right" >
-          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+          <a href="metagenomeseq_restrict.html" title="MetagenomeSeq filtered analysis"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Combined microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>

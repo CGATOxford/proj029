@@ -4,13 +4,10 @@
 Defining colitis-dependent NOGs
 ================================
 
-Create a link to the goi.tsv file in the data/ directory. This will become clearer in a little while::
+In the compare_datasets/ directory create a link to the goi.tsv file in the data/ directory. This will become clearer in a little while::
 
     $ ln -s ../data/goi.tsv .
 
-
-We can run the overlap analyses and PCA for NOGs as we did for genera (DNA) in the previous sections (in the compare_datasets/ directory). 
-We won't therefore go over the same functions. 
 
 Out metagenomeSeq analysis was performed on NOGs and we identified 1221 and 669 NOGs to be differentially abundant in 
 metagenomic and metatranscriptomic data sets, respectively. The overlap between these sets suggested that there were 
@@ -18,7 +15,8 @@ some NOGs that were transcriptionally activated in colitis, leading us to hypoth
 by bacteria to an alteration in the gut niche.
 
 A few tasks were performed before we produced Fig. 2g - some of which did not end up in the manuscript. For example we
-built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the comparison.dir::
+built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the compare_datasets
+directory do::
 
 
     >> import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
@@ -28,7 +26,8 @@ built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differentia
 
 
 
-then we build the differentially abundant NOGs list from database (Hh + aIL10R vs. Steady state)::
+then we build the differentially abundant NOGs list from database (Hh + aIL10R vs. Steady state) for each of DNA and RNa
+ data sets::
 
     >> PipelineMetaomics.buildGeneDiffList("../RNA/csvdb",
                                            "common_genes.tsv",
@@ -47,7 +46,7 @@ in DNA, RNA or both data sets::
                                              "rna_dna_ratio.annotated.tsv")
 
 
-and we plot the DNA and RNA fold changes, fit a linear model and plot the 95% prediction intervals. There is 
+We then plot the DNA and RNA fold changes, fit a linear model and plot the 95% prediction intervals. There is 
 a little bit of sneakyness here as before we created the final plot we found NOGs of interest. This function
 picks up a file called goi.tsv that contains annotations for the plot. These annotations are for NOGs that
 are annotated as being involved in oxidative stress resistance and are up-regulated in metatranscriptomic
@@ -99,10 +98,6 @@ outside of the 95% prediction interval and in which direction
     +---------+--------------+--------------+-------------------+--------------------+-----------------+--------+-------------------+-----------------+-------------+
     |NOG310959|2.94747733379 |4.63709916181 |0.0234651617179669 |0.00113572329548064 |1.68962182801844 |up.both |0.440015764023919  |3.6570351692761  |diff.up.rna  |
     +---------+--------------+--------------+-------------------+--------------------+-----------------+--------+-------------------+-----------------+-------------+
-
-
-  
-
 
 
 And that is Fig. 2 done!

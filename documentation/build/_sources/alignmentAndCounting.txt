@@ -2,7 +2,7 @@
 Alignment and counting
 ===============================
 
-We are picking up the analysis at the point at which raw fastq files have
+We pick up the analysis at the point at which raw fastq files have
 been filtered for contaminating adapters, pairs have been flashed and reads
 mapping to rRNA and mouse have been removed. Details of these steps are in the 
 paper. Both raw fastq files and processed fastq files are available at the EBI ENA
@@ -32,7 +32,7 @@ Alignment
 The first step in the analysis is to assign reads to taxa and functional groups.
 In order to do this we need some databases. We have used the NCBI non-redundant
 protein database (`nr`_) for taxonomic purposes and the integrated gene catalogue
-(`IGC`_) for assessing functions. Download these into a directory of your choice::
+(`IGC`_) for assessing functions. Download these into a databases directory::
 
     $ mkdir databases
     $ cd databases
@@ -45,7 +45,7 @@ protein database (`nr`_) for taxonomic purposes and the integrated gene catalogu
 
 
 We used DIAMOND to align sequences to the reference databases so first we build
-database indexes::
+database indexes. In the databases directory do::
 
     $ diamond makedb --db nr --in nr --threads 16
 
@@ -91,15 +91,15 @@ with and without colitis. In order to do that we first needed to count the numbe
 reads that mapped to each genus and each functional category. This is where the analysis
 of taxonomy and function diverge. 
 
-For taxonomic profiling We used the lowest common ancestor approach (LCA) to 
+For taxonomic profiling we used the lowest common ancestor approach (LCA) to 
 assign reads to genera implemented using lcamapper.sh from mtools (see dependencies). This 
-requires the mapping file of gi number to taxonomy id that is distributed with mtools so for each 
-sample for both DNA and RNA data sets we did for example::
+requires the mapping file of gi number to taxonomy id that is distributed with mtools. For each 
+sample for both DNA and RNA data sets aligned to nr we do for example::
 
     $ lcamapper.sh -i stool-HhaIL10R-R1.diamond.tsv -f Detect -ms 50 -me 0.01 -tp 50 -gt gi_taxid_prot.bin -o stool-HhaIL10R-R1.lca
 
 Again each file that was aligned to the ncbi nr database is used as input to lcamapper.sh. To obtain counts per
-genus (we used genus level analysis throughout) we use the lca2table.py script that is in the scripts/ directory 
+genus we use the lca2table.py script that is in the scripts/ directory 
 of the `CGATOxford/cgat`_ repository::
 
     $ cat stool-HhaIL10R-R1.lca | python cgat/scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.lca.counts.tsv.log > stool-HhaIL10R-R1.lca.counts.tsv
@@ -111,18 +111,18 @@ of the `CGATOxford/cgat`_ repository::
 At this point each file that contains taxa counts is loaded into an sqlite database. This makes subsetting etc easier
 downstream. We use the c2v2db.py script from cgat/ respository to do this::
 
-    $ cat stool-HhaIL10R-R1.counts.tsv | python cgat/scripts/csv2db.py
-                                    --backend=sqlite 
-                                    --retry                              
-                                    --table=stool_HhaIL10R_R1_lca_counts
-                                    > stool-HhaIL10R-R1.lca.counts.tsv.load
+    $ cat stool-HhaIL10R-R1.counts.tsv | python <path_to_cgat>/cgat/scripts/csv2db.py
+                                         --backend=sqlite 
+                                         --retry                              
+                                         --table=stool_HhaIL10R_R1_lca_counts
+                                         > stool-HhaIL10R-R1.lca.counts.tsv.load
 
 
 .. _CGATOxford/CGATPipelines: https://github.com/CGATOxford/CGATPipelines 
 
 This will create a database called "csvdb" in the working directory and will have loaded the table
-stool_HhaIL10R_R1_lca. In our analyses we were interested in genus abundances and so we create
-flat files from the database simply by::
+stool_HhaIL10R_R1_lca_counts. In our analyses we were interested in genus abundances and so we create
+flat files from the database of genus counts by::
 
    $ sqlite3 csvdb 'SELECT taxa, count FROM stool_HhaIL10R_R1_lca_counts WHERE taxa == "genus"' > stool-HhaIL10R-R1.lca.counts.tsv
 
@@ -131,7 +131,7 @@ Next we combine counts for each sample into a single table with rows as genera a
 script from CGAT code collection to do this - combine_tables.py.
 
 e.g for example if we are in the RNA analysis working directory we run combine_tables.py by specifying that we want missing
-genera from a sample to be given a 0 count, we want to merge on column1 (genera), we want to take the "count"
+genera from a sample to be given a 0 count, we want to merge on column 1 (genus), we want to take the "count"
 column and we want to combine all tables that end in .lca.counts.tsv. We also specify the prefixes to be used
 for each column in the resulting combined table::
 
@@ -180,22 +180,22 @@ Again we do this for both RNA and DNA data sets. This produces a table (truncate
 
 The next task is to produce a counts table similar to the one above but for functions. We have aligned to the IGC and we use
 their annotations of eggNOG functions (NOGs) as the features to be counted. For counting per NOG, we extract the best hit DIAMOMD alignment
-for eac read, map the gene to NOG using an additional mapping file and count. To produce a count table for a single sample
-we use the diamond2counts.py script in the scripts/ directory. The input is the DIAMOND alignment file. ::
+for each read, map the gene to NOG using an additional mapping file (provided in data/ directory) and perform the counting. 
+To produce a count table for a single sample we use the diamond2counts.py script in the scripts/ directory. The input is the DIAMOND alignment file. ::
 
 
-    $ zcat stool-HhaIL10R-R1.igc.tsv.gz | python scripts/diamond2counts.py                     
-                                                 --method=best 
-                                                 --cog-map=data/gene2cog.tsv.gz 
-                                                 --sum-cog                    
-                                                 --log=stool-HhaIL10R-R1.igc.counts.tsv.gz.log                    
+    $ zcat stool-HhaIL10R-R1.igc.tsv.gz | python <path_to_cgat>/cgat/scripts/diamond2counts.py                     
+                                          --method=best 
+                                          --cog-map=data/gene2cog.tsv.gz 
+                                          --sum-cog                    
+                                          --log=stool-HhaIL10R-R1.igc.counts.tsv.gz.log                    
                                         | gzip > stool-HhaIL10R-R1.nogs.counts.tsv.gz
 
 
-Again, we combine tables for each sample into a final counts table using combine_tables.py to give
+Again, we combine tables for each sample as for genera into a final counts table using combine_tables.py to give
 
     +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
-    |ref         |stool-HhaIL10R-R4.diamond_count|stool-HhaIL10R-R3.diamond_count|stool-Hh-R4.diamond_count|stool-Hh-R3.diamond_count|stool-WT-R4.diamond_count|stool-aIL10R-R1.diamond_count|
+    |ref         |stool-HhaIL10R-R4_count        |stool-HhaIL10R-R3_count        |stool-Hh-R4_count        |stool-Hh-R3_count        |stool-WT-R4_count        |stool-aIL10R-R1_count        |
     +============+===============================+===============================+=========================+=========================+=========================+=============================+
     |NOG243840   |2                              |4                              |6                        |10                       |1                        |0                            |
     +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
@@ -217,16 +217,13 @@ Again, we combine tables for each sample into a final counts table using combine
     +------------+-------------------------------+-------------------------------+-------------------------+-------------------------+-------------------------+-----------------------------+
 
 
+Counts tables for genera and NOGs (DNA and RNA) will now be taken forward to the analysis steps.
 
-
-Now we have count tables for genera and NOGs for both metagenomic and metatranscriptomic data we can start doing some analysis.
-
-So to recap, in our working directories, DNA/ and RNA/ we now have count tables for alignments to genera and NOGs. Given the large 
-sizes of raw and alignment files these have been deposited at the EBI ENA (ADD LINK). However for reproducing our downstream analysis
+Given the large sizes of raw and alignment files these have been deposited at the EBI ENA (ADD LINK). We expect that you will not
+run the above steps because it is time-cosuming. Therefore, for reproducing our downstream analysis
 we have provided the count tables in the data/DNA/ and data/RNA/ directories (genus.diamond.aggregated.counts.tsv.gz and gene_counts.tsv.gz).
-These can therefore be used for downstream analysis. 
 
-If you have not run the above steps yourself then link to the counts tables we have provided and load into the csvdb database.
+In this case link to the counts tables we have provided and load into the csvdb database.
 
 For RNA::
 
@@ -248,7 +245,7 @@ For RNA::
 
 For DNA::
 
-    $ cd ../DNA
+    $ cd DNA
     $ ln -s ../data/DNA/genus.diamond.aggregated.counts.tsv.gz .
     $ ln -s ../data/DNA/gene_counts.tsv.gz .
     $ zcat genus.diamond.aggregated.counts.tsv.gz | python cgat/scripts/csv2db.py
