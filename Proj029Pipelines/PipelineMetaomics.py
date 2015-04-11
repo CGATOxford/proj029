@@ -833,7 +833,7 @@ def scatterplotPerCogTaxaDNAFoldRNAFold(taxa_cog_rnadiff,
                                         cog_dnadiff):
     '''
     scatterplot fold changes for per genus cog
-    differences for NOGs of interest
+    differences for NOGs of interestx
     '''
     
     R('''library(ggplot2)''')
@@ -850,31 +850,13 @@ def scatterplotPerCogTaxaDNAFoldRNAFold(taxa_cog_rnadiff,
     R('''rna.cog <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % cog_rnadiff)
     R('''rna.cog <- rna.cog[rna.cog$group2 == "WT" & rna.cog$group1 == "HhaIL10R",]''')
 
-    # merge data
+    # merge data for cogs + taxa
     R('''dat <- merge(dna, rna, 
                       by.x = "taxa", 
                       by.y = "taxa", 
                       all.x = T, 
                       all.y = T, 
-                      suffixes = c("dna", "rna"))''')
-
-    # add gene column
-    R('''dat$gene <- unlist(strsplit(dat$taxa, "-"))[seq(1, nrow(dat)*2, 2)]''')
-    R('''dat$genus <- unlist(strsplit(dat$taxa, "-"))[seq(2, nrow(dat)*2, 2)]''')
-
-    # more merging
-    R('''dat <- merge(dat, dna.cog, 
-                      by.x = "gene", 
-                      by.y = "taxa", 
-                      suffixes = c("taxa","dna.cog"), 
-                      all.x = T, 
-                      all.y = T)''')
-    R('''dat <- merge(dat, rna.cog, 
-                      by.x = "gene", 
-                      by.y = "taxa", 
-                      suffixes = c("dna.cog", "rna.cog"), 
-                      all.x = T, 
-                      all.y = T)''')
+                      suffixes = c(".dna.taxa.cog", ".rna.taxa.cog"))''')
 
     # sub NA for 0
     R('''dat[is.na(dat)] <- 0''')
@@ -888,13 +870,15 @@ def scatterplotPerCogTaxaDNAFoldRNAFold(taxa_cog_rnadiff,
     # if not present in one or other then fold change will
     # be 0
     R('''for (cog in cogs){
-            dat2 <- dat[grep(cog, dat$gene),]
-             
+            dat2 <- dat[grep(cog, dat$taxa),]
+            dna.cog2 <- dna.cog[grep(cog, dna.cog$taxa),]
+            rna.cog2 <- rna.cog[grep(cog, rna.cog$taxa),]
+
             # add the data for COG fold changes and abundance
-            dat3 <- data.frame("genus" = append(dat2$genus, cog),
-                               "dna.fold" = append(dat2$logFCdna, unique(dat2$logFCdna.cog)),
-                               "rna.fold" = append(dat2$logFCrna, unique(dat2$logFCrna.cog)),
-                               "abundance" = append(dat2$AveExprdna, sum(dat2$AveExprdna.cog)))
+            dat3 <- data.frame("genus" = append(dat2$taxa, cog),
+                               "dna.fold" = append(dat2$logFC.dna.taxa.cog, dna.cog2$logFC),
+                               "rna.fold" = append(dat2$logFC.rna.taxa.cog, rna.cog2$logFC),
+                               "abundance" = append(dat2$AveExpr.rna.taxa.cog, rna.cog2$AveExpr))
                                
             suffix <- paste(cog, "scatters.pdf", sep = ".")
             outname <- paste("scatterplot_genus_cog_fold.dir", suffix, sep = "/")
