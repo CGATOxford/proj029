@@ -56,7 +56,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Combined microbiome and host profiling in a mouse model of colitis'
+project = u'Proj029 - Microbiome and host profiling in a mouse model of colitis'
 #suggests host immune activity drives changes in the gut micro-environment that influence both community structure and gene expression'
 copyright = u'2015, Nick Ilott'
 
