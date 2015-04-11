@@ -882,7 +882,7 @@
                                         <span class="n">cog_dnadiff</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    scatterplot fold changes for per genus cog</span>
-<span class="sd">    differences for NOGs of interest</span>
+<span class="sd">    differences for NOGs of interestx</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
@@ -899,31 +899,13 @@
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.cog &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">cog_rnadiff</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.cog &lt;- rna.cog[rna.cog$group2 == &quot;WT&quot; &amp; rna.cog$group1 == &quot;HhaIL10R&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
 
-    <span class="c"># merge data</span>
+    <span class="c"># merge data for cogs + taxa</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dna, rna, </span>
 <span class="s">                      by.x = &quot;taxa&quot;, </span>
 <span class="s">                      by.y = &quot;taxa&quot;, </span>
 <span class="s">                      all.x = T, </span>
 <span class="s">                      all.y = T, </span>
-<span class="s">                      suffixes = c(&quot;dna&quot;, &quot;rna&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
-
-    <span class="c"># add gene column</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$gene &lt;- unlist(strsplit(dat$taxa, &quot;-&quot;))[seq(1, nrow(dat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat$genus &lt;- unlist(strsplit(dat$taxa, &quot;-&quot;))[seq(2, nrow(dat)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
-
-    <span class="c"># more merging</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dat, dna.cog, </span>
-<span class="s">                      by.x = &quot;gene&quot;, </span>
-<span class="s">                      by.y = &quot;taxa&quot;, </span>
-<span class="s">                      suffixes = c(&quot;taxa&quot;,&quot;dna.cog&quot;), </span>
-<span class="s">                      all.x = T, </span>
-<span class="s">                      all.y = T)&#39;&#39;&#39;</span><span class="p">)</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- merge(dat, rna.cog, </span>
-<span class="s">                      by.x = &quot;gene&quot;, </span>
-<span class="s">                      by.y = &quot;taxa&quot;, </span>
-<span class="s">                      suffixes = c(&quot;dna.cog&quot;, &quot;rna.cog&quot;), </span>
-<span class="s">                      all.x = T, </span>
-<span class="s">                      all.y = T)&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="s">                      suffixes = c(&quot;.dna.taxa.cog&quot;, &quot;.rna.taxa.cog&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
 
     <span class="c"># sub NA for 0</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat[is.na(dat)] &lt;- 0&#39;&#39;&#39;</span><span class="p">)</span>
@@ -937,15 +919,17 @@
     <span class="c"># if not present in one or other then fold change will</span>
     <span class="c"># be 0</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;for (cog in cogs){</span>
-<span class="s">            dat2 &lt;- dat[grep(cog, dat$gene),]</span>
-<span class="s">             </span>
+<span class="s">            dat2 &lt;- dat[grep(cog, dat$taxa),]</span>
+<span class="s">            dna.cog2 &lt;- dna.cog[grep(cog, dna.cog$taxa),]</span>
+<span class="s">            rna.cog2 &lt;- rna.cog[grep(cog, rna.cog$taxa),]</span>
+
 <span class="s">            # add the data for COG fold changes and abundance</span>
-<span class="s">            dat3 &lt;- data.frame(&quot;genus&quot; = append(dat2$genus, cog),</span>
-<span class="s">                               &quot;dna.fold&quot; = append(dat2$logFCdna, unique(dat2$logFCdna.cog)),</span>
-<span class="s">                               &quot;rna.fold&quot; = append(dat2$logFCrna, unique(dat2$logFCrna.cog)),</span>
-<span class="s">                               &quot;abundance&quot; = append(dat2$AveExprdna, sum(dat2$AveExprdna.cog)))</span>
+<span class="s">            dat3 &lt;- data.frame(&quot;genus&quot; = append(dat2$taxa, cog),</span>
+<span class="s">                               &quot;dna.fold&quot; = append(dat2$logFC.dna.taxa.cog, dna.cog2$logFC),</span>
+<span class="s">                               &quot;rna.fold&quot; = append(dat2$logFC.rna.taxa.cog, rna.cog2$logFC),</span>
+<span class="s">                               &quot;abundance&quot; = append(dat2$AveExpr.rna.taxa.cog, rna.cog2$AveExpr))</span>
 <span class="s">                               </span>
-<span class="s">            suffix &lt;- paste(cog, &quot;scatters.pdf&quot;, sep = &quot;.&quot;)</span>
+<span class="s">            suffix &lt;- paste(cog, &quot;scatters.png&quot;, sep = &quot;.&quot;)</span>
 <span class="s">            outname &lt;- paste(&quot;scatterplot_genus_cog_fold.dir&quot;, suffix, sep = &quot;/&quot;)</span>
 
 <span class="s">            plot1 &lt;- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = log10(abundance), label = genus))</span>

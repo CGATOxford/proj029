@@ -110,8 +110,8 @@ You will also have to install the proj029 respository::
 +------------+--------------+
 |   mtools   | `here`_      |
 +------------+--------------+
-|  fastx     |              |
-|  toolkit   | 0.0.13       |
+|   fastx    |              |
+|   toolkit  | 0.0.13       |
 +------------+--------------+
 
 

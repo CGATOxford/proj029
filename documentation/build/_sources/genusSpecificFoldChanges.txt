@@ -54,14 +54,19 @@ scatterplot_genus_cog_fold.dir in compare_datasets::
 
 
 
-This will produce the following plots of pur genes of interest i.e. those involved in oxidative stress
+This will produce plots of our genes of interest i.e. those involved in oxidative stress
 resistance and glycan utilisation.
 
-.. image:: ../images/COG0783.scatters.pdf
+As an example here is the plot for COG0783: Dps/Ferritin
+
+.. image:: ../images/COG0783.scatters.png
     :align: center
     :width: 400pt
     :height: 400pt
 
+This is where we end the analysis of the microbiota. The next analyses are on the host response to colitis.
+We are not going into the anlayses of these data as they are fairly standard i.e. LIMMA to perform microarray
+analysis and DESeq for RNA-seq analysis.
 
-
+We hope that this documentation was useful!
 
