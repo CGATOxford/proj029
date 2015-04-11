@@ -880,12 +880,12 @@ def scatterplotPerCogTaxaDNAFoldRNAFold(taxa_cog_rnadiff,
                                "rna.fold" = append(dat2$logFC.rna.taxa.cog, rna.cog2$logFC),
                                "abundance" = append(dat2$AveExpr.rna.taxa.cog, rna.cog2$AveExpr))
                                
-            suffix <- paste(cog, "scatters.pdf", sep = ".")
+            suffix <- paste(cog, "scatters.png", sep = ".")
             outname <- paste("scatterplot_genus_cog_fold.dir", suffix, sep = "/")
 
             plot1 <- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = log10(abundance), label = genus))
             plot2 <- plot1 + geom_point(shape = 18) 
-            plot3 <- plot2 + geom_text(hjust = 0.5, vjust = 1, size = 5)
+            plot3 <- plot2 + geom_text(hjust = 0.5, vjust = 1) + scale_size(range = c(3,6))
             plot4 <- plot3 + geom_abline(intercept = 0, slope = 1, colour = "blue") 
             plot5 <- plot4 + geom_hline(yintercept = c(-1,1), linetype = "dashed")
             plot6 <- plot5 + geom_vline(xintercept = c(-1,1), linetype = "dashed")
