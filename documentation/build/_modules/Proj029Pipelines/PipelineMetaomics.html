@@ -934,7 +934,7 @@
 
 <span class="s">            plot1 &lt;- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = log10(abundance), label = genus))</span>
 <span class="s">            plot2 &lt;- plot1 + geom_point(shape = 18) </span>
-<span class="s">            plot3 &lt;- plot2 + geom_text(hjust = 0.5, vjust = 1, size = 5)</span>
+<span class="s">            plot3 &lt;- plot2 + geom_text(hjust = 0.5, vjust = 1) + scale_size(range = c(3,6))</span>
 <span class="s">            plot4 &lt;- plot3 + geom_abline(intercept = 0, slope = 1, colour = &quot;blue&quot;) </span>
 <span class="s">            plot5 &lt;- plot4 + geom_hline(yintercept = c(-1,1), linetype = &quot;dashed&quot;)</span>
 <span class="s">            plot6 &lt;- plot5 + geom_vline(xintercept = c(-1,1), linetype = &quot;dashed&quot;)</span>
