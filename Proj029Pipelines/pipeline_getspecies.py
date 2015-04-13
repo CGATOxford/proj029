@@ -140,5 +140,57 @@ def runMetagenomeSeq(infile, outfile):
 #########################################
 #########################################
 
+
+@follows(mkdir("barplot.dir"))
+@transform(runMetagenomeSeq, 
+           regex("(\S+)/(\S+).diff.tsv"),
+           r"barplot.dir/\2.barplot.pdf")
+def barplotGoi(infile, outfile):
+    '''
+    barplot the genes of interest
+    '''
+    directory = os.path.dirname(outfile)
+    infile = P.snip(infile, ".diff.tsv") + ".norm.matrix"
+    
+    R('''library(ggplot2)''')
+    R('''library(reshape)''')
+    R('''library(plyr)''')
+
+    R('''dat <- read.csv("%s", 
+                         header = T, 
+                         stringsAsFactors = F, 
+                         sep = "\t")''' % infile)
+
+    R('''cogs <- c("COG0783", "COG0435", "COG2837", "COG5520")''')
+    R('''for (cog in cogs){
+             outname <- paste("%s", cog, sep = "/")
+             outname <- paste(outname, "pdf", sep = ".")
+             dat2 <- dat[grep(cog, dat$taxa),]
+             dat2 <- melt(dat2)
+             dat2$cond <- unlist(strsplit(as.character(dat2$variable), ".R[0-9]"))[seq(1, nrow(dat2)*2, 2)]
+             dat2$cond <- unlist(strsplit(dat2$cond, ".", fixed=T))[seq(2, length(dat2$cond)*2, 2)]
+             dat2 <- ddply(dat2, 
+                           c("taxa","cond"),
+                           summarise,
+                           mean = mean(value),
+                           n = length(value),
+                           sd = sd(value),
+                           se = sd/sqrt(n))
+            dat2 <- dat2[order(dat2$mean),]
+            plot1 <- ggplot(dat2, aes(x=factor(taxa, levels = taxa), y=mean, group=cond, fill=cond))
+            plot2 <- plot1 + geom_bar(position = "dodge", stat="identity") 
+            limits <- aes(ymax = mean + se, ymin=mean - se)
+            plot3 <- plot2 + geom_errorbar(limits, , position=position_dodge(0.9), width=0.25)
+            plot4 <- plot3 + scale_fill_manual(values = c("black", "grey"))
+            plot4 + coord_flip()
+            ggsave(outname)
+    }''' % directory)
+    P.touch(outfile)
+
+#########################################
+#########################################
+#########################################
+
+
 if __name__ == "__main__":
     sys.exit(P.main(sys.argv))
