@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    introduction.rst
+   quickAnalysis.rst
    alignmentAndCounting.rst
    metagenomeseq.rst
    compareDatasets.rst
