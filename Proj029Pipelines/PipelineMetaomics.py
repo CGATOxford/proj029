@@ -299,7 +299,7 @@ def buildDetectionOverlap(rnacounts, dnacounts, outfile):
 def plotAbundanceLevelsOfOverlap(rnacounts, 
                                  dnacounts, 
                                  outfile,
-                                 of = None):
+                                 of=None):
     '''
     plot abundance levels pf taxa/NOGs that do
     and don't overlap between data sets
@@ -330,8 +330,9 @@ def plotAbundanceLevelsOfOverlap(rnacounts,
     R('''dna.distinct <- apply(dna[dna.only,], 1, mean)''')
     
     if of == "genes":
-        # this is jsut so the thing will run
+        # this is just so the thing will run
         # genes do not have distinct genes
+        # in RNA analysis
         R('''rna.distinct <- rep(0, 20)''')
     else:
         R('''rna.distinct <- rna.distinct''')
@@ -880,7 +881,7 @@ def scatterplotPerCogTaxaDNAFoldRNAFold(taxa_cog_rnadiff,
                                "rna.fold" = append(dat2$logFC.rna.taxa.cog, rna.cog2$logFC),
                                "abundance" = append(dat2$AveExpr.rna.taxa.cog, rna.cog2$AveExpr))
                                
-            suffix <- paste(cog, "scatters.png", sep = ".")
+            suffix <- paste(cog, "scatters.pdf", sep = ".")
             outname <- paste("scatterplot_genus_cog_fold.dir", suffix, sep = "/")
 
             plot1 <- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = log10(abundance), label = genus))
