@@ -20,7 +20,7 @@ Usage
 
 Example::
 
-   python run_analysis.py --rdir=/user/bin/R
+   python run_analysis.py 
 
 Type::
 
@@ -54,6 +54,12 @@ def linkData(datadir):
     link data from data directory as specified
     on the commandline
     '''
+    # link goi.tsv to cwd
+    
+    if not os.path.exists("goi.tsv"):
+        os.symlink(os.path.abspath(os.path.join(datadir, "goi.tsv")),
+                   os.path.abspath("goi.tsv"))
+
     # create directories - assume we are in the top-level
     # working directory
     to_make = [
@@ -114,18 +120,51 @@ def loadCounts(scriptsdir):
 ##############################################################
 
 
-def runMetagenomeSeq(cgatdir, rdir):
+def runMetagenomeSeq(cgatdir, 
+                     rdir, 
+                     filtered=False,
+                     genus_level=False):
     '''
     run metagenomeSeq on counts tables
     '''
     directories = ["RNA", "DNA"]
     filenames = ["genus.diamond.aggregated.counts.tsv.gz",
-                 "gene_counts.tsv.gz"]
+                 "gene_counts.tsv.gz",
+                 "genus.diamond.aggregated.counts.restricted.tsv.gz",
+                 "gene_counts.restricted.tsv.gz",
+                 "associated_taxa_counts.tsv.gz"]
+
     for directory in directories:
         for filename in filenames:
             filename = os.path.abspath(os.path.join(directory, filename))
             outfilename = P.snip(filename, ".gz")
-            outprefix = P.snip(filename, ".tsv.gz")
+            
+            # check if file exists
+            if not os.path.exists(filename):
+                continue
+            
+            # only apply to genus level
+            if genus_level:
+                if "associated_taxa" not in filename:
+                    continue
+            else:
+                if "associated_taxa" in filename:
+                    continue
+
+            # switch to skip re-running of 
+            # previously run analysis
+            if not filtered:
+                if "restricted" in filename:
+                    continue
+            else:
+                if "restricted" not in filename:
+                    continue
+
+            if "restricted" in filename:
+                outprefix = P.snip(filename, ".restricted.tsv.gz")
+            else:
+                outprefix = P.snip(filename, ".tsv.gz")
+
             os.system("""gunzip -c \
                          %(filename)s > %(outfilename)s""" % locals())
             
@@ -169,6 +208,26 @@ def loadDiffTables(scriptsdir):
 ##############################################################
 
 
+def buildRestrictedSet(proj029scriptsdir, 
+                       infile, 
+                       restrictto):
+    '''
+    build filtered files for proper metagenomeseq
+    analysis
+    '''
+    outfile = P.snip(infile, ".tsv.gz") + ".restricted.tsv.gz"
+    logfile = infile + ".log"
+    os.system("""zcat %(infile)s | python %(proj029scriptsdir)s/counts2restrictedcounts.py \
+                                     --restrict-to=%(restrictto)s \
+                                     --log=restrict.log \
+                                     | gzip > %(outfile)s""" % locals())
+
+
+##############################################################
+##############################################################
+##############################################################
+
+
 def main(argv=None):
     """script main.
     parses command line options in sys.argv, unless *argv* is given.
@@ -190,16 +249,26 @@ def main(argv=None):
     parser.add_option("--cgatdir", dest="cgatdir", type="string",
                       help="provide cgat directory")
 
+    parser.add_option("--proj029dir", dest="proj029dir", type="string",
+                      help="provide proj029 directory")
+
     parser.set_defaults(rdir="/usr/bin")
 
     # add common options (-h/--help, ...) and parse command line
     (options, args) = E.Start(parser, argv=argv)
 
+    assert options.rdir, "must specify R location"
+    assert options.datadir, "must specify data location"
+    assert options.cgatdir, "must specify cgat location"
+    assert options.proj029dir, "must specify proj029 location"
+
     # data and script directories
     datadir = options.datadir
     cgatdir = options.cgatdir
+    proj029dir = options.proj029dir
     rdir = options.rdir
     cgatscriptsdir = "%s/scripts" % cgatdir
+    proj029scriptsdir = "%s/scripts" % proj029dir
 
     # linking data from data directory
     E.info("creating directories and linking data")
@@ -234,11 +303,11 @@ def main(argv=None):
                                                   "DNA/genus.diamond.aggregated.counts.tsv.gz",
                                                    "compare_datasets/genus_abundance_distributions.png")
 
-
-    E.info("plotting abundances of overlapping and distinct genus sets")
+    E.info("plotting abundances of overlapping and distinct gene sets")
     PipelineMetaomics.plotAbundanceLevelsOfOverlap("RNA/gene_counts.tsv.gz",
                                                    "DNA/gene_counts.tsv.gz",
-                                                   "compare_datasets/gene_abundance_distributions.png")
+                                                   "compare_datasets/gene_abundance_distributions.png",
+                                                   of="genes")
 
     
     E.info("correlating abundance estimates bewteen genus abundances")
@@ -247,7 +316,7 @@ def main(argv=None):
                                                     "compare_datasets/genus_abundance_correlation.png")
 
 
-    E.info("correlating abundance estimates bewteen NOG abundances")
+    E.info("correlating abundance estimates between NOG abundances")
     PipelineMetaomics.scatterplotAbundanceEstimates("DNA/gene_counts.norm.matrix",
                                                     "RNA/gene_counts.norm.matrix",
                                                     "compare_datasets/gene_abundance_correlation.png")
@@ -263,8 +332,104 @@ def main(argv=None):
                                       "compare_datasets/common_genes.tsv")
     
 
+    directories = ["RNA", "DNA"]
+    # build filtered sets for metagenomeSeq analysis
+    E.info("build filtered sets (>0.1RPM in both data sets)")
+    for directory in directories:
+        buildRestrictedSet(proj029scriptsdir,
+                           os.path.abspath(
+                os.path.join(directory, "genus.diamond.aggregated.counts.tsv.gz")),
+                           "compare_datasets/common_genera.tsv")
+        buildRestrictedSet(proj029scriptsdir,
+                           os.path.abspath(
+                os.path.join(directory, "gene_counts.tsv.gz")),
+                           "compare_datasets/common_genes.tsv")
+
+    # re-rerun metagenomeSeq
+    E.info("re-running metagenomeSeq on filtered data")
+    runMetagenomeSeq(cgatdir, rdir, filtered = True)
+
+    # load overwritten differential abundance tables
+    E.info("loading differential abundance tables")
+    loadDiffTables(cgatscriptsdir)
+
+    # run principle components analysis
+    E.info("running principle components analysis")
+    filenames = ["genus.diamond.aggregated.counts.norm.matrix",
+                 "gene_counts.norm.matrix"]
+    for directory in directories:
+        # change into correct directory
+        os.chdir(os.path.abspath(directory))
+        for filename in filenames:
+            outfile = P.snip(filename, ".norm.matrix") + ".loadings.tsv"
+            PipelineMetaomics.runPCA(filename, 
+                                     outfile)
+        # return to top level
+        os.chdir(os.path.abspath("../"))
+    
+    E.info("plotting PCA loadings")
+    for directory in directories:
+        os.chdir(os.path.abspath(directory))
+        filename = "genus.diamond.aggregated.counts.loadings.tsv"
+        outfile = P.snip(filename, ".tsv") + ".png"
+        PipelineMetaomics.plotPCALoadings(filename,
+                                          outfile)
+        os.chdir(os.path.abspath("../"))
+
+    # predicting colitis-responsive NOGs
+    E.info("building colitis-responsive NOG sets")
+    PipelineMetaomics.buildRNADNARatio("DNA/gene_counts.diff.tsv",
+                                       "RNA/gene_counts.diff.tsv",
+                                       "compare_datasets/rna_dna_ratio.tsv")
+
+    PipelineMetaomics.buildGeneDiffList("RNA/csvdb",
+                                        "compare_datasets/common_genes.tsv",
+                                        "compare_datasets/rna_diff_genes.tsv")
+
+    PipelineMetaomics.buildGeneDiffList("DNA/csvdb",
+                                        "compare_datasets/common_genes.tsv",
+                                        "compare_datasets/dna_diff_genes.tsv")
+
+    PipelineMetaomics.annotateRNADNARatio("compare_datasets/rna_dna_ratio.tsv",
+                                          "compare_datasets/dna_diff_genes.tsv",
+                                          "compare_datasets/rna_diff_genes.tsv",
+                                          "compare_datasets/rna_dna_ratio.annotated.tsv")
+
+    PipelineMetaomics.plotSets("compare_datasets/rna_dna_ratio.annotated.tsv",
+                               "compare_datasets/rna_dna_ratio.annotated.png")
 
 
+    PipelineMetaomics.buildGenesOutsidePredictionInterval("compare_datasets/rna_dna_ratio.annotated.tsv", 
+                                                          "compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv")
+
+    # assigning NOGs to genera. Plot the maximum contribution
+    # of genera to NOGs
+    E.info("building proportion contribution matrix")
+    PipelineMetaomics.buildGenusCogCountsMatrix("RNA/associated_ptaxa.tsv.gz", 
+                                                "RNA/associated_ptaxa_average.matrix")
+    
+    E.info("plotting maximum genus contribution to NOG expression")
+    PipelineMetaomics.plotMaxTaxaContribution("RNA/associated_ptaxa_average.matrix",
+                                              "compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv",
+                                              "RNA/associated_ptaxa_max_contribution.png")
+
+    
+    E.info("plotting major genera attributed to colitis-responsive NOGS (up-regulates)")
+    PipelineMetaomics.heatmapTaxaCogProportionMatrix("RNA/associated_ptaxa_average.matrix",
+                                                     "compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv",
+                                                     "RNA/associated_ptaxa_heatmap.pdf")
+    
+    # run metagenomeSeq on per genus/NOG counts
+    E.info("running metagenomeSeq on genus-NOG counts")
+    runMetagenomeSeq(cgatdir, rdir, filtered=False, genus_level=True)
+
+    E.info("plotting DNA vs. RNA fold changes for genes of interest")
+    os.chdir(os.path.abspath("compare_datasets"))
+    PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold("../RNA/associated_taxa_counts.diff.tsv",
+                                                          "../DNA/associated_taxa_counts.diff.tsv",
+                                                          "../RNA/gene_counts.diff.tsv",
+                                                          "../RNA/gene_counts.diff.tsv")
+    os.chdir(os.path.abspath(".."))
 
     # write footer and output benchmark information.
     E.Stop()
