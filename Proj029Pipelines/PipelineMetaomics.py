@@ -332,7 +332,7 @@ def plotAbundanceLevelsOfOverlap(rnacounts,
     if of == "genes":
         # this is jsut so the thing will run
         # genes do not have distinct genes
-        R('''rna.distinct <- c(0,0)''')
+        R('''rna.distinct <- rep(0, 20)''')
     else:
         R('''rna.distinct <- rna.distinct''')
 
