@@ -13,8 +13,7 @@ profiling and integrating the two to indentify functional groups that are the mo
 likely to represent colitis-induced functions.
 
 
-The purpose of this documentation is to allow those that were interested enough to 
-read our metagenomics paper to follow the analyses that we used step by step and
+The purpose of this documentation is to allow you to follow the analyses that we used step by step and
 recreate results and figures from our analyses. As with all high-throughput
 sequencing experiments, a number of tasks take a long time to run and created files are
 large. While we expect that the analysis can be run through from start to finish it may be
@@ -86,7 +85,7 @@ CGATPipelines. It is recommended that with third party python modules that you u
     # clone CGAT pipelines (we use Pipeline.py module extensively)
     git clone https://github.com/CGATOxford/CGATPipelines.git
     cd CGATPipelines
-    python setup.py install
+    python setup.py develop
     
 You will also have to install the proj029 respository::
 
@@ -94,6 +93,9 @@ You will also have to install the proj029 respository::
     cd proj029
     python setup.py install
 
+
+Installing the CGAT tools should install the majority of dependencies although specific tools
+and R libraries will need to be installed manually.
 
 
 3rd party software
