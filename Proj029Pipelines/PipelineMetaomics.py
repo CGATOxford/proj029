@@ -15,6 +15,7 @@ import CGAT.IOTools as IOTools
 import CGATPipelines.Pipeline as P
 from rpy2.robjects import r as R
 import pandas
+import numpy as np
 
 ####################################################
 ####################################################
