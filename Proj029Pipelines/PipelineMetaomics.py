@@ -812,9 +812,13 @@ def heatmapTaxaCogProportionMatrix(matrix, annotations, outfile):
     R('''dat <- dat[,colSums(dat > 50) >= 1]''')
     R('''dat <- dat[rowSums(dat > 10) >= 1,]''')
 
+    # not reading numeric in all instances
+    R('''dat2 <- data.frame(t(apply(dat, 1, as.numeric)))''')
+    R('''colnames(dat2) <- colnames(dat)''')
+
     R('''pdf("%s", height = 10, width = 15)''' % outfile)
     R('''library(pheatmap)''')
-    R('''pheatmap(dat, 
+    R('''pheatmap(dat2, 
                   clustering_distance_cols = "manhattan",
                   clustering_method = "ward",
                   annotation = annotation,
