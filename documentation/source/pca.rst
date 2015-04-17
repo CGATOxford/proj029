@@ -12,7 +12,7 @@ test significance of sample clustering using the PERMANOVA implemented in the ad
 In Fig. 1 we looked at genus abundances. Below is a representative example for the RNA analysis. This function
 produces the PCA plot (genus.diamond.aggregated.counts.pca.png) for components 1 and 2 and also outputs the loadings. 
 The name of the plot is consistent with the name of the loadings outfile (apologies but the outfile must end in .loadings.tsv). You must be in 
-the directory where you want the files to be produced, otherwise there will be an error::
+the directory where you want the files to be produced, otherwise there will be an error. In the RNA/ directory type::
 
 
     >> import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
@@ -57,5 +57,5 @@ NOGs that were significantly differentially abundant in both DNA and RNA analyse
 rest of the analysis.
 
  
-.. _CGATOxford/CGATPiplines: https://github.com/CGATOxford/CGATPipelines
+.. _CGATPipelines: https://github.com/CGATOxford/CGATPipelines
 

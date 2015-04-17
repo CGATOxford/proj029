@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
-    <link rel="next" title="Alignment and counting" href="alignmentAndCounting.html" />
+    <link rel="next" title="Installation issues" href="installationIssues.html" />
     <link rel="prev" title="Proj029 - Microbiome and host profiling in a mouse model of colitis" href="index.html" /> 
   </head>
   <body role="document">
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="alignmentAndCounting.html" title="Alignment and counting"
+          <a href="installationIssues.html" title="Installation issues"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Proj029 - Microbiome and host profiling in a mouse model of colitis"
@@ -61,13 +61,17 @@ end we used shotgun metagenomic and metatranscriptomic sequencing. Using these t
 methods we were interested in comparing RNA- and DNA-based methods for microbiome
 profiling and integrating the two to indentify functional groups that are the most
 likely to represent colitis-induced functions.</p>
-<p>The purpose of this documentation is to allow those that were interested enough to
-read our metagenomics paper to follow the analyses that we used step by step and
+<p>The purpose of this documentation is to allow you to follow the analyses that we used step by step and
 recreate results and figures from our analyses. As with all high-throughput
 sequencing experiments, a number of tasks take a long time to run and created files are
 large. While we expect that the analysis can be run through from start to finish it may be
 more apropriate to only run certain sections. Therefore we have provided the output files
 so that some tasks can be skipped.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You may be wondering why this is called proj029. the reason is that this is CGAT&#8217;s
+29th project. The simple naming also enables the code repo to be succinctly named.</p>
+</div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The code for the analyses is distributed across multiple locations. This is due
@@ -92,7 +96,7 @@ we know that it works on our system (Red Hat Enterprise Linux Server release 6.6
 </div>
 </div>
 <div class="section" id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
 <p>To run the analyses you will have to install a bit of software. Shown are the versions
 used in the analysis although newer versions may now be available and could be substituted.</p>
 <p>First of all make sure that you have the CGAT code collection installed - this includes cgat and
@@ -100,8 +104,8 @@ CGATPipelines. It is recommended that with third party python modules that you u
 <div class="highlight-rst"><div class="highlight"><pre># install virtualenv
 pip install virtualenv
 
-# setup virtual environment
-virtualenv --no-site-packages metagenomics
+# setup virtual environment called in metagenomics directory
+virtualenv metagenomics
 
 # start using the virtual environment
 source metagenomics/bin/activate
@@ -123,6 +127,8 @@ cd proj029
 python setup.py install
 </pre></div>
 </div>
+<p>Installing the CGAT tools should install the majority of dependencies although specific tools
+and R libraries will need to be installed manually.</p>
 <div class="section" id="rd-party-software">
 <h3>3rd party software<a class="headerlink" href="#rd-party-software" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
@@ -154,7 +160,6 @@ toolkit</td>
 </tr>
 </tbody>
 </table>
-<p>R libraries</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="100%" />
@@ -178,7 +183,6 @@ toolkit</td>
 </tr>
 </tbody>
 </table>
-<p>Python libraries</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="100%" />
@@ -230,8 +234,8 @@ toolkit</td>
   <p class="topless"><a href="index.html"
                         title="previous chapter">Proj029 - Microbiome and host profiling in a mouse model of colitis</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="alignmentAndCounting.html"
-                        title="next chapter">Alignment and counting</a></p>
+  <p class="topless"><a href="installationIssues.html"
+                        title="next chapter">Installation issues</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -266,7 +270,7 @@ toolkit</td>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="alignmentAndCounting.html" title="Alignment and counting"
+          <a href="installationIssues.html" title="Installation issues"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Proj029 - Microbiome and host profiling in a mouse model of colitis"

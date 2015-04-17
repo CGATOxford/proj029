@@ -61,7 +61,7 @@ NOG expression. To define genus-level fold changes between colitic mice and stea
 mice took two steps. In step 1 we used the script nogs2genera.py as we did previously to
 produce a per genus-NOG count (as opposed to percentage).</p>
 <p>so for example:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python &lt;path_to_proj029&gt;/scripts/nogs2genera.py
+<div class="highlight-python"><div class="highlight"><pre>$ python &lt;path_to_proj029&gt;/proj029/scripts/nogs2genera.py
          -m gene2cog.tsv.gz
          -d common_genes.tsv
          --level=genus
@@ -81,10 +81,10 @@ is run through metagenomeSeq.R to normalise the data and to estimate fold change
 then used to plot DNA fold changes vs. RNA fold changes at the genus level. We include the gene_counts.diff files
 so that we can include the overall NOG fold changes in the plots.</p>
 <p>Create the genus-level .diff.tsv files for RNA and DNA. E.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cd RNA
+<div class="highlight-python"><div class="highlight"><pre>$ cd &lt;path_to_RNA&gt;/RNA
 $ ln -s &lt;path_to_data&gt;/data/RNA/associated_taxa_counts.tsv.gz .
 $ gunzip -c associated_taxa_counts.tsv.gz &gt; associated_taxa_counts.tsv
-$ Rscript &lt;path_to_cgat&gt;/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c associated_taxa_counts.tsv -p associated_taxa_counts
+$ &lt;path_to_R_install&gt;/Rscript &lt;path_to_cgat&gt;/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c associated_taxa_counts.tsv -p associated_taxa_counts
 </pre></div>
 </div>
 <p>Once this is done for RNA and DNA we can plot the fold changes. Apologies but you will have to create a subfolder called
@@ -92,10 +92,10 @@ scatterplot_genus_cog_fold.dir in compare_datasets:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ mkdir scatterplot_genus_cog_fold.dir
 
 &gt;&gt; import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
-&gt;&gt; PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold(&lt;path_to_rna&gt;/RNA/associated_taxa_counts.diff.tsv,
-                                                         &lt;path_to_dna&gt;/DNA/associated_taxa_counts.diff.tsv,
-                                                         &lt;path_to_rna&gt;/RNA/gene_counts.diff.tsv,
-                                                         &lt;path_to_rna&gt;/RNA/gene_counts.diff.tsv)
+&gt;&gt; PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold(&lt;path_to_RNA&gt;/RNA/associated_taxa_counts.diff.tsv,
+                                                         &lt;path_to_DNA&gt;/DNA/associated_taxa_counts.diff.tsv,
+                                                         &lt;path_to_RNA&gt;/RNA/gene_counts.diff.tsv,
+                                                         &lt;path_to_RNA&gt;/RNA/gene_counts.diff.tsv)
 </pre></div>
 </div>
 <p>This will produce plots of our genes of interest i.e. those involved in oxidative stress

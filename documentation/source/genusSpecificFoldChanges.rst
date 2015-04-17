@@ -13,7 +13,7 @@ produce a per genus-NOG count (as opposed to percentage).
 
 so for example::
 
-    $ python <path_to_proj029>/scripts/nogs2genera.py
+    $ python <path_to_proj029>/proj029/scripts/nogs2genera.py
              -m gene2cog.tsv.gz
              -d common_genes.tsv
              --level=genus
@@ -36,10 +36,10 @@ so that we can include the overall NOG fold changes in the plots.
 
 Create the genus-level .diff.tsv files for RNA and DNA. E.g.::
 
-    $ cd RNA
+    $ cd <path_to_RNA>/RNA
     $ ln -s <path_to_data>/data/RNA/associated_taxa_counts.tsv.gz .
     $ gunzip -c associated_taxa_counts.tsv.gz > associated_taxa_counts.tsv
-    $ Rscript <path_to_cgat>/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c associated_taxa_counts.tsv -p associated_taxa_counts
+    $ <path_to_R_install>/Rscript <path_to_cgat>/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c associated_taxa_counts.tsv -p associated_taxa_counts
 
 Once this is done for RNA and DNA we can plot the fold changes. Apologies but you will have to create a subfolder called
 scatterplot_genus_cog_fold.dir in compare_datasets::
@@ -47,10 +47,10 @@ scatterplot_genus_cog_fold.dir in compare_datasets::
     $ mkdir scatterplot_genus_cog_fold.dir
 
     >> import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
-    >> PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold(<path_to_rna>/RNA/associated_taxa_counts.diff.tsv,
-                                                             <path_to_dna>/DNA/associated_taxa_counts.diff.tsv,
-                                                             <path_to_rna>/RNA/gene_counts.diff.tsv,
-                                                             <path_to_rna>/RNA/gene_counts.diff.tsv)
+    >> PipelineMetaomics.scatterplotPerCogTaxaDNAFoldRNAFold(<path_to_RNA>/RNA/associated_taxa_counts.diff.tsv,
+                                                             <path_to_DNA>/DNA/associated_taxa_counts.diff.tsv,
+                                                             <path_to_RNA>/RNA/gene_counts.diff.tsv,
+                                                             <path_to_RNA>/RNA/gene_counts.diff.tsv)
 
 
 

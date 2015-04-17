@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
-    <link rel="next" title="Defining colitis-dependent NOGs" href="colitisResponsiveNOGs.html" />
+    <link rel="next" title="Defining colitis-responsive NOGs" href="colitisResponsiveNOGs.html" />
     <link rel="prev" title="MetagenomeSeq filtered analysis" href="metagenomeseq_restrict.html" /> 
   </head>
   <body role="document">
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
+          <a href="colitisResponsiveNOGs.html" title="Defining colitis-responsive NOGs"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="metagenomeseq_restrict.html" title="MetagenomeSeq filtered analysis"
@@ -61,14 +61,14 @@ test significance of sample clustering using the PERMANOVA implemented in the ad
 <p>In Fig. 1 we looked at genus abundances. Below is a representative example for the RNA analysis. This function
 produces the PCA plot (genus.diamond.aggregated.counts.pca.png) for components 1 and 2 and also outputs the loadings.
 The name of the plot is consistent with the name of the loadings outfile (apologies but the outfile must end in .loadings.tsv). You must be in
-the directory where you want the files to be produced, otherwise there will be an error:</p>
+the directory where you want the files to be produced, otherwise there will be an error. In the RNA/ directory type:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
 &gt;&gt; PipelineMetaomics.runPCA(&quot;genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;genus.diamond.aggregated.counts.loadings.tsv&quot;)
 </pre></div>
 </div>
 <p>This produces the following plot.</p>
 <a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.pca.png"><img alt="_images/genus.diamond.aggregated.counts.pca.png" class="align-center" src="_images/genus.diamond.aggregated.counts.pca.png" style="width: 400pt; height: 400pt;" /></a>
-<p>The adonis test in the module PipelineMetagenomeCommunities.py from <a href="#id1"><span class="problematic" id="id2">`CGATPipelines`_</span></a> was run to test for significant clustering of conditions:</p>
+<p>The adonis test in the module PipelineMetagenomeCommunities.py from <a class="reference external" href="https://github.com/CGATOxford/CGATPipelines">CGATPipelines</a> was run to test for significant clustering of conditions:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import CGATPipelines.PipelineMetagenomeCommunities as PipelineMetagenomeCommunities
 &gt;&gt; PipelineMetagenomeCommunities.testDistSignificance(&quot;genus.diamond.aggregated.counts.norm.matrix&quot;, &quot;genus.diamond.aggregated.counts.norm.permanova.sig&quot;)
 </pre></div>
@@ -101,7 +101,7 @@ rest of the analysis.</p>
                         title="previous chapter">MetagenomeSeq filtered analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="colitisResponsiveNOGs.html"
-                        title="next chapter">Defining colitis-dependent NOGs</a></p>
+                        title="next chapter">Defining colitis-responsive NOGs</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -136,7 +136,7 @@ rest of the analysis.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
+          <a href="colitisResponsiveNOGs.html" title="Defining colitis-responsive NOGs"
              >next</a> |</li>
         <li class="right" >
           <a href="metagenomeseq_restrict.html" title="MetagenomeSeq filtered analysis"

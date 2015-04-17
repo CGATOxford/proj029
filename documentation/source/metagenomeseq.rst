@@ -21,7 +21,7 @@ with .diff.tsv).
 Do this for the relevant genera and gene counts tables::
 
     $ gunzip -c genus.diamond.aggregated.counts.tsv.gz > genus.diamond.aggregated.counts.tsv
-    $ Rscript <path_to_cgat>/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.tsv -p genus.diamond.aggregated.counts
+    $ <path_to_R_install>/Rscript <path_to_cgat>/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.tsv -p genus.diamond.aggregated.counts
 
 
 The options specified control the number of samples (--k) that must contain the feature above a certain reads per million (RPM) (--a)

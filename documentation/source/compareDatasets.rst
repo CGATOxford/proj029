@@ -26,8 +26,8 @@ for genera we can type::
 
 
     >> import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
-    >> PipelineMetaomics.buildDetectionOverlap("../RNA/genus.diamond.aggregated.counts.tsv.gz", 
-                                               "../DNA/genus.diamond.aggregated.counts.tsv.gz", 
+    >> PipelineMetaomics.buildDetectionOverlap("<path_to_RNA>/RNA/genus.diamond.aggregated.counts.tsv.gz", 
+                                               "<path_to_DNA>/DNA/genus.diamond.aggregated.counts.tsv.gz", 
                                                "genus_overlap.tsv")
 
 
@@ -42,8 +42,8 @@ We then compared the feature abundance distributions (e.g. genera) that were det
 per million (RPM) values from counts tables). To do this we run the following functions againg with RNA counts, DNA coutns and outfile
 as positional arguments::
 
-    >> PipelineMetaomics.plotAbundanceLevelsOfOverlap("../RNA/genus.diamond.aggregated.counts.tsv.gz",
-                                                      "../DNA/genus.diamond.aggregated.counts.tsv.gz",
+    >> PipelineMetaomics.plotAbundanceLevelsOfOverlap("<path_to_RNA>/RNA/genus.diamond.aggregated.counts.tsv.gz",
+                                                      "<path_to_DNA>/DNA/genus.diamond.aggregated.counts.tsv.gz",
                                                       "genus_abundance_distributions.png")
 
 This produces the following plot in the file genus_abundance_distributions.png.
@@ -64,8 +64,8 @@ We can then compare abundance estimates for those commonly detected genera (or N
 abundances.:: 
  
 
-    >> PipelineMetaomics.scatterplotAbundanceEstimates("../DNA/genus.diamond.aggregated.counts.norm.matrix",
-                                                       "../RNA/genus.diamond.aggregated.counts.norm.matrix",
+    >> PipelineMetaomics.scatterplotAbundanceEstimates("<path_to_DNA>/DNA/genus.diamond.aggregated.counts.norm.matrix",
+                                                       "<path_to_RNA>/RNA/genus.diamond.aggregated.counts.norm.matrix",
                                                        "genus_abundance_correlation.png")
 
 
@@ -85,13 +85,13 @@ that we loaded into our database and run the following functions. common_genera.
 restrict our "proper" metagenomeSeq analysis to those features::
 
 
-    >> PipelineMetaomics.buildCommonList("../RNA/csvdb",
-                                         "../DNA/csvdb",
+    >> PipelineMetaomics.buildCommonList("<path_to_RNA>/RNA/csvdb",
+                                         "<path_to_DNA>/DNA/csvdb",
                                          "common_genera.tsv")
 
 
-    >> PipelineMetaomics.buildCommonList("../RNA/csvdb",
-                                         "../DNA/csvdb",
+    >> PipelineMetaomics.buildCommonList("<path_to_RNA>/RNA/csvdb",
+                                         "<path_to_DNA>/DNA/csvdb",
                                          "common_genes.tsv")
 
 

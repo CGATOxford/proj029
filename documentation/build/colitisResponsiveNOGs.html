@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Defining colitis-dependent NOGs &mdash; Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    <title>Defining colitis-responsive NOGs &mdash; Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -52,10 +52,10 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="defining-colitis-dependent-nogs">
-<h1>Defining colitis-dependent NOGs<a class="headerlink" href="#defining-colitis-dependent-nogs" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="defining-colitis-responsive-nogs">
+<h1>Defining colitis-responsive NOGs<a class="headerlink" href="#defining-colitis-responsive-nogs" title="Permalink to this headline">¶</a></h1>
 <p>In the compare_datasets/ directory create a link to the goi.tsv file in the data/ directory. This will become clearer in a little while:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ln -s ../data/goi.tsv .
+<div class="highlight-python"><div class="highlight"><pre>$ ln -s &lt;path_to_data&gt;/data/goi.tsv .
 </pre></div>
 </div>
 <p>Out metagenomeSeq analysis was performed on NOGs and we identified 1221 and 669 NOGs to be differentially abundant in
@@ -63,22 +63,22 @@ metagenomic and metatranscriptomic data sets, respectively. The overlap between 
 some NOGs that were transcriptionally activated in colitis, leading us to hypothesise that these were due to responses
 by bacteria to an alteration in the gut niche.</p>
 <p>A few tasks were performed before we produced Fig. 2g - some of which did not end up in the manuscript. For example we
-built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the compare_datasets
+built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the compare_datasets/
 directory do:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
-&gt;&gt; PipelineMetaomics.buildRNADNARatio(&quot;../DNA/gene_counts.diff.tsv&quot;,
-                                      &quot;../RNA/gene_counts.diff.tsv&quot;,
+&gt;&gt; PipelineMetaomics.buildRNADNARatio(&quot;&lt;path_to_DNA&gt;/DNA/gene_counts.diff.tsv&quot;,
+                                      &quot;&lt;path_to_RNA&gt;/RNA/gene_counts.diff.tsv&quot;,
                                       &quot;rna_dna_ratio.tsv&quot;)
 </pre></div>
 </div>
 <dl class="docutils">
 <dt>then we build the differentially abundant NOGs list from database (Hh + aIL10R vs. Steady state) for each of DNA and RNa</dt>
 <dd><p class="first">data sets:</p>
-<div class="last highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;../RNA/csvdb&quot;,
+<div class="last highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;&lt;path_to_RNA&gt;/RNA/csvdb&quot;,
                                        &quot;common_genes.tsv&quot;,
                                        &quot;rna_diff_genes.tsv&quot;)
 
-&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;../DNA/csvdb&quot;,
+&gt;&gt; PipelineMetaomics.buildGeneDiffList(&quot;&lt;path_to_DNA&gt;/DNA/csvdb&quot;,
                                        &quot;common_genes.tsv&quot;,
                                        &quot;dna_diff_genes.tsv&quot;)
 </pre></div>

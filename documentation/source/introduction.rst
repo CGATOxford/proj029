@@ -20,6 +20,10 @@ large. While we expect that the analysis can be run through from start to finish
 more apropriate to only run certain sections. Therefore we have provided the output files 
 so that some tasks can be skipped.
 
+.. note::
+    You may be wondering why this is called proj029. the reason is that this is CGAT's
+    29th project. The simple naming also enables the code repo to be succinctly named.
+
 
 Overview
 =========
@@ -59,8 +63,11 @@ we know that it works on our system (Red Hat Enterprise Linux Server release 6.6
 .. _CGATOxford/proj029/Proj029Pipelines: https://github.com/CGATOxford/proj029/
 
 
+.. _Dependencies:
+
 Dependencies
 =============
+
 
 To run the analyses you will have to install a bit of software. Shown are the versions
 used in the analysis although newer versions may now be available and could be substituted.
@@ -71,8 +78,8 @@ CGATPipelines. It is recommended that with third party python modules that you u
     # install virtualenv
     pip install virtualenv
     
-    # setup virtual environment 
-    virtualenv --no-site-packages metagenomics
+    # setup virtual environment called in metagenomics directory
+    virtualenv metagenomics
 
     # start using the virtual environment
     source metagenomics/bin/activate 
@@ -85,7 +92,7 @@ CGATPipelines. It is recommended that with third party python modules that you u
     # clone CGAT pipelines (we use Pipeline.py module extensively)
     git clone https://github.com/CGATOxford/CGATPipelines.git
     cd CGATPipelines
-    python setup.py develop
+    python setup.py install
     
 You will also have to install the proj029 respository::
 
@@ -117,7 +124,6 @@ and R libraries will need to be installed manually.
 +------------+--------------+
 
 
-R libraries
 
 +---------------+
 | R libraries   |
@@ -135,8 +141,6 @@ R libraries
 | vegan         |
 +---------------+
 
-
-Python libraries
 
 
 +--------------------+

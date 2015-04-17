@@ -24,8 +24,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
-    <link rel="next" title="Code" href="code.html" />
-    <link rel="prev" title="Defining colitis-dependent NOGs" href="colitisResponsiveNOGs.html" /> 
+    <link rel="next" title="Estimating genus-level fold changes" href="genusSpecificFoldChanges.html" />
+    <link rel="prev" title="Defining colitis-responsive NOGs" href="colitisResponsiveNOGs.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,10 +38,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="code.html" title="Code"
+          <a href="genusSpecificFoldChanges.html" title="Estimating genus-level fold changes"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
+          <a href="colitisResponsiveNOGs.html" title="Defining colitis-responsive NOGs"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
@@ -62,7 +62,7 @@ the percentage of reads from each genus that map to a NOG. This is the basic inp
 of Fig. 3a. The script takes as input a gene2cog mapping file (-m), the list of NOGs
 which we wish to calculate % genus reads over (-d), the level at which to count (&#8211;level),
 the taxa assignments file and the alignment to the IGC:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python &lt;path_to_proj029&gt;/scripts/nogs2genera.py
+<div class="highlight-python"><div class="highlight"><pre>$ python &lt;path_to_proj029&gt;/proj029/scripts/nogs2genera.py
          -m gene2cog.tsv.gz
          -d common_genes.tsv
          --level=genus
@@ -75,8 +75,8 @@ the taxa assignments file and the alignment to the IGC:</p>
 <p>Once we have a .ptaxa.tsv.gz file for each sample, we combine the tables using combine_tables.py. This proces is somewhat
 time-consuming and uses a lot of memory. We have therefore provided the .ptaxa.tsv.gz combined files in the data/RNA/directory.
 The file is called associated_ptaxa.tsv.gz. You can link this file to your RNA/ working directory:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cd RNA
-$ ln -s &lt;path_to_proj029&gt;/data/RNA/associated_ptaxa.tsv.gz .
+<div class="highlight-python"><div class="highlight"><pre>$ cd &lt;path_to_RNA&gt;/RNA
+$ ln -s &lt;path_to_data&gt;/data/RNA/associated_ptaxa.tsv.gz .
 </pre></div>
 </div>
 <p>It will look like this (truncated for visual purposes):</p>
@@ -91,15 +91,17 @@ $ ln -s &lt;path_to_proj029&gt;/data/RNA/associated_ptaxa.tsv.gz .
 <col width="14%" />
 <col width="14%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>cog</td>
-<td>taxa</td>
-<td>stool-HhaIL10R-R2_preads</td>
-<td>stool-aIL10R-R3_preads</td>
-<td>stool-aIL10R-R2_preads</td>
-<td>stool-WT-R4_preads</td>
-<td>stool-WT-R1_preads</td>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">cog</th>
+<th class="head">taxa</th>
+<th class="head">stool-HhaIL10R-R2_preads</th>
+<th class="head">stool-aIL10R-R3_preads</th>
+<th class="head">stool-aIL10R-R2_preads</th>
+<th class="head">stool-WT-R4_preads</th>
+<th class="head">stool-WT-R1_preads</th>
 </tr>
+</thead>
+<tbody valign="top">
 <tr class="row-even"><td>NOG243842</td>
 <td>unassigned</td>
 <td>100.000000</td>
@@ -179,7 +181,7 @@ $ ln -s &lt;path_to_proj029&gt;/data/RNA/associated_ptaxa.tsv.gz .
 <div class="section" id="build-the-nog-genus-counts-matrix">
 <h2>Build the NOG genus counts matrix<a class="headerlink" href="#build-the-nog-genus-counts-matrix" title="Permalink to this headline">¶</a></h2>
 <p>We needed to transform this data into average percentages across samples for each NOG-genus combination. To do this we use the following
-function:</p>
+function. In the RNA/ directory:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
 &gt;&gt; PipelineMetaomics.buildGenusCogCountsMatrix(&quot;associated_ptaxa.tsv.gz&quot;, &quot;associated_ptaxa_average.matrix&quot;)
 </pre></div>
@@ -199,18 +201,20 @@ function:</p>
 <col width="9%" />
 <col width="16%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>&nbsp;</td>
-<td>COG0001</td>
-<td>COG0002</td>
-<td>COG0003</td>
-<td>COG0004</td>
-<td>COG0005</td>
-<td>COG0006</td>
-<td>COG0007</td>
-<td>COG0008</td>
-<td>COG0009</td>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&nbsp;</th>
+<th class="head">COG0001</th>
+<th class="head">COG0002</th>
+<th class="head">COG0003</th>
+<th class="head">COG0004</th>
+<th class="head">COG0005</th>
+<th class="head">COG0006</th>
+<th class="head">COG0007</th>
+<th class="head">COG0008</th>
+<th class="head">COG0009</th>
 </tr>
+</thead>
+<tbody valign="top">
 <tr class="row-even"><td>Abiotrophia</td>
 <td>0</td>
 <td>0</td>
@@ -320,7 +324,7 @@ of a NOG</p>
 <h2>Plotting the maximum contribution of a genus to NOG expression<a class="headerlink" href="#plotting-the-maximum-contribution-of-a-genus-to-nog-expression" title="Permalink to this headline">¶</a></h2>
 <p>We can recreate Fig. 3a by running:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotMaxTaxaContribution(&quot;associated_ptaxa_average.matrix&quot;,
-                                             &quot;../compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv&quot;,
+                                             &quot;&lt;path_to_compare_datasets&gt;/compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv&quot;,
                                              &quot;associated_ptaxa_max_contribution.png&quot;)
 </pre></div>
 </div>
@@ -332,7 +336,7 @@ to be expressed by a dominant genus than the other NOG sets.</p>
 <h2>Plotting dominant genera for colitis-responsive NOGs<a class="headerlink" href="#plotting-dominant-genera-for-colitis-responsive-nogs" title="Permalink to this headline">¶</a></h2>
 <p>To see which genera are dominating the expression of these NOGs we use the following function:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.heatmapTaxaCogProportionMatrix(&quot;associated_ptaxa_average.matrix&quot;,
-                                                    &quot;../compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv&quot;,
+                                                    &quot;&lt;path_to_compare_datasets&gt;/compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv&quot;,
                                                     &quot;associated_ptaxa_heatmap.pdf&quot;)
 </pre></div>
 </div>
@@ -363,10 +367,10 @@ responsive NOGs that have a dominant genus (&gt;=50% maximum genus contribution)
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="colitisResponsiveNOGs.html"
-                        title="previous chapter">Defining colitis-dependent NOGs</a></p>
+                        title="previous chapter">Defining colitis-responsive NOGs</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="code.html"
-                        title="next chapter">Code</a></p>
+  <p class="topless"><a href="genusSpecificFoldChanges.html"
+                        title="next chapter">Estimating genus-level fold changes</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -401,10 +405,10 @@ responsive NOGs that have a dominant genus (&gt;=50% maximum genus contribution)
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="code.html" title="Code"
+          <a href="genusSpecificFoldChanges.html" title="Estimating genus-level fold changes"
              >next</a> |</li>
         <li class="right" >
-          <a href="colitisResponsiveNOGs.html" title="Defining colitis-dependent NOGs"
+          <a href="colitisResponsiveNOGs.html" title="Defining colitis-responsive NOGs"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>

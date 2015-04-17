@@ -71,8 +71,8 @@ as measured by DNA compares with abundance of RNA. Here we will use the Pipeline
 to look at the overlaps. The function takes as positional arguments the RNA counts, DNA counts and outfile name. For example,
 for genera we can type:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
-&gt;&gt; PipelineMetaomics.buildDetectionOverlap(&quot;../RNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
-                                           &quot;../DNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
+&gt;&gt; PipelineMetaomics.buildDetectionOverlap(&quot;&lt;path_to_RNA&gt;/RNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
+                                           &quot;&lt;path_to_DNA&gt;/DNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
                                            &quot;genus_overlap.tsv&quot;)
 </pre></div>
 </div>
@@ -84,8 +84,8 @@ sample in DNA and RNA analyses as well as the overlap. We run this also for the 
 <p>We then compared the feature abundance distributions (e.g. genera) that were detected in DNA, RNA or both data sets (based on reads
 per million (RPM) values from counts tables). To do this we run the following functions againg with RNA counts, DNA coutns and outfile
 as positional arguments:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotAbundanceLevelsOfOverlap(&quot;../RNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
-                                                  &quot;../DNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotAbundanceLevelsOfOverlap(&quot;&lt;path_to_RNA&gt;/RNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
+                                                  &quot;&lt;path_to_DNA&gt;/DNA/genus.diamond.aggregated.counts.tsv.gz&quot;,
                                                   &quot;genus_abundance_distributions.png&quot;)
 </pre></div>
 </div>
@@ -98,8 +98,8 @@ between sets of features based on the wilkoxon rank sum test.</p>
 <h2>Abundance correlations<a class="headerlink" href="#abundance-correlations" title="Permalink to this headline">¶</a></h2>
 <p>We can then compare abundance estimates for those commonly detected genera (or NOGs) based on metagenomeSeq normalised
 abundances.:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.scatterplotAbundanceEstimates(&quot;../DNA/genus.diamond.aggregated.counts.norm.matrix&quot;,
-                                                   &quot;../RNA/genus.diamond.aggregated.counts.norm.matrix&quot;,
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.scatterplotAbundanceEstimates(&quot;&lt;path_to_DNA&gt;/DNA/genus.diamond.aggregated.counts.norm.matrix&quot;,
+                                                   &quot;&lt;path_to_RNA&gt;/RNA/genus.diamond.aggregated.counts.norm.matrix&quot;,
                                                    &quot;genus_abundance_correlation.png&quot;)
 </pre></div>
 </div>
@@ -110,13 +110,13 @@ we need to build a set of genera/NOGs that were found to be present in both DNA 
 this we use differential abundance tables (i.e. all features that were originally tested for significnace in either RNA or DNA data sets)
 that we loaded into our database and run the following functions. common_genera.tsv and common_genes.tsv will be used to
 restrict our &#8220;proper&#8221; metagenomeSeq analysis to those features:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildCommonList(&quot;../RNA/csvdb&quot;,
-                                     &quot;../DNA/csvdb&quot;,
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.buildCommonList(&quot;&lt;path_to_RNA&gt;/RNA/csvdb&quot;,
+                                     &quot;&lt;path_to_DNA&gt;/DNA/csvdb&quot;,
                                      &quot;common_genera.tsv&quot;)
 
 
-&gt;&gt; PipelineMetaomics.buildCommonList(&quot;../RNA/csvdb&quot;,
-                                     &quot;../DNA/csvdb&quot;,
+&gt;&gt; PipelineMetaomics.buildCommonList(&quot;&lt;path_to_RNA&gt;/RNA/csvdb&quot;,
+                                     &quot;&lt;path_to_DNA&gt;/DNA/csvdb&quot;,
                                      &quot;common_genes.tsv&quot;)
 </pre></div>
 </div>

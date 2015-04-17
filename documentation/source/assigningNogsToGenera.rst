@@ -14,7 +14,7 @@ which we wish to calculate % genus reads over (-d), the level at which to count 
 the taxa assignments file and the alignment to the IGC::
 
 
-    $ python <path_to_proj029>/scripts/nogs2genera.py
+    $ python <path_to_proj029>/proj029/scripts/nogs2genera.py
              -m gene2cog.tsv.gz
              -d common_genes.tsv
              --level=genus
@@ -27,15 +27,15 @@ Once we have a .ptaxa.tsv.gz file for each sample, we combine the tables using c
 time-consuming and uses a lot of memory. We have therefore provided the .ptaxa.tsv.gz combined files in the data/RNA/directory.
 The file is called associated_ptaxa.tsv.gz. You can link this file to your RNA/ working directory::
 
-    $ cd RNA
-    $ ln -s <path_to_proj029>/data/RNA/associated_ptaxa.tsv.gz .
+    $ cd <path_to_RNA>/RNA
+    $ ln -s <path_to_data>/data/RNA/associated_ptaxa.tsv.gz .
 
 It will look like this (truncated for visual purposes):
 
 
     +---------+---------------+------------------------+----------------------+----------------------+------------------+------------------+
     |cog      |taxa           |stool-HhaIL10R-R2_preads|stool-aIL10R-R3_preads|stool-aIL10R-R2_preads|stool-WT-R4_preads|stool-WT-R1_preads|
-    +---------+---------------+------------------------+----------------------+----------------------+------------------+------------------+
+    +=========+===============+========================+======================+======================+==================+==================+
     |NOG243842|unassigned     |100.000000              |100.000000            |0                     |0                 |0                 |
     +---------+---------------+------------------------+----------------------+----------------------+------------------+------------------+
     |NOG243840|unassigned     |50.000000               |0                     |50.000000             |100.000000        |100.000000        |
@@ -63,7 +63,7 @@ Build the NOG genus counts matrix
 ==================================
 
 We needed to transform this data into average percentages across samples for each NOG-genus combination. To do this we use the following
-function::
+function. In the RNA/ directory::
 
     >> import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
     >> PipelineMetaomics.buildGenusCogCountsMatrix("associated_ptaxa.tsv.gz", "associated_ptaxa_average.matrix")
@@ -73,7 +73,7 @@ This will give us this file:
 
     +---------------+-----------+-------------------+-------+------------+-------+------------+------------+------------+--------------------+
     |               |COG0001    |COG0002            |COG0003|COG0004     |COG0005|COG0006     |COG0007     |COG0008     |COG0009             |
-    +---------------+-----------+-------------------+-------+------------+-------+------------+------------+------------+--------------------+
+    +===============+===========+===================+=======+============+=======+============+============+============+====================+
     |Abiotrophia    |0          |0                  |0      |0           |0      |0           |0           |0           |0                   |
     +---------------+-----------+-------------------+-------+------------+-------+------------+------------+------------+--------------------+
     |Acaryochloris  |0.002159625|0                  |0      |0.0186110625|0      |0.009047375 |0           |0           |0.0021784375        |
@@ -105,7 +105,7 @@ Plotting the maximum contribution of a genus to NOG expression
 We can recreate Fig. 3a by running::
 
     >> PipelineMetaomics.plotMaxTaxaContribution("associated_ptaxa_average.matrix",
-                                                 "../compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv",
+                                                 "<path_to_compare_datasets>/compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv",
                                                  "associated_ptaxa_max_contribution.png")
 
 
@@ -128,7 +128,7 @@ Plotting dominant genera for colitis-responsive NOGs
 To see which genera are dominating the expression of these NOGs we use the following function::
 
     >> PipelineMetaomics.heatmapTaxaCogProportionMatrix("associated_ptaxa_average.matrix",
-                                                        "../compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv",
+                                                        "<path_to_compare_datasets>/compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv",
                                                         "associated_ptaxa_heatmap.pdf")
 
 

@@ -1,12 +1,12 @@
 
 
-================================
-Defining colitis-dependent NOGs
-================================
+=================================
+Defining colitis-responsive NOGs
+=================================
 
 In the compare_datasets/ directory create a link to the goi.tsv file in the data/ directory. This will become clearer in a little while::
 
-    $ ln -s ../data/goi.tsv .
+    $ ln -s <path_to_data>/data/goi.tsv .
 
 
 Out metagenomeSeq analysis was performed on NOGs and we identified 1221 and 669 NOGs to be differentially abundant in 
@@ -15,13 +15,13 @@ some NOGs that were transcriptionally activated in colitis, leading us to hypoth
 by bacteria to an alteration in the gut niche.
 
 A few tasks were performed before we produced Fig. 2g - some of which did not end up in the manuscript. For example we
-built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the compare_datasets
+built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the compare_datasets/
 directory do::
 
 
     >> import Proj029Pipelines.PipelineMetaomics as PipelineMetaomics
-    >> PipelineMetaomics.buildRNADNARatio("../DNA/gene_counts.diff.tsv",
-                                          "../RNA/gene_counts.diff.tsv",
+    >> PipelineMetaomics.buildRNADNARatio("<path_to_DNA>/DNA/gene_counts.diff.tsv",
+                                          "<path_to_RNA>/RNA/gene_counts.diff.tsv",
                                           "rna_dna_ratio.tsv") 
 
 
@@ -29,11 +29,11 @@ directory do::
 then we build the differentially abundant NOGs list from database (Hh + aIL10R vs. Steady state) for each of DNA and RNa
  data sets::
 
-    >> PipelineMetaomics.buildGeneDiffList("../RNA/csvdb",
+    >> PipelineMetaomics.buildGeneDiffList("<path_to_RNA>/RNA/csvdb",
                                            "common_genes.tsv",
                                            "rna_diff_genes.tsv")
 
-    >> PipelineMetaomics.buildGeneDiffList("../DNA/csvdb",
+    >> PipelineMetaomics.buildGeneDiffList("<path_to_DNA>/DNA/csvdb",
                                            "common_genes.tsv",
                                            "dna_diff_genes.tsv")
 

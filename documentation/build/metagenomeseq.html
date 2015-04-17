@@ -67,7 +67,7 @@ The first is the normalised counts table (ends with .norm.matrix) and the second
 with .diff.tsv).</p>
 <p>Do this for the relevant genera and gene counts tables:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ gunzip -c genus.diamond.aggregated.counts.tsv.gz &gt; genus.diamond.aggregated.counts.tsv
-$ Rscript &lt;path_to_cgat&gt;/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.tsv -p genus.diamond.aggregated.counts
+$ &lt;path_to_R_install&gt;/Rscript &lt;path_to_cgat&gt;/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.tsv -p genus.diamond.aggregated.counts
 </pre></div>
 </div>
 <p>The options specified control the number of samples (&#8211;k) that must contain the feature above a certain reads per million (RPM) (&#8211;a)

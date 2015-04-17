@@ -64,6 +64,7 @@
 <span class="kn">import</span> <span class="nn">CGATPipelines.Pipeline</span> <span class="kn">as</span> <span class="nn">P</span>
 <span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">r</span> <span class="k">as</span> <span class="n">R</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
@@ -348,7 +349,7 @@
 <div class="viewcode-block" id="plotAbundanceLevelsOfOverlap"><a class="viewcode-back" href="../../code.html#Proj029Pipelines.PipelineMetaomics.plotAbundanceLevelsOfOverlap">[docs]</a><span class="k">def</span> <span class="nf">plotAbundanceLevelsOfOverlap</span><span class="p">(</span><span class="n">rnacounts</span><span class="p">,</span> 
                                  <span class="n">dnacounts</span><span class="p">,</span> 
                                  <span class="n">outfile</span><span class="p">,</span>
-                                 <span class="n">of</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+                                 <span class="n">of</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    plot abundance levels pf taxa/NOGs that do</span>
 <span class="sd">    and don&#39;t overlap between data sets</span>
@@ -379,9 +380,10 @@
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dna.distinct &lt;- apply(dna[dna.only,], 1, mean)&#39;&#39;&#39;</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">of</span> <span class="o">==</span> <span class="s">&quot;genes&quot;</span><span class="p">:</span>
-        <span class="c"># this is jsut so the thing will run</span>
+        <span class="c"># this is just so the thing will run</span>
         <span class="c"># genes do not have distinct genes</span>
-        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.distinct &lt;- c(0,0)&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="c"># in RNA analysis</span>
+        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.distinct &lt;- rep(0, 20)&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rna.distinct &lt;- rna.distinct&#39;&#39;&#39;</span><span class="p">)</span>
 
@@ -859,9 +861,13 @@
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,colSums(dat &gt; 50) &gt;= 1]&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[rowSums(dat &gt; 10) &gt;= 1,]&#39;&#39;&#39;</span><span class="p">)</span>
 
+    <span class="c"># not reading numeric in all instances</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2 &lt;- data.frame(t(apply(dat, 1, as.numeric)))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;colnames(dat2) &lt;- colnames(dat)&#39;&#39;&#39;</span><span class="p">)</span>
+
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pdf(&quot;</span><span class="si">%s</span><span class="s">&quot;, height = 10, width = 15)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(pheatmap)&#39;&#39;&#39;</span><span class="p">)</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pheatmap(dat, </span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pheatmap(dat2, </span>
 <span class="s">                  clustering_distance_cols = &quot;manhattan&quot;,</span>
 <span class="s">                  clustering_method = &quot;ward&quot;,</span>
 <span class="s">                  annotation = annotation,</span>
@@ -929,7 +935,7 @@
 <span class="s">                               &quot;rna.fold&quot; = append(dat2$logFC.rna.taxa.cog, rna.cog2$logFC),</span>
 <span class="s">                               &quot;abundance&quot; = append(dat2$AveExpr.rna.taxa.cog, rna.cog2$AveExpr))</span>
 <span class="s">                               </span>
-<span class="s">            suffix &lt;- paste(cog, &quot;scatters.png&quot;, sep = &quot;.&quot;)</span>
+<span class="s">            suffix &lt;- paste(cog, &quot;scatters.pdf&quot;, sep = &quot;.&quot;)</span>
 <span class="s">            outname &lt;- paste(&quot;scatterplot_genus_cog_fold.dir&quot;, suffix, sep = &quot;/&quot;)</span>
 
 <span class="s">            plot1 &lt;- ggplot(dat3, aes(x = dna.fold, y = rna.fold, size = log10(abundance), label = genus))</span>

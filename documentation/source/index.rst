@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    introduction.rst
+   installationIssues.rst
    quickAnalysis.rst
    alignmentAndCounting.rst
    metagenomeseq.rst

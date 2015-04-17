@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>MetagenomeSeq filtered analysis &mdash; Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
+    <title>Quick analysis &mdash; Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation" href="index.html" />
-    <link rel="next" title="Principle components analysis" href="pca.html" />
-    <link rel="prev" title="Comparing metagenomic and metatranscriptomic data sets" href="compareDatasets.html" /> 
+    <link rel="next" title="Alignment and counting" href="alignmentAndCounting.html" />
+    <link rel="prev" title="Installation issues" href="installationIssues.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,10 +38,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pca.html" title="Principle components analysis"
+          <a href="alignmentAndCounting.html" title="Alignment and counting"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+          <a href="installationIssues.html" title="Installation issues"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>
@@ -52,40 +52,20 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="metagenomeseq-filtered-analysis">
-<h1>MetagenomeSeq filtered analysis<a class="headerlink" href="#metagenomeseq-filtered-analysis" title="Permalink to this headline">¶</a></h1>
-<p>Now we have compared the RNA and DNA data sets and have sets of features that we want to analyse,
-we can run metagenomeSeq on a filtered set of features (using common_genera.tsv and common_genes.tsv).</p>
-<p>For example to produce new counts tables with filtered features for genera we can do:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cd &lt;path_to_RNA&gt;/RNA
-$ zcat genus.diamond.aggregated.counts.tsv.gz | python &lt;path_to_proj029&gt;/proj029/scripts/counts2restrictedcounts.py
-                                              --restrict-to=../compare_datasets/common_genera.tsv
-                                              --log=restrict_genera.log
-                                              &gt; genus.diamond.aggregated.counts.restricted.tsv
+  <div class="section" id="quick-analysis">
+<h1>Quick analysis<a class="headerlink" href="#quick-analysis" title="Permalink to this headline">¶</a></h1>
+<p>Once the dependencies have been installed, the quickest and easiest way to run the analysis is to simply
+type:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python &lt;path_to_proj029&gt;/proj029/scripts/run_analysis.py
+         --cgatdir=&lt;path_to_cgat&gt;
+         --proj029dir=&lt;path_to_proj029&gt;
+         --rdir=&lt;path_to_R_install&gt;
+         --datadir=&lt;path_to_data&gt;
 </pre></div>
 </div>
-<p>We can then use this filtered counts table for metagenomeSeq analysis:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ &lt;path_to_R_install&gt;/Rscript &lt;path_to_cgat&gt;/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.restricted.tsv -p genus.diamond.aggregated.counts
-</pre></div>
-</div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">here we have overwritten the previous results tables from metagenomeSeq.</p>
-</div>
-<p>The resulting .norm.matrix files are used in subsequent principle components analysis and the .diff.tsv files are the final
-results of differential abundance testing.</p>
-<p>Load the differential abundance table into the database:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cat genus.diamond.aggregated.counts.diff.tsv |
-  python &lt;path_to_cgat&gt;/cgat/scripts/csv2db.py --backend=sqlite
-                                               --retry
-                                               --table=genus_diamond_aggregated_counts_diff
-                                               &gt; genus.diamond.aggregated.counts.diff.tsv.load
-</pre></div>
-</div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">here we have overwritten the database tables</p>
-</div>
+<p>This will run through all the analyses in the subsequent pages (except for the computationally intensive ones). That is symbolic
+links will be created to data that is required to recreate analyses and figures. It would be advisable to read through the rest of this
+documentation however to learn which files relate to which steps.</p>
 </div>
 
 
@@ -98,15 +78,15 @@ results of differential abundance testing.</p>
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
   <h4>Previous topic</h4>
-  <p class="topless"><a href="compareDatasets.html"
-                        title="previous chapter">Comparing metagenomic and metatranscriptomic data sets</a></p>
+  <p class="topless"><a href="installationIssues.html"
+                        title="previous chapter">Installation issues</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pca.html"
-                        title="next chapter">Principle components analysis</a></p>
+  <p class="topless"><a href="alignmentAndCounting.html"
+                        title="next chapter">Alignment and counting</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/metagenomeseq_restrict.txt"
+      <li><a href="_sources/quickAnalysis.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -137,10 +117,10 @@ results of differential abundance testing.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pca.html" title="Principle components analysis"
+          <a href="alignmentAndCounting.html" title="Alignment and counting"
              >next</a> |</li>
         <li class="right" >
-          <a href="compareDatasets.html" title="Comparing metagenomic and metatranscriptomic data sets"
+          <a href="installationIssues.html" title="Installation issues"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Proj029 - Microbiome and host profiling in a mouse model of colitis 1.0 documentation</a> &raquo;</li> 
       </ul>

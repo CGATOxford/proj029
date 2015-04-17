@@ -9,8 +9,8 @@ we can run metagenomeSeq on a filtered set of features (using common_genera.tsv 
 
 For example to produce new counts tables with filtered features for genera we can do::
  
-    $ cd RNA
-    $ zcat genus.diamond.aggregated.counts.tsv.gz | python proj029/scripts/counts2restrictedcounts.py 
+    $ cd <path_to_RNA>/RNA
+    $ zcat genus.diamond.aggregated.counts.tsv.gz | python <path_to_proj029>/proj029/scripts/counts2restrictedcounts.py 
                                                   --restrict-to=../compare_datasets/common_genera.tsv
                                                   --log=restrict_genera.log
                                                   > genus.diamond.aggregated.counts.restricted.tsv
@@ -18,10 +18,10 @@ For example to produce new counts tables with filtered features for genera we ca
 
 We can then use this filtered counts table for metagenomeSeq analysis::
 
-    $ Rscript cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.restricted.tsv -p genus.diamond.aggregated.counts
+    $ <path_to_R_install>/Rscript <path_to_cgat>/cgat/R/run_metagenomeseq.R --k 4 --a 0.1 -c genus.diamond.aggregated.counts.restricted.tsv -p genus.diamond.aggregated.counts
 
-::
-    NOTE: here we have overwritten the previous results tables from metagenomeSeq.
+.. warning:: 
+    here we have overwritten the previous results tables from metagenomeSeq.
 
 
 The resulting .norm.matrix files are used in subsequent principle components analysis and the .diff.tsv files are the final
@@ -37,8 +37,8 @@ Load the differential abundance table into the database::
 
 
 
-::
-    NOTE: here we have overwritten the database tables
+.. warning:: 
+    here we have overwritten the database tables
 
 
 

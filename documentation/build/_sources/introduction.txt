@@ -13,13 +13,16 @@ profiling and integrating the two to indentify functional groups that are the mo
 likely to represent colitis-induced functions.
 
 
-The purpose of this documentation is to allow those that were interested enough to 
-read our metagenomics paper to follow the analyses that we used step by step and
+The purpose of this documentation is to allow you to follow the analyses that we used step by step and
 recreate results and figures from our analyses. As with all high-throughput
 sequencing experiments, a number of tasks take a long time to run and created files are
 large. While we expect that the analysis can be run through from start to finish it may be
 more apropriate to only run certain sections. Therefore we have provided the output files 
 so that some tasks can be skipped.
+
+.. note::
+    You may be wondering why this is called proj029. the reason is that this is CGAT's
+    29th project. The simple naming also enables the code repo to be succinctly named.
 
 
 Overview
@@ -60,8 +63,11 @@ we know that it works on our system (Red Hat Enterprise Linux Server release 6.6
 .. _CGATOxford/proj029/Proj029Pipelines: https://github.com/CGATOxford/proj029/
 
 
+.. _Dependencies:
+
 Dependencies
 =============
+
 
 To run the analyses you will have to install a bit of software. Shown are the versions
 used in the analysis although newer versions may now be available and could be substituted.
@@ -72,8 +78,8 @@ CGATPipelines. It is recommended that with third party python modules that you u
     # install virtualenv
     pip install virtualenv
     
-    # setup virtual environment 
-    virtualenv --no-site-packages metagenomics
+    # setup virtual environment called in metagenomics directory
+    virtualenv metagenomics
 
     # start using the virtual environment
     source metagenomics/bin/activate 
@@ -95,6 +101,9 @@ You will also have to install the proj029 respository::
     python setup.py install
 
 
+Installing the CGAT tools should install the majority of dependencies although specific tools
+and R libraries will need to be installed manually.
+
 
 3rd party software
 -------------------
@@ -115,7 +124,6 @@ You will also have to install the proj029 respository::
 +------------+--------------+
 
 
-R libraries
 
 +---------------+
 | R libraries   |
@@ -133,8 +141,6 @@ R libraries
 | vegan         |
 +---------------+
 
-
-Python libraries
 
 
 +--------------------+

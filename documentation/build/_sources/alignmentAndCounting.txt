@@ -7,23 +7,22 @@ been filtered for contaminating adapters, pairs have been flashed and reads
 mapping to rRNA and mouse have been removed. Details of these steps are in the 
 paper. Both raw fastq files and processed fastq files are available at the EBI ENA
 under accession number EMTAB-XXXX so the analysis can be run without having to 
-perform the pre-processing steps yourself::
+perform the pre-processing steps yourself
 
-    NOTE: The alignment and counting steps can take a long time and large amount of memory. If
-    you do not want to run these steps then we have provided the counts tables for genera
-    and functional groups (NOGs) - see bottom of this page.
-
+.. note:: 
+    The alignment and counting steps can take a long time and large amount of memory. 
+    If you do not want to run these steps then we have provided the counts tables for 
+    genera and functional groups (NOGs) - see :ref:`Skipping alignment and counting`.
 
 The RNA and DNA analyses were run separately using the same pipeline. For the our
-purposes we will run the analyses separately in two separate directories. Create these
-directories::
+purposes we will run the analyses separately in two separate directories. In your working directory
+create these directories::
 
     $ mkdir RNA
     $ mkdir DNA 
 
 
 Now download the .fastq files from the EBI ENA into their respective directories.
-
 
 
 Alignment
@@ -54,14 +53,15 @@ and::
     $ diamond makedb --db igc --in IGC.pep --threads 16
 
 
-NOTE: DIAMOND takes uncompressed files as input so you will need to unzip first
+.. note:: 
+    DIAMOND takes uncompressed files as input so you will need to unzip first
 
 Next we ran the alignment for each fastq file (reads) to each database 
 (fastq files need to be converted to fasta format first e.g. using `fastx toolkit`_). As 
 an example:
 
     # change into the RNA directory (contains raw data) for example
-    $ cd RNA
+    $ cd <path_to_RNA>/RNA
 
 conversion::
 
@@ -92,9 +92,10 @@ reads that mapped to each genus and each functional category. This is where the 
 of taxonomy and function diverge. 
 
 For taxonomic profiling we used the lowest common ancestor approach (LCA) to 
-assign reads to genera implemented using lcamapper.sh from mtools (see dependencies). This 
+assign reads to genera implemented using lcamapper.sh from mtools (see :ref:`Dependencies`). This 
 requires the mapping file of gi number to taxonomy id that is distributed with mtools. For each 
 sample for both DNA and RNA data sets aligned to nr we do for example::
+
 
     $ lcamapper.sh -i stool-HhaIL10R-R1.diamond.tsv -f Detect -ms 50 -me 0.01 -tp 50 -gt gi_taxid_prot.bin -o stool-HhaIL10R-R1.lca
 
@@ -102,7 +103,7 @@ Again each file that was aligned to the ncbi nr database is used as input to lca
 genus we use the lca2table.py script that is in the scripts/ directory 
 of the `CGATOxford/cgat`_ repository::
 
-    $ cat stool-HhaIL10R-R1.lca | python cgat/scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.lca.counts.tsv.log > stool-HhaIL10R-R1.lca.counts.tsv
+    $ cat stool-HhaIL10R-R1.lca | python <path_to_cgat>cgat/scripts/lca2table.py --summarise=taxa-counts --log=stool-HhaIL10R-R1.lca.counts.tsv.log > stool-HhaIL10R-R1.lca.counts.tsv
 
 
 .. _CGATOxford/cgat: https://github.com/CGATOxford/cgat 
@@ -136,7 +137,7 @@ column and we want to combine all tables that end in .lca.counts.tsv. We also sp
 for each column in the resulting combined table::
 
 
-    $ python cgat/scripts/combine_tables.py                    
+    $ python <path_to_cgat>/cgat/scripts/combine_tables.py                    
              --missing=0                    
              --columns=1                    
              --take=count                    
@@ -219,6 +220,12 @@ Again, we combine tables for each sample as for genera into a final counts table
 
 Counts tables for genera and NOGs (DNA and RNA) will now be taken forward to the analysis steps.
 
+
+.. _Skipping alignment and counting:
+
+Skipping the alignment and counting steps
+===========================================
+
 Given the large sizes of raw and alignment files these have been deposited at the EBI ENA (ADD LINK). We expect that you will not
 run the above steps because it is time-cosuming. Therefore, for reproducing our downstream analysis
 we have provided the count tables in the data/DNA/ and data/RNA/ directories (genus.diamond.aggregated.counts.tsv.gz and gene_counts.tsv.gz).
@@ -227,16 +234,16 @@ In this case link to the counts tables we have provided and load into the csvdb 
 
 For RNA::
 
-    $ cd RNA
-    $ ln -s ../data/RNA/genus.diamond.aggregated.counts.tsv.gz .
-    $ ln -s ../data/RNA/gene_counts.tsv.gz .
-    $ zcat genus.diamond.aggregated.counts.tsv.gz | python cgat/scripts/csv2db.py
+    $ cd <path_to_RNA/RNA
+    $ ln -s <path_to_data>/data/RNA/genus.diamond.aggregated.counts.tsv.gz .
+    $ ln -s <path_to_data>/data/RNA/gene_counts.tsv.gz .
+    $ zcat genus.diamond.aggregated.counts.tsv.gz | python <path_to_cgat>/cgat/scripts/csv2db.py
                                                     --backend=sqlite 
                                                     --retry                              
                                                     --table=genus_diamond_aggregated_counts
                                                     > genus.diamond.aggregated.counts.tsv.gz.load
 
-    $ zcat gene_counts.tsv.gz | python cgat/scripts/csv2db.py
+    $ zcat gene_counts.tsv.gz | python <path_to_cgat>/cgat/scripts/csv2db.py
                                 --backend=sqlite 
                                 --retry                              
                                 --table=gene_counts
@@ -245,17 +252,17 @@ For RNA::
 
 For DNA::
 
-    $ cd DNA
-    $ ln -s ../data/DNA/genus.diamond.aggregated.counts.tsv.gz .
-    $ ln -s ../data/DNA/gene_counts.tsv.gz .
-    $ zcat genus.diamond.aggregated.counts.tsv.gz | python cgat/scripts/csv2db.py
+    $ cd <path_to_DNA>/DNA
+    $ ln -s <path_to_data>/data/DNA/genus.diamond.aggregated.counts.tsv.gz .
+    $ ln -s <path_to_data>/data/DNA/gene_counts.tsv.gz .
+    $ zcat genus.diamond.aggregated.counts.tsv.gz | python <path_to_cgat>/cgat/scripts/csv2db.py
                                                     --backend=sqlite 
                                                     --retry                              
                                                     --table=genus_diamond_aggregated_counts
                                                     > genus.diamond.aggregated.counts.tsv.gz.load
 
 
-    $ zcat gene_counts.tsv.gz | python cgat/scripts/csv2db.py
+    $ zcat gene_counts.tsv.gz | python <path_to_cgat>/cgat/scripts/csv2db.py
                                 --backend=sqlite 
                                 --retry                              
                                 --table=gene_counts
