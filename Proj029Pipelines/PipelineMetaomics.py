@@ -580,6 +580,7 @@ def plotSets(infile, outfile):
     R('''mod1 <- lm(dat$rna~dat$dna)''')
     R('''intercept <- mod1[[1]][1]''')
     R('''slope = mod1[[1]][2]''')
+    R('''print(summary(mod1))''')
 
     # prediction intervals
     R('''pred.ints <- predict(mod1, interval = "prediction", level = 0.95)''')
