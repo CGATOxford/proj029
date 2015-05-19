@@ -629,6 +629,7 @@
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mod1 &lt;- lm(dat$rna~dat$dna)&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;intercept &lt;- mod1[[1]][1]&#39;&#39;&#39;</span><span class="p">)</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;slope = mod1[[1]][2]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;print(summary(mod1))&#39;&#39;&#39;</span><span class="p">)</span>
 
     <span class="c"># prediction intervals</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pred.ints &lt;- predict(mod1, interval = &quot;prediction&quot;, level = 0.95)&#39;&#39;&#39;</span><span class="p">)</span>

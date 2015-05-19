@@ -6,7 +6,7 @@ We pick up the analysis at the point at which raw fastq files have
 been filtered for contaminating adapters, pairs have been flashed and reads
 mapping to rRNA and mouse have been removed. Details of these steps are in the 
 paper. Both raw fastq files and processed fastq files are available at the EBI ENA
-under accession number EMTAB-XXXX so the analysis can be run without having to 
+under accession number E-MTAB-3562 so the analysis can be run without having to 
 perform the pre-processing steps yourself
 
 .. note:: 
