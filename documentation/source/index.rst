@@ -1,10 +1,10 @@
-.. Proj029 - Microbiome and host profiling in a mouse model of colitis suggests host immune activity drives changes in the gut micro-environment that influence both community structure and gene expression documentation master file, created by
+.. Proj029 - Defining the microbial transcriptional response to colitis through integrated host and microbiome profiling
    sphinx-quickstart on Fri Mar 20 13:43:00 2015.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Proj029 - Microbiome and host profiling in a mouse model of colitis
-===================================================================
+Proj029 - Defining the microbial transcriptional response to colitis through integrated host and microbiome profiling
+======================================================================================================================
 
 Contents:
 
