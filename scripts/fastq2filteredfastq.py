@@ -35,7 +35,7 @@ import sys
 import re
 import optparse
 import pysam
-import CGAT.Pipeline as P
+import CGATPipelines.Pipeline as P
 import CGAT.Experiment as E
 import CGAT.IOTools as IOTools
 import CGAT.Fastq as Fastq

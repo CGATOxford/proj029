@@ -40,7 +40,7 @@ import rpy2.robjects as ro
 import rpy2.robjects.vectors as rovectors
 from rpy2.rinterface import RRuntimeError
 import CGATPipelines.PipelineMapping as PipelineMapping
-import CGATPipelines.PipelineMetagenomeAssembly as PipelineMetagenomeAssembly
+#import CGATPipelines.PipelineMetagenomeAssembly as PipelineMetagenomeAssembly
 import CGAT.FastaIterator as FastaIterator
 import CGAT.Metaphlan as Metaphlan
 import CGATPipelines.PipelineMapping as PipelineMapping
@@ -88,7 +88,7 @@ def filterFastq(infiles, outfile):
         invert = "--invert"
     else:
         invert = ""
-    statement = '''zcat %(fastq)s | python /ifs/projects/proj029/src/fastq2filteredfastq.py
+    statement = '''zcat %(fastq)s | python /ifs/projects/proj029/src/scripts/fastq2filteredfastq.py
                                     -b %(bam)s
                                     %(invert)s
                                     --reads=%(t)s

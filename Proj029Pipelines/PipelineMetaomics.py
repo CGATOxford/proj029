@@ -115,7 +115,13 @@ def buildCommonList(rnadb, dnadb, outfile):
 ####################################################
 ####################################################
 
-def buildGeneDiffList(db, commonset, outfile):
+
+def buildDiffList(db, 
+                  commonset, 
+                  outfile, 
+                  fdr=0.05,
+                  l2fold=1,
+                  tablename=None):
     '''
     build a list of differentially expressed
     NOGs between colitis and steady state
@@ -131,35 +137,72 @@ def buildGeneDiffList(db, commonset, outfile):
     # remove any genes that are different between Hh and steady state
     # or between aIL10R and steady state
     hh = set([x[0] for x in cc.execute("""SELECT taxa 
-                       FROM gene_counts_diff
+                       FROM %s
                        WHERE group1 == "Hh" 
                        AND group2 == "WT" 
-                       AND adj_P_Val < 0.05""").fetchall()])
+                       AND adj_P_Val < %f""" % (tablename, fdr)).fetchall()])
 
     # sql list
     hh = "(" + ",".join(['"'+x+'"' for x in hh]) + ")"
 
     ail10r = set([x[0] for x in cc.execute("""SELECT taxa 
-                       FROM gene_counts_diff
+                       FROM %s
                        WHERE group1 == "WT" 
                        AND group2 == "aIL10R" 
-                       AND adj_P_Val < 0.05""").fetchall()])
+                       AND adj_P_Val < %f""" % (tablename, fdr)).fetchall()])
     # sql list
     ail10r = "(" + ",".join(['"'+x+'"' for x in ail10r]) + ")"
 
+
+    print ail10r
+    print hh
+
     outf = open(outfile, "w")
     for gene in cc.execute("""SELECT taxa 
-                              FROM gene_counts_diff 
+                              FROM %s
                               WHERE group1 == "HhaIL10R" 
                               AND group2 == "WT" 
-                              AND adj_P_Val < 0.05
-                              AND (logFC > 1 OR logFC < -1)
+                              AND adj_P_Val < %f
+                              AND (logFC > %i OR logFC < -%i)
                               AND taxa IN %s
                               AND taxa NOT IN %s
                               AND taxa NOT IN %s
-                              ORDER BY logFC DESC""" % (common, hh, ail10r)).fetchall():
+                              ORDER BY logFC DESC""" % (tablename, fdr, l2fold, l2fold, common, hh, ail10r)).fetchall():
         outf.write(gene[0] + "\n")
     outf.close()
+
+
+####################################################
+####################################################
+####################################################
+
+
+def heatmapDiffFeatures(diff_list,
+                        matrix,
+                        outfile):
+    '''
+    draw heatmap of differentially abundant features
+    '''
+    R('''library(gplots)''')
+    R('''library(gtools)''')
+
+    R('''diff <- read.csv("%s", header=F, sep="\t", stringsAsFactors=F)''' % diff_list)
+
+    R('''dat <- read.csv("%s", header=T, stringsAsFactors=F, sep="\t")''' % matrix)
+    R('''rownames(dat) <- dat$taxa''')
+    R('''dat <- dat[, 1:ncol(dat)-1]''')
+    R('''dat <- dat[diff[,1],]''')
+    R('''dat <- na.omit(dat)''')
+    R('''dat <- dat[, mixedsort(colnames(dat))]''')
+    R('''samples <- colnames(dat)''')
+    R('''dat <- t(apply(dat, 1, scale))''')
+    R('''colnames(dat) <- samples''')
+    R('''cols <- colorRampPalette(c("blue", "white", "red"))''')
+    R('''pdf("%s")''' % outfile)
+    R('''heatmap.2(as.matrix(dat), col = cols, scale = "row", trace = "none", Rowv = F, Colv = F, margins = c(15,15), 
+                       distfun = function(x) dist(x, method = "manhattan"),
+                       hclustfun = function(x) hclust(x, method = "ward.D2"))''')
+    R["dev.off"]()
 
 ####################################################
 ####################################################
@@ -470,6 +513,58 @@ def plotPCALoadings(infile, outfile):
 ####################################################
 ####################################################
 ####################################################
+
+
+def barchartProportions(infile, outfile):
+    '''
+    stacked barchart description of percent reads
+    mapping to each taxon
+    '''
+    R('''library(ggplot2)''')
+    R('''library(gtools)''')
+    R('''library(reshape)''')
+
+    R('''dat <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % infile)
+    R('''rownames(dat) <- dat$taxa''')
+    
+    # get rid of taxa colomn
+    R('''dat <- dat[,1:ncol(dat)-1]''')
+    R('''dat.percent <- data.frame(apply(dat, 2, function(x) x*100))''')
+    
+    # candidate genera
+    R('''candidates <- c("Peptoniphilus",
+                         "Deferribacter",
+                         "Escherichia",
+                         "Lactobacillus",
+                         "Turicibacter",
+                         "Akkermansia",
+                         "Bifidobacterium",
+                         "Methylacidiphilum")''')
+    
+    R('''dat.percent <- dat.percent[candidates,]''')
+    R('''dat.percent <- dat.percent[,mixedsort(colnames(dat.percent))]''')
+
+    # add taxa column with "other" = < 5% in any sample
+    R('''dat.percent$taxa <- rownames(dat.percent)''')
+
+    # reshape and plot
+    outname = P.snip(outfile, ".pdf")
+    R('''dat.percent <- melt(dat.percent)''')
+    R('''conds <- unlist(strsplit(as.character(dat.percent$variable), ".R[0-9]"))[seq(1, nrow(dat.percent)*2, 2)]''')
+    R('''conds <- unlist(strsplit(conds, ".", fixed = T))[seq(2, length(conds)*2, 2)]''')  
+    R('''dat.percent$cond <- conds''')
+    R('''for (taxon in candidates){
+         outname <- paste("%s", paste("_", taxon, sep=""), ".pdf", sep="")
+         dat.percent.restrict <- dat.percent[dat.percent$taxa==taxon,]
+         plot1 <- ggplot(dat.percent.restrict, 
+                         aes(x=factor(cond, levels=c("WT","aIL10R", "Hh", "HhaIL10R")), 
+                         y=value, group=cond, colour=cond, label=variable))
+         plot1 + geom_boxplot() + geom_jitter() + geom_text() + scale_colour_manual(values=c("darkGreen", "red", "grey", "blue"))
+         ggsave(outname)}''' % outname)
+
+####################################################
+####################################################
+####################################################
 # SECTION 4
 ####################################################
 ####################################################
@@ -696,6 +791,125 @@ def buildGenusCogCountsMatrix(infile, outfile):
     df = pandas.DataFrame(result)
     df.to_csv(outfile, sep = "\t", na_rep = 0)
 
+
+####################################################
+####################################################
+####################################################
+
+
+def mergePathwaysAndGenusCogCountsMatrix(annotations,
+                                         matrix,
+                                         outfile):
+    '''
+    merge cog annotations and per taxa cog counts
+    '''
+    # read annotations
+    R('''anno <- read.csv("%s", header=T, stringsAsFactors=F, sep="\t", row.names=1)''' % annotations)
+    R('''anno.no.pathways <- anno[,1:ncol(anno)-1]''')
+    R('''anno.p <- sweep(anno.no.pathways, 2, colSums(anno.no.pathways), "/")''')
+    R('''anno.p$average <- rowMeans(anno.p)''')
+    R('''anno.p$pathway <- anno$taxa''')
+
+    # read matrix
+    R('''mat <- read.csv("%s", header=T, stringsAsFactors=F, sep="\t", row.names=1)''' % matrix)
+    R('''mat <- data.frame(t(mat))''')
+    R('''mat$ref <- rownames(mat)''')
+
+    # split pathway annotations
+    R('''for (pathway in unique(anno.p$pathway)){
+             if (pathway == "Function unknown"){next}
+             # some weirness with some names
+             pw <- gsub("/", "_", pathway)
+             outname <- paste("candidate_pathways.dir", paste(pw, "tsv", sep = "."), sep="/")
+             outname <- gsub(" ", "_", outname)
+             print(outname)
+             anno.p2 <- anno.p[anno.p$pathway == pathway,]
+             anno.p2 <- anno.p2[order(anno.p2$average, decreasing=T),]
+             # top 10
+#             anno.p2 <- anno.p2[1:10,]
+             # merge with matrix
+             mat2 <- mat[rownames(anno.p2),]
+             mat2$pathway <- anno.p2$pathway
+             write.table(mat2, file=outname, sep="\t", row.names=F)}''')
+
+
+####################################################
+####################################################
+####################################################
+
+def plotNumberOfTaxaPerPathway(infiles, outfile):
+    '''
+    plot the average number of taxa expressing genes
+    in each pathway
+    '''
+    tmp = P.getTempFilename(".")
+    infs = " ".join(infiles)
+    statement = '''awk 'FNR==1 && NR!=1 { while (/ref/) getline; }1 {print}' %(infs)s > %(tmp)s'''
+    P.run()
+    R('''library(ggplot2)''')
+    R('''library(plyr)''')
+    R('''library(reshape)''')
+    R('''dat <-read.csv("%s", header=T, stringsAsFactors=F, sep="\t")''' % tmp)
+    R('''t <- ncol(dat)''')
+    R('''dat <- na.omit(dat)''')
+    R('''pathways <- dat$pathway''')
+    R('''dat2 <- dat[,1:ncol(dat)-1]''')
+    R('''dat2 <- dat2[,1:ncol(dat2)-1]''')
+
+    # colsums gives the total number of taxa expressing each NOG
+    R('''col.sums <- data.frame(t(sapply(split(dat2, pathways), colSums)))''')
+    R('''rownames(col.sums) <- unique(pathways)''')
+
+    # rowsums gives the total number of taxa expressing
+    # at least one NOG per pathway
+    R('''total.taxa <- data.frame(rowSums(col.sums > 0))''')
+    R('''total.taxa$pathway <- rownames(col.sums)''')
+
+    # sort by highest
+    R('''total.taxa <- total.taxa[order(total.taxa[,1], decreasing=T), ]''')    
+    R('''colnames(total.taxa) <- c("value", "pathway")''')
+
+    R('''plot1 <- ggplot(total.taxa, aes(x=factor(pathway,levels=pathway), y=value/t, stat="identity"))''')
+    R('''plot1 + geom_bar(stat="identity") + theme(axis.text.x=element_text(angle=90))''') 
+    R('''ggsave("%s")''' % outfile)
+    os.unlink(tmp)
+
+####################################################
+####################################################
+####################################################
+
+
+def plotTaxaContributionsToCandidatePathways(matrix, 
+                                             outfile):
+    '''
+    plot the distribution of maximum genus
+    contribution per gene set
+    '''
+    R('''library(ggplot2)''')
+    R('''library(gplots)''')
+    R('''library(pheatmap)''')
+    R('''mat <- read.csv("%s", header = T, stringsAsFactors = F, sep = "\t")''' % matrix)
+    R('''mat <- na.omit(mat)''')
+    R('''print(mat$ref)''')
+    # just plot top 10
+
+    R('''rownames(mat) <- mat$ref''')
+    R('''mat2 <- mat[,1:ncol(mat)-1]''')
+    R('''mat2 <- mat2[,1:ncol(mat2)-1]''')
+
+    # only keep those genera that contribute > 5% to
+    # a NOG
+    R('''mat2 <- mat2[,colSums(mat2) > 5]''')
+    R('''cols <- colorRampPalette(c("white", "blue"))(75)''')
+    R('''pdf("%s")''' % outfile)
+    R('''pheatmap(mat2, 
+                  color=cols, 
+                  cluster_cols=T, 
+                  cluster_rows=T, 
+                  cluster_method="ward.D2")''')
+    R["dev.off"]()
+
+
 ####################################################
 ####################################################
 ####################################################
@@ -870,7 +1084,7 @@ def scatterplotPerCogTaxaDNAFoldRNAFold(taxa_cog_rnadiff,
 
     # NOTE these are specified and hardcoded 
     # here - NOGs of interest
-    R('''cogs <- c("COG0783", "COG2837", "COG0435","COG5520")''')
+    R('''cogs <- c("COG0783", "COG2837", "COG0435","COG5520", "COG0508", "COG0852")''')
 
     # iterate over cogs and scatterplot
     # fold changes in DNA and RNA analysis.

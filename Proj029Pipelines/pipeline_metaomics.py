@@ -207,6 +207,74 @@ def buildCommonGeneraList(infiles, outfile):
                                       dnadb,
                                       outfile)
 
+
+#########################################
+#########################################
+#########################################
+
+
+@follows(mkdir("diff.dir"))
+@transform([os.path.join(PARAMS.get("rna_communitiesdir"), "csvdb"),
+            os.path.join(PARAMS.get("dna_communitiesdir"), "csvdb")],
+           regex("(\S+)/(.*NA).*/csvdb"),
+           add_inputs(buildCommonGeneraList),
+           r"diff.dir/\2_HhaIL10R_vs_WT.diff.genera.tsv")
+def buildGeneraDiffList(infiles, outfile):
+    '''
+    build a list of differentially expressed genera
+    between HhaIL10R and WT at adj_P_Val < 0.1
+    '''
+    db, common = infiles
+    PipelineMetaomics.buildDiffList(db,
+                                    common,
+                                    outfile,
+                                    fdr=0.1,
+                                    l2fold=0,
+                                    tablename="genus_diamond_aggregated_counts_diff")
+
+
+#########################################
+#########################################
+#########################################
+
+@jobs_limit(1, "R")
+@transform(buildGeneraDiffList,
+           suffix(".tsv"),
+           add_inputs(os.path.join(PARAMS.get("dna_communitiesdir"), 
+                                   "counts.dir/genus.diamond.aggregated.counts.norm.matrix")),
+           "_dna.pdf")
+def heatmapDiffGeneraDna(infiles, outfile):
+    '''
+    draw heatmap of differentially abundant 
+    genera in DNA analysis
+    '''
+    difflist, matrix = infiles
+    PipelineMetaomics.heatmapDiffFeatures(difflist,
+                                          matrix,
+                                          outfile)
+
+#########################################
+#########################################
+#########################################
+
+
+@jobs_limit(1, "R")
+@transform(buildGeneraDiffList,
+           suffix(".tsv"),
+           add_inputs(os.path.join(PARAMS.get("rna_communitiesdir"), 
+                                   "counts.dir/genus.diamond.aggregated.counts.norm.matrix")),
+           "_rna.pdf")
+def heatmapDiffGeneraRna(infiles, outfile):
+    '''
+    draw heatmap of differentially abundant 
+    genera in DNA analysis
+    '''
+    difflist, matrix = infiles
+    PipelineMetaomics.heatmapDiffFeatures(difflist,
+                                          matrix,
+                                          outfile)
+
+
 #########################################
 #########################################
 #########################################
@@ -223,9 +291,12 @@ def buildGeneDiffList(infiles, outfile):
     between HhaIL10R and WT
     '''
     db, common = infiles
-    PipelineMetaomics.buildGeneDiffList(db,
-                                        common,
-                                        outfile)
+    PipelineMetaomics.buildDiffList(db,
+                                    common,
+                                    outfile,
+                                    fdr=0.05,
+                                    l2fold=1,
+                                    tablename="gene_counts_diff")
 
 #########################################
 #########################################
@@ -460,6 +531,40 @@ def plotPCALoadings(infile, outfile):
     '''
     PipelineMetaomics.plotPCALoadings(infile,
                                       outfile)
+
+
+#########################################
+#########################################
+#########################################
+
+@follows(mkdir("pca.dir"))
+@jobs_limit(1, "R")
+@transform([os.path.join(
+            PARAMS.get("dna_communitiesdir"), 
+            "counts.dir/genus.diamond.aggregated.proportion.tsv"),
+            os.path.join(
+            PARAMS.get("rna_communitiesdir"), 
+            "counts.dir/genus.diamond.aggregated.proportion.tsv")],
+           regex("(\S+)/(\S+).proportion.tsv"),
+           r"pca.dir/\2.boxplot.pdf")
+def barchartProportions(infile, outfile):
+    '''
+    barchart the proportions for those that contribute to the
+    separation of colitic samples
+    '''
+    if "DNA" in infile:
+        prefix = "dna_"
+    elif "RNA" in infile:
+        prefix = "rna_"
+
+    outname = os.path.join(
+        os.path.dirname(outfile), 
+        prefix+os.path.basename(outfile)
+        )
+
+    PipelineMetaomics.barchartProportions(infile,
+                                          outname)
+    P.touch(outfile)
 
 #########################################
 #########################################
@@ -798,9 +903,66 @@ def buildGenusCogCountsMatrix(infile, outfile):
     PipelineMetaomics.buildGenusCogCountsMatrix(infile,
                                                 outfile)
 
+
 ###################################################
 ###################################################
 ###################################################
+
+
+@follows(mkdir("candidate_pathways.dir"))
+@split([os.path.join(
+        PARAMS.get("dna_communitiesdir"), 
+        "genes.dir/gene_counts.annotated.tsv.gz"),
+       buildGenusCogCountsMatrix],
+       "candidate_pathways.dir/*.tsv")
+def mergePathwaysAndGenusCogCountsMatrix(infiles, outfile):
+    '''
+    merge cog annotations and per taxa cog counts
+    '''
+    annotations, matrix = infiles
+    PipelineMetaomics.mergePathwaysAndGenusCogCountsMatrix(annotations,
+                                                           matrix,
+                                                           outfile)
+
+
+
+###################################################
+###################################################
+###################################################
+
+
+@merge(mergePathwaysAndGenusCogCountsMatrix, "candidate_pathways.dir/ntaxa.pdf")
+def plotNumberOfTaxaPerPathway(infiles, outfile):
+    '''
+    plot the average number of taxa expressing genes
+    in each pathway
+    '''
+    PipelineMetaomics.plotNumberOfTaxaPerPathway(infiles,
+                                                 outfile)
+
+
+
+###################################################
+###################################################
+###################################################
+
+@jobs_limit(1, "R")
+@transform(mergePathwaysAndGenusCogCountsMatrix,
+           suffix(".tsv"),
+           ".pdf")
+def plotTaxaContributionsToCandidatePathways(infile, outfile):
+    '''
+    plot the distribution of maximum genus
+    contribution per gene set
+    '''
+    PipelineMetaomics.plotTaxaContributionsToCandidatePathways(infile, 
+                                                               outfile)
+
+
+###################################################
+###################################################
+###################################################
+
 
 @merge([buildGenusCogCountsMatrix, 
         buildGenesOutsidePredictionInterval], 
@@ -818,6 +980,7 @@ def plotMaxTaxaContribution(infiles, outfile):
 ###################################################
 ###################################################
 ###################################################
+
 
 @merge([buildGenusCogCountsMatrix, 
         buildGenesOutsidePredictionInterval], 
