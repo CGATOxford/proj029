@@ -706,8 +706,9 @@ def buildCountTaxaInCogsRNA(infiles, outfile):
     alignment_genes = infiles[0]
     track = P.snip(
         os.path.basename(alignment_genes), ".diamond.genes.tsv.gz")
+
     alignment_taxa = [
-        x for x in infiles[1] if os.path.basename(x).startswith(track)][0]
+        x for x in infiles[1:] if os.path.basename(x).startswith(track)][0]
 
     statement = '''python %(projscripts)s/nogs2genera.py 
                    -m %(m)s
