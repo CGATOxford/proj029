@@ -64,7 +64,7 @@ perform the pre-processing steps yourself</p>
 <p class="first admonition-title">Note</p>
 <p class="last">The alignment and counting steps can take a long time and large amount of memory.
 If you do not want to run these steps then we have provided the counts tables for
-genera and functional groups (NOGs) - see <a class="reference internal" href="#skipping-alignment-and-counting"><em>Skipping the alignment and counting steps</em></a>.</p>
+genera and functional groups (NOGs) - see <a class="reference internal" href="#skipping-alignment-and-counting"><span>Skipping the alignment and counting steps</span></a>.</p>
 </div>
 <p>The RNA and DNA analyses were run separately using the same pipeline. For the our
 purposes we will run the analyses separately in two separate directories. In your working directory
@@ -126,7 +126,7 @@ with and without colitis. In order to do that we first needed to count the numbe
 reads that mapped to each genus and each functional category. This is where the analysis
 of taxonomy and function diverge.</p>
 <p>For taxonomic profiling we used the lowest common ancestor approach (LCA) to
-assign reads to genera implemented using lcamapper.sh from mtools (see <a class="reference internal" href="introduction.html#dependencies"><em>Dependencies</em></a>). This
+assign reads to genera implemented using lcamapper.sh from mtools (see <a class="reference internal" href="introduction.html#dependencies"><span>Dependencies</span></a>). This
 requires the mapping file of gi number to taxonomy id that is distributed with mtools. For each
 sample for both DNA and RNA data sets aligned to nr we do for example:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ lcamapper.sh -i stool-HhaIL10R-R1.diamond.tsv -f Detect -ms 50 -me 0.01 -tp 50 -gt gi_taxid_prot.bin -o stool-HhaIL10R-R1.lca
@@ -474,7 +474,7 @@ $ zcat gene_counts.tsv.gz | python &lt;path_to_cgat&gt;/cgat/scripts/csv2db.py
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Nick Ilott.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

@@ -14,7 +14,7 @@ metagenomic and metatranscriptomic data sets, respectively. The overlap between 
 some NOGs that were transcriptionally activated in colitis, leading us to hypothesise that these were due to responses
 by bacteria to an alteration in the gut niche.
 
-A few tasks were performed before we produced Fig. 2g - some of which did not end up in the manuscript. For example we
+A few tasks were performed before we produced Fig. 5a some of which did not end up in the manuscript. For example we
 built the RNA fold / DNA fold ratio for NOGs using the metagenomeSeq differential abundance files. In the compare_datasets/
 directory do::
 
@@ -57,7 +57,7 @@ data and defined as colitis-responsive (lying outside of the 95% prediction inte
                                   "rna_dna_ratio.annotated.png")
 
 
-This will produce Fig.2g.
+This will produce Fig. 5a.
 
 
 .. image:: ../images/rna_dna_ratio.annotated.png
@@ -100,5 +100,4 @@ outside of the 95% prediction interval and in which direction
     +---------+--------------+--------------+-------------------+--------------------+-----------------+--------+-------------------+-----------------+-------------+
 
 
-And that is Fig. 2 done!
 

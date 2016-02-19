@@ -47,11 +47,6 @@
           <div class="body" role="main">
             
   <h1>Source code for CGAT.Diamond</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">collections</span>
-<span class="kn">import</span> <span class="nn">CGAT.Experiment</span> <span class="kn">as</span> <span class="nn">E</span>
 <span class="kn">import</span> <span class="nn">random</span>
 
 
@@ -112,8 +107,8 @@
 <span class="c">#######################################################</span>
 
 
-<span class="k">def</span> <span class="nf">alignment_iterator</span><span class="p">(</span><span class="n">alignment_file</span><span class="p">):</span>
-<div class="viewcode-block" id="alignment_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.alignment_iterator">[docs]</a>    <span class="sd">&#39;&#39;&#39;</span>
+<div class="viewcode-block" id="alignment_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.alignment_iterator">[docs]</a><span class="k">def</span> <span class="nf">alignment_iterator</span><span class="p">(</span><span class="n">alignment_file</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    return an alignment</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="c"># replaced .readlines()</span>
@@ -140,9 +135,9 @@
 <span class="c">#######################################################</span>
 <span class="c">#######################################################</span>
 
-
-<span class="k">def</span> <span class="nf">query_iterator</span><span class="p">(</span><span class="n">alignment_iterator</span><span class="p">):</span></div>
-<div class="viewcode-block" id="query_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.query_iterator">[docs]</a>    <span class="sd">&#39;&#39;&#39;</span>
+</div>
+<div class="viewcode-block" id="query_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.query_iterator">[docs]</a><span class="k">def</span> <span class="nf">query_iterator</span><span class="p">(</span><span class="n">alignment_iterator</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    iterate over alignments by query</span>
 <span class="sd">    return a list of alignments</span>
 <span class="sd">    &#39;&#39;&#39;</span>
@@ -165,9 +160,9 @@
 <span class="c">#######################################################</span>
 <span class="c">#######################################################</span>
 
-
-<span class="k">def</span> <span class="nf">best_alignment_iterator</span><span class="p">(</span><span class="n">query_iterator</span><span class="p">):</span></div>
-<div class="viewcode-block" id="best_alignment_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.best_alignment_iterator">[docs]</a>    <span class="sd">&#39;&#39;&#39;</span>
+</div>
+<div class="viewcode-block" id="best_alignment_iterator"><a class="viewcode-back" href="../../code.html#CGAT.Diamond.best_alignment_iterator">[docs]</a><span class="k">def</span> <span class="nf">best_alignment_iterator</span><span class="p">(</span><span class="n">query_iterator</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    return stats for best alignment - best is determined</span>
 <span class="sd">    by highest bit score. If there are multiple alignments</span>
 <span class="sd">    with the same score return a random one</span>
@@ -181,8 +176,8 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_alignments</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">best_alignments</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">best_alignments</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">best_alignment</span> <span class="o">=</span> <span class="n">best_alignments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">yield</span> <span class="n">best_alignment</span>
-</pre></div></div>
+        <span class="k">yield</span> <span class="n">best_alignment</span></div>
+</pre></div>
 
           </div>
         </div>
@@ -224,7 +219,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Nick Ilott.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

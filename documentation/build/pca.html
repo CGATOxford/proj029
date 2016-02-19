@@ -54,11 +54,12 @@
             
   <div class="section" id="principle-components-analysis">
 <h1>Principle components analysis<a class="headerlink" href="#principle-components-analysis" title="Permalink to this headline">¶</a></h1>
-<p>In Fig. 1 and 2 we performed principle components analysis on metagenomeSeq normalised counts at the level of genus
-and NOG (metagenomics and metatranscriptomics). As this is done separately for each data set we return to the
-DNA/ and RNA/ directories we created to run the functions. Below we show the functions we ran to produce the figures and to
-test significance of sample clustering using the PERMANOVA implemented in the adonis test (vegan).</p>
-<p>In Fig. 1 we looked at genus abundances. Below is a representative example for the RNA analysis. This function
+<p>We performed principle components analysis on metagenomeSeq normalised counts at the level of genus
+and NOG (metagenomics and metatranscriptomics, see Fig. 2d, e and f and Fig. 4d and e).
+As this is done separately for each data set we return to the DNA/ and RNA/ directories we created to run the functions.
+Below we show the functions we ran to produce the figures and to test significance of sample clustering using the PERMANOVA
+implemented in the adonis test (vegan).</p>
+<p>To begin with we look at genus abundances. Below is a representative example for the RNA analysis. This function
 produces the PCA plot (genus.diamond.aggregated.counts.pca.png) for components 1 and 2 and also outputs the loadings.
 The name of the plot is consistent with the name of the loadings outfile (apologies but the outfile must end in .loadings.tsv). You must be in
 the directory where you want the files to be produced, otherwise there will be an error. In the RNA/ directory type:</p>
@@ -74,17 +75,6 @@ the directory where you want the files to be produced, otherwise there will be a
 </pre></div>
 </div>
 <p>The file &#8220;genus.diamond.aggregated.counts.norm.permanova.sig&#8221; contains the model fit and significance p-value.</p>
-<p>As we did not see much in the way of significant difference of individual genera in our metagenomeSeq analysis we were
-interested in the PCA loadings on Genera. We can reproduce Fig.1d (right panel) using the following function:</p>
-<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; PipelineMetaomics.plotPCALoadings(&quot;genus.diamond.aggregated.counts.loadings.tsv&quot;, &quot;genus.diamond.aggregated.counts.loadings.png&quot;)
-</pre></div>
-</div>
-<p>This will produce the following plot</p>
-<a class="reference internal image-reference" href="_images/genus.diamond.aggregated.counts.loadings.png"><img alt="_images/genus.diamond.aggregated.counts.loadings.png" class="align-center" src="_images/genus.diamond.aggregated.counts.loadings.png" style="width: 400pt; height: 400pt;" /></a>
-<p>And that is Fig. 1 and half of Fig. 2 done!</p>
-<p>We did not see any striking differences in genera abundance in our metagenomeSeq anlaysis. However we did see a number of
-NOGs that were significantly differentially abundant in both DNA and RNA analyses. We therefore concentrate on these in the
-rest of the analysis.</p>
 </div>
 
 
@@ -146,7 +136,7 @@ rest of the analysis.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Nick Ilott.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

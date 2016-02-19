@@ -4,7 +4,7 @@
 Introduction
 ==============
 
-The aims of the project and analysis are explained in the paper. Briefly, we were 
+The aims of the project and analysis are explained in the paper [Link here]. Briefly, we were 
 interested to discover community structure and functional changes in the microbiota associated with 
 inflammation in a mouse model of Helicobacter hepaticus + aIL10R colitis. To this
 end we used shotgun metagenomic and metatranscriptomic sequencing. Using these two
@@ -14,8 +14,12 @@ likely to represent colitis-induced functions.
 
 
 The purpose of this documentation is to allow you to follow the analyses that we used step by step and
-recreate results and figures from our analyses. As with all high-throughput
-sequencing experiments, a number of tasks take a long time to run and created files are
+recreate results and figures from our analyses. However, as you will see, not all of the figures are
+reproduced here although the code is available to do so. This documentation will be updated (hopefully)
+with a more complete analysis. Nevertheless, the major steps for data processing and analysis are
+provided. 
+
+As with all high-throughput sequencing experiments, a number of tasks take a long time to run and created files are
 large. While we expect that the analysis can be run through from start to finish it may be
 more apropriate to only run certain sections. Therefore we have provided the output files 
 so that some tasks can be skipped.

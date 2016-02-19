@@ -9,7 +9,7 @@ abundant NOGs. Since we have read assignments to genera and NOGs, all we had to 
 reads that were aligned to both and count the number of reads per genus-NOG pair. For each sample
 we take the RNA-seq read assignments and do the counting. By default the following script will output
 the percentage of reads from each genus that map to a NOG. This is the basic input for the generation
-of Fig. 3a. The script takes as input a gene2cog mapping file (-m), the list of NOGs
+of Fig. 5b and c. The script takes as input a gene2cog mapping file (-m), the list of NOGs
 which we wish to calculate % genus reads over (-d), the level at which to count (--level),
 the taxa assignments file and the alignment to the IGC::
 
@@ -102,7 +102,7 @@ Plotting the maximum contribution of a genus to NOG expression
 ===============================================================
 
 
-We can recreate Fig. 3a by running::
+We can recreate Fig. 5b by running::
 
     >> PipelineMetaomics.plotMaxTaxaContribution("associated_ptaxa_average.matrix",
                                                  "<path_to_compare_datasets>/compare_datasets/rna_dna_ratio.annotated.outsidepi.tsv",

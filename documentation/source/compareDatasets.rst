@@ -7,7 +7,8 @@ Comparing metagenomic and metatranscriptomic data sets
 There is very little metatranscriptomic data out there in colitis. Therefore we were initially just
 interested in comparing metagenomic and metatranscriptomic data sets in terms of the genera and 
 functions that are detected and the correlation of abundance estimates. The following describes how
-we performed these analyses.
+we performed these analyses and will show you how Fig. 2a, 2b and 2c were created (this also applies
+with Fig. 4a, b and c).
 
 First we make a separate working directory for the comparison::
 
@@ -18,7 +19,7 @@ First we make a separate working directory for the comparison::
 Detection overlap
 =================
 
-The first analysis that we do is to do some simple comparisons between the DNA and RNA data sets (Fig. 1 in the paper). 
+The first analysis that we do is to do some simple comparisons between the DNA and RNA data sets. 
 This involves looking at the number of genera/NOGs that were detected in each method (and the overlap) and how abundance
 as measured by DNA compares with abundance of RNA. Here we will use the PipelineMetaomics.py module
 to look at the overlaps. The function takes as positional arguments the RNA counts, DNA counts and outfile name. For example,
@@ -78,7 +79,7 @@ This produces the plot below in the file genus_abundance_correlation.png and pri
     :height: 300pt
 
 
-This was repeated using the same functions for NOG-based counts and normalised counts (Fig. 2). For furhter analysis
+This was repeated using the same functions for NOG-based counts and normalised counts. For furhter analysis
 we need to build a set of genera/NOGs that were found to be present in both DNA and RNA data sets above the 0.1 RPM threshold. To do
 this we use differential abundance tables (i.e. all features that were originally tested for significnace in either RNA or DNA data sets)
 that we loaded into our database and run the following functions. common_genera.tsv and common_genes.tsv will be used to

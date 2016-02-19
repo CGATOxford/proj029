@@ -163,8 +163,14 @@
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
+
 </div>
-<div class="viewcode-block" id="buildGeneDiffList"><a class="viewcode-back" href="../../code.html#Proj029Pipelines.PipelineMetaomics.buildGeneDiffList">[docs]</a><span class="k">def</span> <span class="nf">buildGeneDiffList</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">commonset</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<div class="viewcode-block" id="buildDiffList"><a class="viewcode-back" href="../../code.html#Proj029Pipelines.PipelineMetaomics.buildDiffList">[docs]</a><span class="k">def</span> <span class="nf">buildDiffList</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> 
+                  <span class="n">commonset</span><span class="p">,</span> 
+                  <span class="n">outfile</span><span class="p">,</span> 
+                  <span class="n">fdr</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+                  <span class="n">l2fold</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                  <span class="n">tablename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    build a list of differentially expressed</span>
 <span class="sd">    NOGs between colitis and steady state</span>
@@ -180,35 +186,72 @@
     <span class="c"># remove any genes that are different between Hh and steady state</span>
     <span class="c"># or between aIL10R and steady state</span>
     <span class="n">hh</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
-<span class="s">                       FROM gene_counts_diff</span>
+<span class="s">                       FROM </span><span class="si">%s</span><span class="s"></span>
 <span class="s">                       WHERE group1 == &quot;Hh&quot; </span>
 <span class="s">                       AND group2 == &quot;WT&quot; </span>
-<span class="s">                       AND adj_P_Val &lt; 0.05&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()])</span>
+<span class="s">                       AND adj_P_Val &lt; </span><span class="si">%f</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tablename</span><span class="p">,</span> <span class="n">fdr</span><span class="p">))</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()])</span>
 
     <span class="c"># sql list</span>
     <span class="n">hh</span> <span class="o">=</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span><span class="o">+</span><span class="n">x</span><span class="o">+</span><span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">hh</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
 
     <span class="n">ail10r</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
-<span class="s">                       FROM gene_counts_diff</span>
+<span class="s">                       FROM </span><span class="si">%s</span><span class="s"></span>
 <span class="s">                       WHERE group1 == &quot;WT&quot; </span>
 <span class="s">                       AND group2 == &quot;aIL10R&quot; </span>
-<span class="s">                       AND adj_P_Val &lt; 0.05&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()])</span>
+<span class="s">                       AND adj_P_Val &lt; </span><span class="si">%f</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tablename</span><span class="p">,</span> <span class="n">fdr</span><span class="p">))</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()])</span>
     <span class="c"># sql list</span>
     <span class="n">ail10r</span> <span class="o">=</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span><span class="o">+</span><span class="n">x</span><span class="o">+</span><span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ail10r</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
 
+
+    <span class="k">print</span> <span class="n">ail10r</span>
+    <span class="k">print</span> <span class="n">hh</span>
+
     <span class="n">outf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">cc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
-<span class="s">                              FROM gene_counts_diff </span>
+<span class="s">                              FROM </span><span class="si">%s</span><span class="s"></span>
 <span class="s">                              WHERE group1 == &quot;HhaIL10R&quot; </span>
 <span class="s">                              AND group2 == &quot;WT&quot; </span>
-<span class="s">                              AND adj_P_Val &lt; 0.05</span>
-<span class="s">                              AND (logFC &gt; 1 OR logFC &lt; -1)</span>
+<span class="s">                              AND adj_P_Val &lt; </span><span class="si">%f</span><span class="s"></span>
+<span class="s">                              AND (logFC &gt; </span><span class="si">%i</span><span class="s"> OR logFC &lt; -</span><span class="si">%i</span><span class="s">)</span>
 <span class="s">                              AND taxa IN </span><span class="si">%s</span><span class="s"></span>
 <span class="s">                              AND taxa NOT IN </span><span class="si">%s</span><span class="s"></span>
 <span class="s">                              AND taxa NOT IN </span><span class="si">%s</span><span class="s"></span>
-<span class="s">                              ORDER BY logFC DESC&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">common</span><span class="p">,</span> <span class="n">hh</span><span class="p">,</span> <span class="n">ail10r</span><span class="p">))</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+<span class="s">                              ORDER BY logFC DESC&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tablename</span><span class="p">,</span> <span class="n">fdr</span><span class="p">,</span> <span class="n">l2fold</span><span class="p">,</span> <span class="n">l2fold</span><span class="p">,</span> <span class="n">common</span><span class="p">,</span> <span class="n">hh</span><span class="p">,</span> <span class="n">ail10r</span><span class="p">))</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
         <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gene</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
     <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+
+</div>
+<div class="viewcode-block" id="heatmapDiffFeatures"><a class="viewcode-back" href="../../code.html#Proj029Pipelines.PipelineMetaomics.heatmapDiffFeatures">[docs]</a><span class="k">def</span> <span class="nf">heatmapDiffFeatures</span><span class="p">(</span><span class="n">diff_list</span><span class="p">,</span>
+                        <span class="n">matrix</span><span class="p">,</span>
+                        <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    draw heatmap of differentially abundant features</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gplots)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;diff &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header=F, sep=&quot;</span><span class="se">\t</span><span class="s">&quot;, stringsAsFactors=F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">diff_list</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header=T, stringsAsFactors=F, sep=&quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">matrix</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[, 1:ncol(dat)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[diff[,1],]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- na.omit(dat)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[, mixedsort(colnames(dat))]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;samples &lt;- colnames(dat)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- t(apply(dat, 1, scale))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;colnames(dat) &lt;- samples&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;cols &lt;- colorRampPalette(c(&quot;blue&quot;, &quot;white&quot;, &quot;red&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pdf(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;heatmap.2(as.matrix(dat), col = cols, scale = &quot;row&quot;, trace = &quot;none&quot;, Rowv = F, Colv = F, margins = c(15,15), </span>
+<span class="s">                       distfun = function(x) dist(x, method = &quot;manhattan&quot;),</span>
+<span class="s">                       hclustfun = function(x) hclust(x, method = &quot;ward.D2&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[</span><span class="s">&quot;dev.off&quot;</span><span class="p">]()</span>
 
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
@@ -519,6 +562,58 @@
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
+
+</div>
+<div class="viewcode-block" id="barchartProportions"><a class="viewcode-back" href="../../code.html#Proj029Pipelines.PipelineMetaomics.barchartProportions">[docs]</a><span class="k">def</span> <span class="nf">barchartProportions</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    stacked barchart description of percent reads</span>
+<span class="sd">    mapping to each taxon</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(reshape)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># get rid of taxa colomn</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,1:ncol(dat)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- data.frame(apply(dat, 2, function(x) x*100))&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># candidate genera</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;candidates &lt;- c(&quot;Peptoniphilus&quot;,</span>
+<span class="s">                         &quot;Deferribacter&quot;,</span>
+<span class="s">                         &quot;Escherichia&quot;,</span>
+<span class="s">                         &quot;Lactobacillus&quot;,</span>
+<span class="s">                         &quot;Turicibacter&quot;,</span>
+<span class="s">                         &quot;Akkermansia&quot;,</span>
+<span class="s">                         &quot;Bifidobacterium&quot;,</span>
+<span class="s">                         &quot;Methylacidiphilum&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- dat.percent[candidates,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- dat.percent[,mixedsort(colnames(dat.percent))]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># add taxa column with &quot;other&quot; = &lt; 5% in any sample</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$taxa &lt;- rownames(dat.percent)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># reshape and plot</span>
+    <span class="n">outname</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">snip</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;.pdf&quot;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- melt(dat.percent)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(as.character(dat.percent$variable), &quot;.R[0-9]&quot;))[seq(1, nrow(dat.percent)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;conds &lt;- unlist(strsplit(conds, &quot;.&quot;, fixed = T))[seq(2, length(conds)*2, 2)]&#39;&#39;&#39;</span><span class="p">)</span>  
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$cond &lt;- conds&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;for (taxon in candidates){</span>
+<span class="s">         outname &lt;- paste(&quot;</span><span class="si">%s</span><span class="s">&quot;, paste(&quot;_&quot;, taxon, sep=&quot;&quot;), &quot;.pdf&quot;, sep=&quot;&quot;)</span>
+<span class="s">         dat.percent.restrict &lt;- dat.percent[dat.percent$taxa==taxon,]</span>
+<span class="s">         plot1 &lt;- ggplot(dat.percent.restrict, </span>
+<span class="s">                         aes(x=factor(cond, levels=c(&quot;WT&quot;,&quot;aIL10R&quot;, &quot;Hh&quot;, &quot;HhaIL10R&quot;)), </span>
+<span class="s">                         y=value, group=cond, colour=cond, label=variable))</span>
+<span class="s">         plot1 + geom_boxplot() + geom_jitter() + geom_text() + scale_colour_manual(values=c(&quot;darkGreen&quot;, &quot;red&quot;, &quot;grey&quot;, &quot;blue&quot;))</span>
+<span class="s">         ggsave(outname)}&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outname</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
 <span class="c"># SECTION 4</span>
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
@@ -745,6 +840,125 @@
     <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
     <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">na_rep</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+
+</div>
+<div class="viewcode-block" id="mergePathwaysAndGenusCogCountsMatrix"><a class="viewcode-back" href="../../code.html#Proj029Pipelines.PipelineMetaomics.mergePathwaysAndGenusCogCountsMatrix">[docs]</a><span class="k">def</span> <span class="nf">mergePathwaysAndGenusCogCountsMatrix</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span>
+                                         <span class="n">matrix</span><span class="p">,</span>
+                                         <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    merge cog annotations and per taxa cog counts</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c"># read annotations</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;anno &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header=T, stringsAsFactors=F, sep=&quot;</span><span class="se">\t</span><span class="s">&quot;, row.names=1)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">annotations</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;anno.no.pathways &lt;- anno[,1:ncol(anno)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;anno.p &lt;- sweep(anno.no.pathways, 2, colSums(anno.no.pathways), &quot;/&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;anno.p$average &lt;- rowMeans(anno.p)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;anno.p$pathway &lt;- anno$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># read matrix</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header=T, stringsAsFactors=F, sep=&quot;</span><span class="se">\t</span><span class="s">&quot;, row.names=1)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">matrix</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat &lt;- data.frame(t(mat))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat$ref &lt;- rownames(mat)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># split pathway annotations</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;for (pathway in unique(anno.p$pathway)){</span>
+<span class="s">             if (pathway == &quot;Function unknown&quot;){next}</span>
+<span class="s">             # some weirness with some names</span>
+<span class="s">             pw &lt;- gsub(&quot;/&quot;, &quot;_&quot;, pathway)</span>
+<span class="s">             outname &lt;- paste(&quot;candidate_pathways.dir&quot;, paste(pw, &quot;tsv&quot;, sep = &quot;.&quot;), sep=&quot;/&quot;)</span>
+<span class="s">             outname &lt;- gsub(&quot; &quot;, &quot;_&quot;, outname)</span>
+<span class="s">             print(outname)</span>
+<span class="s">             anno.p2 &lt;- anno.p[anno.p$pathway == pathway,]</span>
+<span class="s">             anno.p2 &lt;- anno.p2[order(anno.p2$average, decreasing=T),]</span>
+<span class="s">             # top 10</span>
+<span class="s">#             anno.p2 &lt;- anno.p2[1:10,]</span>
+<span class="s">             # merge with matrix</span>
+<span class="s">             mat2 &lt;- mat[rownames(anno.p2),]</span>
+<span class="s">             mat2$pathway &lt;- anno.p2$pathway</span>
+<span class="s">             write.table(mat2, file=outname, sep=&quot;</span><span class="se">\t</span><span class="s">&quot;, row.names=F)}&#39;&#39;&#39;</span><span class="p">)</span>
+
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+</div>
+<div class="viewcode-block" id="plotNumberOfTaxaPerPathway"><a class="viewcode-back" href="../../code.html#Proj029Pipelines.PipelineMetaomics.plotNumberOfTaxaPerPathway">[docs]</a><span class="k">def</span> <span class="nf">plotNumberOfTaxaPerPathway</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot the average number of taxa expressing genes</span>
+<span class="sd">    in each pathway</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">getTempFilename</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+    <span class="n">infs</span> <span class="o">=</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+    <span class="n">statement</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;awk &#39;FNR==1 &amp;&amp; NR!=1 { while (/ref/) getline; }1 {print}&#39; </span><span class="si">%(infs)s</span><span class="s"> &gt; </span><span class="si">%(tmp)s</span><span class="s">&#39;&#39;&#39;</span>
+    <span class="n">P</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(plyr)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(reshape)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;-read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header=T, stringsAsFactors=F, sep=&quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">tmp</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;t &lt;- ncol(dat)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- na.omit(dat)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pathways &lt;- dat$pathway&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2 &lt;- dat[,1:ncol(dat)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat2 &lt;- dat2[,1:ncol(dat2)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># colsums gives the total number of taxa expressing each NOG</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;col.sums &lt;- data.frame(t(sapply(split(dat2, pathways), colSums)))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(col.sums) &lt;- unique(pathways)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># rowsums gives the total number of taxa expressing</span>
+    <span class="c"># at least one NOG per pathway</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;total.taxa &lt;- data.frame(rowSums(col.sums &gt; 0))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;total.taxa$pathway &lt;- rownames(col.sums)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># sort by highest</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;total.taxa &lt;- total.taxa[order(total.taxa[,1], decreasing=T), ]&#39;&#39;&#39;</span><span class="p">)</span>    
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;colnames(total.taxa) &lt;- c(&quot;value&quot;, &quot;pathway&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 &lt;- ggplot(total.taxa, aes(x=factor(pathway,levels=pathway), y=value/t, stat=&quot;identity&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 + geom_bar(stat=&quot;identity&quot;) + theme(axis.text.x=element_text(angle=90))&#39;&#39;&#39;</span><span class="p">)</span> 
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+<span class="c">####################################################</span>
+
+</div>
+<div class="viewcode-block" id="plotTaxaContributionsToCandidatePathways"><a class="viewcode-back" href="../../code.html#Proj029Pipelines.PipelineMetaomics.plotTaxaContributionsToCandidatePathways">[docs]</a><span class="k">def</span> <span class="nf">plotTaxaContributionsToCandidatePathways</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> 
+                                             <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot the distribution of maximum genus</span>
+<span class="sd">    contribution per gene set</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gplots)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(pheatmap)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">matrix</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat &lt;- na.omit(mat)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;print(mat$ref)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="c"># just plot top 10</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(mat) &lt;- mat$ref&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat2 &lt;- mat[,1:ncol(mat)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat2 &lt;- mat2[,1:ncol(mat2)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># only keep those genera that contribute &gt; 5% to</span>
+    <span class="c"># a NOG</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;mat2 &lt;- mat2[,colSums(mat2) &gt; 5]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;cols &lt;- colorRampPalette(c(&quot;white&quot;, &quot;blue&quot;))(75)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pdf(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;pheatmap(mat2, </span>
+<span class="s">                  color=cols, </span>
+<span class="s">                  cluster_cols=T, </span>
+<span class="s">                  cluster_rows=T, </span>
+<span class="s">                  cluster_method=&quot;ward.D2&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[</span><span class="s">&quot;dev.off&quot;</span><span class="p">]()</span>
+
+
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
 <span class="c">####################################################</span>
@@ -919,7 +1133,7 @@
 
     <span class="c"># NOTE these are specified and hardcoded </span>
     <span class="c"># here - NOGs of interest</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;cogs &lt;- c(&quot;COG0783&quot;, &quot;COG2837&quot;, &quot;COG0435&quot;,&quot;COG5520&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;cogs &lt;- c(&quot;COG0783&quot;, &quot;COG2837&quot;, &quot;COG0435&quot;,&quot;COG5520&quot;, &quot;COG0508&quot;, &quot;COG0852&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
 
     <span class="c"># iterate over cogs and scatterplot</span>
     <span class="c"># fold changes in DNA and RNA analysis.</span>
@@ -990,7 +1204,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Nick Ilott.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>
