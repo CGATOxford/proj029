@@ -100,9 +100,6 @@ return a list of alignments</p>
 <div class="section" id="pipelinemetagenomecommunities-py">
 <h3>PipelineMetagenomeCommunities.py<a class="headerlink" href="#pipelinemetagenomecommunities-py" title="Permalink to this headline">¶</a></h3>
 <p>classes and utility functions for pipeline_metagenomecommunities.py</p>
-<p>Different assembly tools will use different inputs. Some can take
-fasta files whereas others will take fastq and in either case can be
-paired-end (in the same or different files) or single end</p>
 <dl class="function">
 <dt id="CGATPipelines.PipelineMetagenomeCommunities.MAPlot">
 <code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">MAPlot</code><span class="sig-paren">(</span><em>infile</em>, <em>threshold_stat</em>, <em>p_threshold</em>, <em>fc_threshold</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#MAPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.MAPlot" title="Permalink to this definition">¶</a></dt>
@@ -111,9 +108,15 @@ paired-end (in the same or different files) or single end</p>
 
 <dl class="function">
 <dt id="CGATPipelines.PipelineMetagenomeCommunities.annotate">
-<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">annotate</code><span class="sig-paren">(</span><em>infile</em>, <em>annotation_file</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#annotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.annotate" title="Permalink to this definition">¶</a></dt>
-<dd><p>annotate infile with annotations from
-annotation gtf file</p>
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">annotate</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>geneset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#annotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.annotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotate NOGs into functional categories</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.barchartProportions">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">barchartProportions</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>order</em>, <em>dtype='pathways'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#barchartProportions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.barchartProportions" title="Permalink to this definition">¶</a></dt>
+<dd><p>stacked barchart description of percent reads
+mapping to each taxon</p>
 </dd></dl>
 
 <dl class="function">
@@ -126,6 +129,13 @@ annotation gtf file</p>
 <dt id="CGATPipelines.PipelineMetagenomeCommunities.barplotDiversity">
 <code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">barplotDiversity</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>rdir</em>, <em>ind='shannon'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#barplotDiversity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.barplotDiversity" title="Permalink to this definition">¶</a></dt>
 <dd><p>barplot diversity</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.buildLcaProportionsAcrossSamples">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">buildLcaProportionsAcrossSamples</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>dtype='pathway'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#buildLcaProportionsAcrossSamples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.buildLcaProportionsAcrossSamples" title="Permalink to this definition">¶</a></dt>
+<dd><p>build the proportion of reads mapped to 
+each taxoomic level per sample</p>
 </dd></dl>
 
 <dl class="function">
@@ -154,6 +164,13 @@ counts</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="CGATPipelines.PipelineMetagenomeCommunities.plotProportionDistributions">
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">plotProportionDistributions</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#plotProportionDistributions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.plotProportionDistributions" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot the cumulative proportions of taxa. Input table 
+of proportions</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="CGATPipelines.PipelineMetagenomeCommunities.rarefactionCurve">
 <code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">rarefactionCurve</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>rdir</em>, <em>f=1000000</em>, <em>step=1000000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#rarefactionCurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.rarefactionCurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform and plot rarefaction curves
@@ -170,7 +187,7 @@ in distance metrics</p>
 
 <dl class="function">
 <dt id="CGATPipelines.PipelineMetagenomeCommunities.testDiversity">
-<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">testDiversity</code><span class="sig-paren">(</span><em>infile</em>, <em>poutfile</em>, <em>rdir</em>, <em>ind='shannon'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#testDiversity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.testDiversity" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">CGATPipelines.PipelineMetagenomeCommunities.</code><code class="descname">testDiversity</code><span class="sig-paren">(</span><em>infile</em>, <em>outfile</em>, <em>rdir</em>, <em>ind='shannon'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CGATPipelines/PipelineMetagenomeCommunities.html#testDiversity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CGATPipelines.PipelineMetagenomeCommunities.testDiversity" title="Permalink to this definition">¶</a></dt>
 <dd><p>barplot diversity</p>
 </dd></dl>
 

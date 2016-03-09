@@ -186,11 +186,12 @@
     <span class="c"># remove any genes that are different between Hh and steady state</span>
     <span class="c"># or between aIL10R and steady state</span>
     <span class="n">hh</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
-<span class="s">                       FROM </span><span class="si">%s</span><span class="s"></span>
-<span class="s">                       WHERE group1 == &quot;Hh&quot; </span>
-<span class="s">                       AND group2 == &quot;WT&quot; </span>
+<span class="s">                       FROM </span><span class="si">%s</span><span class="s"> </span><span class="se">\</span>
+<span class="s">                       WHERE group1 == &quot;Hh&quot; </span><span class="se">\</span>
+<span class="s">                       AND group2 == &quot;WT&quot; </span><span class="se">\</span>
 <span class="s">                       AND adj_P_Val &lt; </span><span class="si">%f</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tablename</span><span class="p">,</span> <span class="n">fdr</span><span class="p">))</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()])</span>
 
+    
     <span class="c"># sql list</span>
     <span class="n">hh</span> <span class="o">=</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span><span class="o">+</span><span class="n">x</span><span class="o">+</span><span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">hh</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
 
@@ -202,9 +203,6 @@
     <span class="c"># sql list</span>
     <span class="n">ail10r</span> <span class="o">=</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span><span class="o">+</span><span class="n">x</span><span class="o">+</span><span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ail10r</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
 
-
-    <span class="k">print</span> <span class="n">ail10r</span>
-    <span class="k">print</span> <span class="n">hh</span>
 
     <span class="n">outf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">cc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;SELECT taxa </span>
@@ -748,7 +746,7 @@
 <span class="s">                                                         &quot;purple&quot;, </span>
 <span class="s">                                                         &quot;red&quot;, </span>
 <span class="s">                                                         &quot;grey&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot5 &lt;- plot4 + geom_abline(yintercept = intercept, slope = slope)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot5 &lt;- plot4 + geom_abline(intercept = intercept, slope = slope)&#39;&#39;&#39;</span><span class="p">)</span>
 
     <span class="c"># prediction intervals</span>
     <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot6 &lt;- plot5 + geom_line(aes(x = dna, y = lwr), linetype = &quot;dashed&quot;, colour = &quot;black&quot;)&#39;&#39;&#39;</span><span class="p">)</span>

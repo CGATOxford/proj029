@@ -52,10 +52,6 @@
 
 <span class="sd">classes and utility functions for pipeline_metagenomecommunities.py</span>
 
-<span class="sd">Different assembly tools will use different inputs. Some can take</span>
-<span class="sd">fasta files whereas others will take fastq and in either case can be</span>
-<span class="sd">paired-end (in the same or different files) or single end</span>
-
 <span class="sd">&#39;&#39;&#39;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
@@ -297,8 +293,8 @@
 <span class="s">                         sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">results</span><span class="p">)</span>
     <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;data loaded&quot;</span><span class="p">)</span>
 
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;t &lt;- dat$taxa[dat$</span><span class="si">%s</span><span class="s"> &lt; </span><span class="si">%f</span><span class="s"> &amp; abs(dat$logFC) &gt; </span><span class="si">%f</span><span class="s">]&#39;&#39;&#39;</span><span class="p">)</span>
-    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;diff.genes &lt;- unique(t)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">p_threshold</span><span class="p">,</span> <span class="n">fc_threshold</span><span class="p">))</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;t &lt;- dat$taxa[dat$</span><span class="si">%s</span><span class="s"> &lt; </span><span class="si">%f</span><span class="s"> &amp; abs(dat$logFC) &gt; </span><span class="si">%f</span><span class="s">]&#39;&#39;&#39;</span><span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">p_threshold</span><span class="p">,</span> <span class="n">fc_threshold</span><span class="p">))</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;diff.genes &lt;- unique(t)&#39;&#39;&#39;</span><span class="p">)</span> 
 
     <span class="c">##############################</span>
     <span class="c"># this is a hack</span>
@@ -339,7 +335,7 @@
 <span class="c">###################################################################</span>
 
 </div>
-<div class="viewcode-block" id="annotate"><a class="viewcode-back" href="../../code.html#CGATPipelines.PipelineMetagenomeCommunities.annotate">[docs]</a><span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">annotation_file</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">annotation_file</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    annotate infile with annotations from</span>
 <span class="sd">    annotation gtf file</span>
@@ -382,7 +378,7 @@
 <span class="c">###################################################################</span>
 <span class="c">###################################################################</span>
 
-</div>
+
 <div class="viewcode-block" id="rarefactionCurve"><a class="viewcode-back" href="../../code.html#CGATPipelines.PipelineMetagenomeCommunities.rarefactionCurve">[docs]</a><span class="k">def</span> <span class="nf">rarefactionCurve</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span>
                      <span class="n">outfile</span><span class="p">,</span>
                      <span class="n">rdir</span><span class="p">,</span>
@@ -484,7 +480,7 @@
 
 </div>
 <div class="viewcode-block" id="testDiversity"><a class="viewcode-back" href="../../code.html#CGATPipelines.PipelineMetagenomeCommunities.testDiversity">[docs]</a><span class="k">def</span> <span class="nf">testDiversity</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span>
-                  <span class="n">poutfile</span><span class="p">,</span>
+                  <span class="n">outfile</span><span class="p">,</span>
                   <span class="n">rdir</span><span class="p">,</span>
                   <span class="n">ind</span><span class="o">=</span><span class="s">&quot;shannon&quot;</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
@@ -510,8 +506,184 @@
 <span class="s">                     stat = k$statistic),</span>
 <span class="s">                     file = &quot;</span><span class="si">%s</span><span class="s">&quot;,</span>
 <span class="s">                     sep = &quot;</span><span class="se">\t</span><span class="s">&quot;,</span>
-<span class="s">                     row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span></div>
-</pre></div>
+<span class="s">                     row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+
+<span class="c">###############################################</span>
+<span class="c">###############################################</span>
+<span class="c">###############################################</span>
+
+</div>
+<span class="k">def</span> <span class="nf">rarefy</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> 
+           <span class="n">outfile</span><span class="p">,</span> 
+           <span class="n">sample</span><span class="p">):</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(vegan)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, </span>
+<span class="s">                         header=T, </span>
+<span class="s">                         stringsAsFactors=F,</span>
+<span class="s">                         sep=&quot;</span><span class="se">\t</span><span class="s">&quot;,</span>
+<span class="s">                         row.names=1)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rdat &lt;- rrarefy(t(dat), </span><span class="si">%i</span><span class="s">)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">sample</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rdat &lt;- as.data.frame(t(rdat))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rdat$taxa &lt;- rownames(rdat)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rdat &lt;- rdat[,append(&quot;taxa&quot;, colnames(rdat[1:ncol(rdat)-1]))]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(rdat, file=&quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names=F, quote=F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+<span class="c">###################################################################</span>
+
+<div class="viewcode-block" id="buildLcaProportionsAcrossSamples"><a class="viewcode-back" href="../../code.html#CGATPipelines.PipelineMetagenomeCommunities.buildLcaProportionsAcrossSamples">[docs]</a><span class="k">def</span> <span class="nf">buildLcaProportionsAcrossSamples</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&quot;pathway&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    build the proportion of reads mapped to </span>
+<span class="sd">    each taxoomic level per sample</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(dplyr)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, row.names=1)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dtype</span><span class="o">==</span> <span class="s">&quot;pathway&quot;</span><span class="p">:</span>
+        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- data.frame(dat %&gt;</span><span class="si">% g</span><span class="s">roup_by(taxa) %&gt;</span><span class="si">% s</span><span class="s">ummarise_each(funs(sum)))&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,2:ncol(dat)]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.t &lt;- data.frame(sweep(as.matrix(dat), 2, colSums(dat), &quot;/&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.t$taxa &lt;- rownames(dat.t)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;write.table(dat.t, file = &quot;</span><span class="si">%s</span><span class="s">&quot;, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;, quote=F, row.names = F)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">###############################################</span>
+<span class="c">###############################################</span>
+<span class="c">###############################################</span>
+
+</div>
+<div class="viewcode-block" id="plotProportionDistributions"><a class="viewcode-back" href="../../code.html#CGATPipelines.PipelineMetagenomeCommunities.plotProportionDistributions">[docs]</a><span class="k">def</span> <span class="nf">plotProportionDistributions</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plot the cumulative proportions of taxa. Input table </span>
+<span class="sd">    of proportions</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(reshape)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># get rid of taxa colomn</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,1:ncol(dat)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- data.frame(apply(dat, 2, function(x) x*100))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- dat.percent[,mixedsort(colnames(dat.percent))]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$average &lt;- rowMeans(dat.percent)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- dat.percent[order(dat.percent$average, decreasing = T),]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$cumulative.proportion &lt;- cumsum(dat.percent$average)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$ntaxa &lt;- seq(1,nrow(dat.percent),1)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 &lt;- ggplot(dat.percent, aes(x=ntaxa, </span>
+<span class="s">                                          y=cumulative.proportion, </span>
+<span class="s">                                          stat=&quot;identity&quot;))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot2 &lt;- plot1 + geom_line(stat = &quot;identity&quot;, aes(linewidth = 2))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot2 + ylim(c(0,100)) + xlim(c(1, nrow(dat.percent)))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+
+<span class="c">###############################################</span>
+<span class="c">###############################################</span>
+<span class="c">###############################################</span>
+</div>
+<div class="viewcode-block" id="barchartProportions"><a class="viewcode-back" href="../../code.html#CGATPipelines.PipelineMetagenomeCommunities.barchartProportions">[docs]</a><span class="k">def</span> <span class="nf">barchartProportions</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&quot;pathways&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    stacked barchart description of percent reads</span>
+<span class="sd">    mapping to each taxon</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(ggplot2)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(gtools)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;library(reshape)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- read.csv(&quot;</span><span class="si">%s</span><span class="s">&quot;, header = T, stringsAsFactors = F, sep = &quot;</span><span class="se">\t</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;rownames(dat) &lt;- dat$taxa&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># get rid of taxa colomn</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat &lt;- dat[,1:ncol(dat)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- data.frame(apply(dat, 2, function(x) x*100))&#39;&#39;&#39;</span><span class="p">)</span>
+    
+    <span class="c"># get order from python string</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;sample.order &lt;- unlist(strsplit(&quot;</span><span class="si">%s</span><span class="s">&quot;, &quot;,&quot;))&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">order</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- dat.percent[,sample.order]&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># this is a horrible way to</span>
+    <span class="c"># change the names of those &lt; 5%</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;to_other &lt;- c()</span>
+<span class="s">         for (i in 1:nrow(dat.percent)){</span>
+<span class="s">              if (max(dat.percent[i,]) &lt; 5){</span>
+<span class="s">                  to_other &lt;- append(to_other, rownames(dat.percent[i,]))</span>
+<span class="s">              }</span>
+<span class="s">         }&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># take average across samples</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$average &lt;- rowMeans(dat.percent)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># plot all pathways cos there</span>
+    <span class="c"># aren&#39;t many</span>
+    <span class="c"># if dtype==&quot;pathways&quot;:</span>
+    <span class="c">#     R(&#39;&#39;&#39;to_other = c()&#39;&#39;&#39;)</span>
+
+    <span class="c"># add taxa column with &quot;other&quot; = &lt; 5% in any sample</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$taxa &lt;- rownames(dat.percent)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$taxa &lt;- ifelse(dat.percent$taxa </span><span class="si">%i</span><span class="s">n% to_other, </span>
+<span class="s">                                    &quot;other&quot;, </span>
+<span class="s">                                    dat.percent$taxa)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.other &lt;- dat.percent[dat.percent$taxa == &quot;other&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.other &lt;- dat.other[,1:ncol(dat.other)-1]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;other &lt;- colSums(dat.other)&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- dat.percent[dat.percent$taxa != &quot;other&quot;,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- dat.percent[,1:ncol(dat.percent)-1,]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent[&quot;other&quot;,] &lt;- unlist(other)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$taxa &lt;- rownames(dat.percent)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$taxa[dat.percent$taxa == &quot;other&quot;] &lt;- &quot;bother&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent$taxa[dat.percent$taxa == &quot;Function unknown&quot;] &lt;- &quot;aFunction unknown&quot;&#39;&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c"># reshape and plot</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;- melt(dat.percent)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;dat.percent &lt;-  dat.percent[order(dat.percent$variable, dat.percent$taxa),]&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 &lt;- ggplot(dat.percent, </span>
+<span class="s">                          aes(x=factor(variable, levels=variable), </span>
+<span class="s">                              y=value, fill=taxa, stat=&quot;identity&quot;)) + geom_bar(stat=&quot;identity&quot;)&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;plot1 + theme(axis.text.x=element_text(angle=90))&#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">(</span><span class="s">&#39;&#39;&#39;ggsave(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;&#39;&#39;</span> <span class="o">%</span> <span class="n">outfile</span><span class="p">)</span>
+
+<span class="c">###############################################</span>
+<span class="c">###############################################</span>
+<span class="c">###############################################</span>
+
+</div>
+<div class="viewcode-block" id="annotate"><a class="viewcode-back" href="../../code.html#CGATPipelines.PipelineMetagenomeCommunities.annotate">[docs]</a><span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">geneset</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    annotate NOGs into functional categories</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">annotation</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;loading geneset&quot;</span><span class="p">)</span>
+    <span class="n">anno</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">geneset</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">anno</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">nog</span><span class="p">,</span> <span class="n">funccat</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">annotation</span><span class="p">[</span><span class="n">nog</span><span class="p">]</span> <span class="o">=</span> <span class="n">funccat</span>
+    <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;finished loading gene set&quot;</span><span class="p">)</span>
+
+    <span class="n">E</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;annotating infile&quot;</span><span class="p">)</span>
+    <span class="n">inf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">inf</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">outf</span> <span class="o">=</span> <span class="n">IOTools</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">taxa</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">inf</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">nog</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pathway</span> <span class="o">=</span> <span class="n">annotation</span><span class="p">[</span><span class="n">nog</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">pathway</span> <span class="o">=</span> <span class="s">&quot;Function unknown&quot;</span>
+        <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">+</span><span class="n">pathway</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">outf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+        
+</pre></div></div>
 
           </div>
         </div>
