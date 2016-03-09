@@ -106,7 +106,7 @@ def loadCounts(scriptsdir):
             database = os.path.abspath(os.path.join(directory, "csvdb"))
             statement = """zcat %(filename)s |
                            python %(scriptsdir)s/csv2db.py \
-                                 --backend=sqlite \
+                                 --database-backend=sqlite \
                                  --retry \
                                  --database=%(database)s \
                                  --table=%(table)s \
@@ -194,7 +194,7 @@ def loadDiffTables(scriptsdir):
             database = os.path.abspath(os.path.join(directory, "csvdb"))
             statement = """cat %(filename)s |
                            python %(scriptsdir)s/csv2db.py \
-                                 --backend=sqlite \
+                                 --database-backend=sqlite \
                                  --retry \
                                  --database=%(database)s \
                                  --table=%(table)s \
