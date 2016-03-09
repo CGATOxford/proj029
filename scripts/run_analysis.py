@@ -190,15 +190,17 @@ def loadDiffTables(scriptsdir):
         for filename in filenames:
             filename = os.path.abspath(os.path.join(directory, filename))
             outfile = P.snip(filename, ".tsv") + ".load"
-            table = P.toTable(outfile)
+            table = P.toTable(os.path.basename(outfile))
             database = os.path.abspath(os.path.join(directory, "csvdb"))
-            statement = """cat %(filename)s |
+            statement = """cd %(directory)s;
+                           cat %(filename)s |
                            python %(scriptsdir)s/csv2db.py \
                                  --database-backend=sqlite \
                                  --retry \
                                  --database=%(database)s \
                                  --table=%(table)s \
-                                 > %(outfile)s
+                                 > %(outfile)s;
+                           cd ../
                         """ % locals()
             os.system(statement)
 
