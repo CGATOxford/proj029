@@ -384,13 +384,15 @@ def main(argv=None):
                                        "RNA/gene_counts.diff.tsv",
                                        "compare_datasets/rna_dna_ratio.tsv")
 
-    PipelineMetaomics.buildGeneDiffList("RNA/csvdb",
-                                        "compare_datasets/common_genes.tsv",
-                                        "compare_datasets/rna_diff_genes.tsv")
+    PipelineMetaomics.buildDiffList("RNA/csvdb",
+                                    "compare_datasets/common_genes.tsv",
+                                    "compare_datasets/rna_diff_genes.tsv",
+                                    tablename="gene_counts_diff")
 
-    PipelineMetaomics.buildGeneDiffList("DNA/csvdb",
-                                        "compare_datasets/common_genes.tsv",
-                                        "compare_datasets/dna_diff_genes.tsv")
+    PipelineMetaomics.buildDiffList("DNA/csvdb",
+                                    "compare_datasets/common_genes.tsv",
+                                    "compare_datasets/dna_diff_genes.tsv",
+                                    tablename="gene_counts_diff")
 
     PipelineMetaomics.annotateRNADNARatio("compare_datasets/rna_dna_ratio.tsv",
                                           "compare_datasets/dna_diff_genes.tsv",

@@ -137,11 +137,12 @@ def buildDiffList(db,
     # remove any genes that are different between Hh and steady state
     # or between aIL10R and steady state
     hh = set([x[0] for x in cc.execute("""SELECT taxa 
-                       FROM %s
-                       WHERE group1 == "Hh" 
-                       AND group2 == "WT" 
+                       FROM %s \
+                       WHERE group1 == "Hh" \
+                       AND group2 == "WT" \
                        AND adj_P_Val < %f""" % (tablename, fdr)).fetchall()])
 
+    
     # sql list
     hh = "(" + ",".join(['"'+x+'"' for x in hh]) + ")"
 
@@ -153,9 +154,6 @@ def buildDiffList(db,
     # sql list
     ail10r = "(" + ",".join(['"'+x+'"' for x in ail10r]) + ")"
 
-
-    print ail10r
-    print hh
 
     outf = open(outfile, "w")
     for gene in cc.execute("""SELECT taxa 
@@ -699,7 +697,7 @@ def plotSets(infile, outfile):
                                                          "purple", 
                                                          "red", 
                                                          "grey"))''')
-    R('''plot5 <- plot4 + geom_abline(yintercept = intercept, slope = slope)''')
+    R('''plot5 <- plot4 + geom_abline(intercept = intercept, slope = slope)''')
 
     # prediction intervals
     R('''plot6 <- plot5 + geom_line(aes(x = dna, y = lwr), linetype = "dashed", colour = "black")''')
